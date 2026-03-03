@@ -1,5 +1,5 @@
 {
-  "name": "sift",
+  "name": "ledge",
   "module": "index.ts",
   "type": "module",
   "private": true,
