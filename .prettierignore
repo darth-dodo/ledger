@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+.angular/cache
+frontend/.angular
+.agentic-framework
