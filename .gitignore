@@ -3,10 +3,10 @@
 # ========================
 node_modules/
 
-# Lock files (bun.lock is committed)
+# Lock files (pnpm-lock.yaml is committed)
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
+bun.lock
 
 # ========================
 # Build Output
@@ -19,7 +19,7 @@ build/
 # ========================
 # Angular
 # ========================
-.angular/cache/
+**/.angular/cache/
 .sass-cache/
 
 # ========================
