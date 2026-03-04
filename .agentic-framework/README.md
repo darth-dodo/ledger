@@ -110,7 +110,7 @@ cp .agentic/templates/session-template.md docs/session-log.md
 │       ├── javascript.md
 │       ├── python.md
 │       ├── go.md
-│       └── bun.md                # Bun runtime (bun test, bun build)
+│       └── (removed bun.md — project now uses Node.js + pnpm)
 │
 ├── integration/                  # Session management
 │   ├── session-template.md       # Persona-aware session log (with Serena memory examples)
@@ -141,14 +141,14 @@ Specialized agent personalities with domain expertise:
 
 Structured patterns for common development tasks:
 
-| Workflow            | Duration  | Phases                                       |
-| ------------------- | --------- | -------------------------------------------- |
-| Feature Development | 1-3 hours | Design → Implement → Validate                |
-| Content Creation    | 1-2 hours | Outline → Write → Review                     |
-| Bug Fix             | 30-90 min | Investigate → Fix → Verify                   |
-| Data Pipeline       | 2-6 hours | Design → Implement Stages → Validate         |
+| Workflow            | Duration   | Phases                                         |
+| ------------------- | ---------- | ---------------------------------------------- |
+| Feature Development | 1-3 hours  | Design → Implement → Validate                  |
+| Content Creation    | 1-2 hours  | Outline → Write → Review                       |
+| Bug Fix             | 30-90 min  | Investigate → Fix → Verify                     |
+| Data Pipeline       | 2-6 hours  | Design → Implement Stages → Validate           |
 | Milestone Delivery  | Days-Weeks | Gate-In → Scope → Implement → Validate → Retro |
-| Multi-Agent         | Variable  | Coordinate → Parallel Work → Merge           |
+| Multi-Agent         | Variable   | Coordinate → Parallel Work → Merge             |
 
 ### 3. Quality Gates
 
@@ -167,10 +167,10 @@ Structured patterns for common development tasks:
 
 Domain-specific extensions that augment core personas:
 
-| Overlay            | Extends   | Domain                         |
-| ------------------ | --------- | ------------------------------ |
-| **ai-engineer**    | Developer | RAG, embeddings, prompt design |
-| **data-engineer**  | Developer | Parsing, ETL, data validation  |
+| Overlay           | Extends   | Domain                         |
+| ----------------- | --------- | ------------------------------ |
+| **ai-engineer**   | Developer | RAG, embeddings, prompt design |
+| **data-engineer** | Developer | Parsing, ETL, data validation  |
 
 ### 5. Multi-Agent Coordination
 

@@ -390,41 +390,41 @@ frontend/
 
 ### Upload
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/upload` | Upload PDF/CSV → triggers parse + embed pipeline |
-| GET | `/statements` | List all uploaded statements |
-| GET | `/statements/:id` | Statement detail + parsed transactions |
-| DELETE | `/statements/:id` | Delete statement + related data |
+| Method | Endpoint          | Description                                      |
+| ------ | ----------------- | ------------------------------------------------ |
+| POST   | `/upload`         | Upload PDF/CSV → triggers parse + embed pipeline |
+| GET    | `/statements`     | List all uploaded statements                     |
+| GET    | `/statements/:id` | Statement detail + parsed transactions           |
+| DELETE | `/statements/:id` | Delete statement + related data                  |
 
 ### Transactions
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/transactions` | List transactions (filter by date, category, amount) |
-| PATCH | `/transactions/:id` | Edit category or description |
+| Method | Endpoint            | Description                                          |
+| ------ | ------------------- | ---------------------------------------------------- |
+| GET    | `/transactions`     | List transactions (filter by date, category, amount) |
+| PATCH  | `/transactions/:id` | Edit category or description                         |
 
 ### Analytics
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/analytics/summary` | Total in/out, top categories, savings rate |
-| GET | `/analytics/categories` | Spending by category |
-| GET | `/analytics/monthly` | Month-over-month breakdown |
-| GET | `/analytics/daily` | Daily spending data (for heatmap) |
+| Method | Endpoint                | Description                                |
+| ------ | ----------------------- | ------------------------------------------ |
+| GET    | `/analytics/summary`    | Total in/out, top categories, savings rate |
+| GET    | `/analytics/categories` | Spending by category                       |
+| GET    | `/analytics/monthly`    | Month-over-month breakdown                 |
+| GET    | `/analytics/daily`      | Daily spending data (for heatmap)          |
 
 ### Chat
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/chat` | Send message → RAG-powered response |
-| GET | `/chat/history` | Past chat messages |
+| Method | Endpoint        | Description                         |
+| ------ | --------------- | ----------------------------------- |
+| POST   | `/chat`         | Send message → RAG-powered response |
+| GET    | `/chat/history` | Past chat messages                  |
 
 ### Health
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Backend health check |
+| Method | Endpoint  | Description          |
+| ------ | --------- | -------------------- |
+| GET    | `/health` | Backend health check |
 
 ---
 
@@ -532,7 +532,7 @@ services:
       POSTGRES_USER: ledger
       POSTGRES_PASSWORD: ledger
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -546,20 +546,20 @@ volumes:
 
 ### Backend (NestJS)
 
-| Package | Purpose |
-|---------|---------|
-| `@nestjs/core` | NestJS framework |
-| `@nestjs/typeorm` + `typeorm` | ORM + database |
-| `pg` + `pgvector` | PostgreSQL driver + vector support |
-| `@mistralai/mistralai` | Mistral AI SDK |
-| `pdf-parse` | PDF text extraction |
-| `csv-parse` | CSV parsing |
-| `multer` | File upload handling |
-| `@nestjs/jwt` + `@nestjs/passport` | Authentication (M7) |
+| Package                            | Purpose                            |
+| ---------------------------------- | ---------------------------------- |
+| `@nestjs/core`                     | NestJS framework                   |
+| `@nestjs/typeorm` + `typeorm`      | ORM + database                     |
+| `pg` + `pgvector`                  | PostgreSQL driver + vector support |
+| `@mistralai/mistralai`             | Mistral AI SDK                     |
+| `pdf-parse`                        | PDF text extraction                |
+| `csv-parse`                        | CSV parsing                        |
+| `multer`                           | File upload handling               |
+| `@nestjs/jwt` + `@nestjs/passport` | Authentication (M7)                |
 
 ### Frontend (Angular)
 
-| Package | Purpose |
-|---------|---------|
-| `@angular/core` | Angular framework |
+| Package                   | Purpose            |
+| ------------------------- | ------------------ |
+| `@angular/core`           | Angular framework  |
 | `chart.js` + `ng2-charts` | Data visualization |

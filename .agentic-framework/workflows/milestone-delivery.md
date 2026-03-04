@@ -71,33 +71,39 @@ Retrospective
 # Milestone [N]: [Name]
 
 ## Objective
+
 [One sentence goal]
 
 ## Acceptance Criteria
+
 - [ ] [Criterion 1]
 - [ ] [Criterion 2]
 - [ ] [Criterion 3]
 
 ## Prerequisites (Gate-In)
+
 - [x] M(N-1) deliverables verified
 - [x] [Dependency from previous milestone]
 
 ## Task Breakdown
 
-| # | Task | Sub-Workflow | Coordination | Estimate |
-|---|------|-------------|--------------|----------|
-| 1 | [Task name] | feature-development | Single agent | 2h |
-| 2 | [Task name] | data-pipeline | Sequential | 3h |
-| 3 | [Task name] | feature-development | Parallel | 2h |
+| #   | Task        | Sub-Workflow        | Coordination | Estimate |
+| --- | ----------- | ------------------- | ------------ | -------- |
+| 1   | [Task name] | feature-development | Single agent | 2h       |
+| 2   | [Task name] | data-pipeline       | Sequential   | 3h       |
+| 3   | [Task name] | feature-development | Parallel     | 2h       |
 
 ## Dependency Graph (within milestone)
+
 Task 1 → Task 2 (Task 2 needs Task 1's output)
 Task 3 (independent, can parallel with Task 1)
 
 ## ADRs
+
 - ADR-[N]: [Title] (if architectural decision made)
 
 ## Risks
+
 - [Risk]: [Mitigation]
 ```
 
@@ -112,6 +118,7 @@ Task 3 (independent, can parallel with Task 1)
 ### Execution
 
 Each task follows the appropriate sub-workflow:
+
 - **Feature work** → `workflows/feature-development.md`
 - **Data pipeline** → `workflows/data-pipeline.md`
 - **Bug fixes** → `workflows/bug-fix.md`
@@ -120,6 +127,7 @@ Each task follows the appropriate sub-workflow:
 ### Coordination
 
 Use the milestone's assigned coordination pattern:
+
 - **Single agent**: Execute tasks sequentially
 - **Parallel**: Independent tasks run concurrently (see `multi-agent-coordination.md`)
 - **Sequential pipeline**: Dependent tasks pass output forward
@@ -129,11 +137,11 @@ Use the milestone's assigned coordination pattern:
 ```markdown
 ## Milestone [N] Progress
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Task 1 | Complete | Merged to feature branch |
-| Task 2 | In Progress | Blocked on DB migration |
-| Task 3 | Pending | Waiting for Task 1 |
+| Task   | Status      | Notes                    |
+| ------ | ----------- | ------------------------ |
+| Task 1 | Complete    | Merged to feature branch |
+| Task 2 | In Progress | Blocked on DB migration  |
+| Task 3 | Pending     | Waiting for Task 1       |
 
 **Overall**: 1/3 complete
 **Blockers**: [List or "None"]
@@ -165,26 +173,30 @@ Use the milestone's assigned coordination pattern:
 **Status**: [Approved / Changes Requested]
 
 ### Acceptance Criteria
+
 - [x] Criterion 1: Verified
 - [x] Criterion 2: Verified
 - [ ] Criterion 3: Issue found (see below)
 
 ### Quality Gates
-| Gate | Status | Notes |
-|------|--------|-------|
-| 1. Syntax | Pass | |
-| 2. Types | Pass | |
-| 3. Lint | Pass | |
-| 4. Security | Pass | |
-| 5. Tests | Pass | Coverage: 82% |
-| 6. Performance | Pass | |
-| 7. Accessibility | N/A | Backend-only milestone |
-| 8. Integration | Pass | |
+
+| Gate             | Status | Notes                  |
+| ---------------- | ------ | ---------------------- |
+| 1. Syntax        | Pass   |                        |
+| 2. Types         | Pass   |                        |
+| 3. Lint          | Pass   |                        |
+| 4. Security      | Pass   |                        |
+| 5. Tests         | Pass   | Coverage: 82%          |
+| 6. Performance   | Pass   |                        |
+| 7. Accessibility | N/A    | Backend-only milestone |
+| 8. Integration   | Pass   |                        |
 
 ### Issues Found
+
 - [Issue]: [Severity] - [Description]
 
 ### Recommendation
+
 [Approved for gate-out / Requires fixes: list]
 ```
 
@@ -257,16 +269,16 @@ M0 (Scaffold)
 
 ### Ledger Milestone → Coordination Pattern Mapping
 
-| Milestone | Pattern | Personas | Rationale |
-|-----------|---------|----------|-----------|
-| M0: Scaffold | Single agent | Developer | Simple setup task |
-| M1: Health Check | Single agent | Developer | Single endpoint + smoke test |
-| M2: File Upload | Sequential | Architect → Developer | Design upload strategy, then implement |
-| M3: Parse & Persist | Sequential | Architect → Developer → QA | Parser strategy needs design, careful testing |
-| M4: Chunk & Embed | Sequential | Architect → Developer + AI overlay | Embedding quality is critical path |
-| M5: RAG Chat | Hierarchical | Architect leads, Developer + AI overlay | Complex multi-system integration |
-| M6: Analytics | Parallel | Developer (backend) + Developer (frontend) | Independent API and dashboard work |
-| M7: Auth & Polish | Parallel | Developer + QA + Writer | Multiple independent hardening tasks |
+| Milestone           | Pattern      | Personas                                   | Rationale                                     |
+| ------------------- | ------------ | ------------------------------------------ | --------------------------------------------- |
+| M0: Scaffold        | Single agent | Developer                                  | Simple setup task                             |
+| M1: Health Check    | Single agent | Developer                                  | Single endpoint + smoke test                  |
+| M2: File Upload     | Sequential   | Architect → Developer                      | Design upload strategy, then implement        |
+| M3: Parse & Persist | Sequential   | Architect → Developer → QA                 | Parser strategy needs design, careful testing |
+| M4: Chunk & Embed   | Sequential   | Architect → Developer + AI overlay         | Embedding quality is critical path            |
+| M5: RAG Chat        | Hierarchical | Architect leads, Developer + AI overlay    | Complex multi-system integration              |
+| M6: Analytics       | Parallel     | Developer (backend) + Developer (frontend) | Independent API and dashboard work            |
+| M7: Auth & Polish   | Parallel     | Developer + QA + Writer                    | Multiple independent hardening tasks          |
 
 ---
 
@@ -278,20 +290,24 @@ M0 (Scaffold)
 # Milestone [N] → Milestone [N+1] Handoff
 
 ## Completed Deliverables
+
 - [Deliverable 1]: [Location / description]
 - [Deliverable 2]: [Location / description]
 
 ## State of the System
+
 - **What works**: [Summary of working functionality]
 - **Known issues**: [List or "None"]
 - **Technical debt**: [Deferred items]
 
 ## Context for Next Milestone
+
 - [Key decision from M(N) that affects M(N+1)]
 - [Interface / API contract that M(N+1) depends on]
 - [Data format or schema that carries forward]
 
 ## Recommendations
+
 - [Suggestion for approaching next milestone]
 ```
 
@@ -300,16 +316,19 @@ M0 (Scaffold)
 ## Best Practices
 
 ### Planning
+
 - **Scope ruthlessly**: Each milestone should be demo-able. If it's not, it's too big.
 - **One milestone at a time**: Don't start M(N+1) until M(N) gates out.
 - **Dependencies are risks**: Minimize cross-milestone coupling.
 
 ### Execution
+
 - **Use sub-workflows**: Don't reinvent — each task within a milestone follows feature-development.md, data-pipeline.md, etc.
 - **Track daily**: Update milestone progress document as tasks complete.
 - **Commit to the branch**: Each milestone gets its own feature branch or PR.
 
 ### Retrospectives
+
 - **Never skip**: The retrospective is how the framework improves.
-- **Be specific**: "Tests were slow" → "bun test took 45s, need to parallelize".
+- **Be specific**: "Tests were slow" → "pnpm test took 45s, need to parallelize".
 - **Act on it**: Each retro produces at least one concrete change.

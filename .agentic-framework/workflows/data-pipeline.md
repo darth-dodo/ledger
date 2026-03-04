@@ -70,17 +70,20 @@ Output
 # Pipeline: [Name]
 
 ## Overview
+
 [What this pipeline does, end to end]
 
 ## Stages
 
 ### Stage 1: [Name]
+
 - **Input**: [Type/format]
 - **Output**: [Type/format]
 - **Validation**: [What's checked at exit]
 - **Error handling**: [retry N times / skip / abort]
 
 ### Stage 2: [Name]
+
 - **Input**: [Output from Stage 1]
 - **Output**: [Type/format]
 - **Validation**: [What's checked at exit]
@@ -89,15 +92,18 @@ Output
 [Continue for each stage]
 
 ## Data Contracts
+
 Stage 1 → Stage 2: [TypeScript interface or schema]
 Stage 2 → Stage 3: [TypeScript interface or schema]
 
 ## Error Strategy
+
 - **Transient failures** (network, timeout): Retry with backoff (3 attempts)
 - **Validation failures** (bad data): Log, skip record, continue pipeline
 - **Fatal failures** (schema mismatch): Abort pipeline, return partial results
 
 ## Idempotency
+
 - [How re-running the pipeline is safe]
 - [Deduplication strategy: hash, unique constraints, upsert]
 ```
@@ -190,23 +196,27 @@ async function runPipeline(rawInput: RawInput): Promise<PipelineResult> {
 ### Test Categories
 
 **Happy Path**:
+
 - [ ] Valid input → all stages complete → correct output
 - [ ] Multiple records → all processed correctly
 - [ ] Different input formats (if applicable) → all handled
 
 **Edge Cases**:
+
 - [ ] Empty input → graceful handling (no crash, clear error)
 - [ ] Single record → works (no off-by-one)
 - [ ] Maximum size input → completes within time budget
 - [ ] Duplicate input → idempotent (no duplicate records)
 
 **Error Scenarios**:
+
 - [ ] Malformed input → validation catches at Stage 1
 - [ ] Invalid data mid-pipeline → handled per error strategy
 - [ ] External service timeout → retry logic works
 - [ ] External service down → fallback or clear error
 
 **Data Integrity**:
+
 - [ ] No records lost (input count = output count + error count)
 - [ ] No records duplicated
 - [ ] Data accuracy: spot-check transformed values against source
@@ -218,19 +228,22 @@ async function runPipeline(rawInput: RawInput): Promise<PipelineResult> {
 ## Pipeline Validation: [Name]
 
 ### Test Results
-| Test Category | Pass | Fail | Notes |
-|---------------|------|------|-------|
-| Happy path | X/X | 0 | |
-| Edge cases | X/X | 0 | |
-| Error handling | X/X | 0 | |
-| Data integrity | X/X | 0 | |
+
+| Test Category  | Pass | Fail | Notes |
+| -------------- | ---- | ---- | ----- |
+| Happy path     | X/X  | 0    |       |
+| Edge cases     | X/X  | 0    |       |
+| Error handling | X/X  | 0    |       |
+| Data integrity | X/X  | 0    |       |
 
 ### Performance
+
 - Small input (10 records): [X]ms
 - Medium input (100 records): [X]ms
 - Large input (1000 records): [X]ms
 
 ### Data Accuracy
+
 - Records checked: [N]
 - Accuracy: [X]%
 - Issues found: [List or "None"]
@@ -277,16 +290,19 @@ Complete
 ## Best Practices
 
 ### Design
+
 - **Contracts over comments**: Define TypeScript interfaces between stages
 - **Narrow stages**: Each stage does one transformation, not three
 - **Explicit error handling**: Every stage has a defined failure mode
 
 ### Implementation
+
 - **Test stages in isolation first**: Unit tests per stage before integration
 - **Log everything**: Structured logs with stage name, duration, record count
 - **Make re-runs safe**: Upserts, dedup keys, or idempotency tokens
 
 ### Validation
+
 - **Count everything**: Input records = output records + error records
 - **Spot-check accuracy**: Don't just check counts, verify actual values
 - **Test the error paths**: Intentionally break stages to verify recovery

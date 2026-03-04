@@ -721,17 +721,20 @@ Multi-agent coordination can fail at any point. Every pattern needs a defined re
 ### Parallel Pattern — Error Recovery
 
 **Agent Failure**:
+
 - Other agents continue working (failures are isolated per worktree)
 - Orchestrator marks failed task as "blocked"
 - Option A: Reassign to a new agent in a fresh worktree
 - Option B: Mark as incomplete, merge successful agents, address later
 
 **Merge Conflict**:
+
 - Merge agents in dependency order (least dependent first)
 - If conflict arises, the orchestrator resolves (not the agents)
 - If >50% of agents conflict with each other, halt — the task boundaries were wrong
 
 **Circuit Breaker**:
+
 - If >50% of parallel agents fail → halt all agents, reassess task decomposition
 - Don't merge partial results if they form an incomplete feature
 
@@ -749,34 +752,40 @@ Multi-agent coordination can fail at any point. Every pattern needs a defined re
 ### Sequential Pattern — Error Recovery
 
 **Stage Failure**:
+
 1. Retry: If transient (timeout, flaky test), retry the stage once
 2. Rollback: If the stage's output is corrupted, revert to the previous stage's output
 3. Escalate: If retry and rollback fail, escalate to orchestrator
 
 **Handoff Rejection**:
+
 - Receiving agent validates input before starting
 - If validation fails, reject handoff with specific feedback
 - Previous agent fixes and re-submits
 - Maximum 2 rejection cycles before orchestrator intervenes
 
 **Pipeline Stall**:
+
 - Time-box each stage (use duration estimates from scope document)
 - If a stage exceeds 2x its estimate, orchestrator evaluates: simplify scope or add resources
 
 ### Hierarchical Pattern — Error Recovery
 
 **Worker Failure**:
+
 - Lead detects worker failure via status reporting
 - Lead redistributes task to remaining workers (if capacity allows)
 - If no capacity: lead escalates to orchestrator for additional resources
 - Completed worker outputs are preserved regardless
 
 **Lead Failure**:
+
 - Orchestrator detects lead failure via reporting gap
 - Orchestrator promotes most capable worker to lead, or takes over
 - Workers pause until new lead is assigned
 
 **Cross-Domain Integration Failure**:
+
 - If Domain A and Domain B outputs are incompatible at integration:
   1. Identify which domain's output diverged from the shared contract
   2. That domain's lead fixes the incompatibility

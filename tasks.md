@@ -6,28 +6,28 @@
 
 ## Progress Dashboard
 
-| Metric               | Value                          |
-| -------------------- | ------------------------------ |
-| **Current Milestone** | M0 — Monorepo Scaffold 🔄     |
-| **Overall Progress**  | 1/8 milestones in progress     |
-| **Active Blockers**   | 0                              |
-| **Quality Gates**     | ➖ Not yet applicable          |
-| **Last Updated**      | 2026-03-04                     |
+| Metric                | Value                      |
+| --------------------- | -------------------------- |
+| **Current Milestone** | M0 — Monorepo Scaffold 🔄  |
+| **Overall Progress**  | 1/8 milestones in progress |
+| **Active Blockers**   | 0                          |
+| **Quality Gates**     | ➖ Not yet applicable      |
+| **Last Updated**      | 2026-03-04                 |
 
 ---
 
 ## Milestone Matrix
 
-| #  | Milestone           | Status | Pattern       | Personas                    | Duration | Depends On |
-| -- | ------------------- | ------ | ------------- | --------------------------- | -------- | ---------- |
-| M0 | Monorepo Scaffold   | 🔄     | Single agent  | Developer                   | 1d       | —          |
-| M1 | Health Check        | ⏳     | Single agent  | Developer                   | 1d       | M0         |
-| M2 | File Upload         | ⏳     | Sequential    | Architect → Developer       | 2d       | M1         |
-| M3 | Parse & Persist     | ⏳     | Sequential    | Architect → Developer → QA  | 3d       | M2         |
-| M4 | Chunk & Embed       | ⏳     | Sequential    | Architect → Developer + AI  | 2d       | M3         |
-| M5 | RAG Chat            | ⏳     | Hierarchical  | Architect leads, Dev + AI   | 3d       | M4         |
-| M6 | Full Dashboard      | ⏳     | Parallel      | Dev (backend) + Dev (frontend) | 3d    | M5         |
-| M7 | Auth & Polish       | ⏳     | Parallel      | Dev + QA + Writer           | 2d       | M6         |
+| #   | Milestone         | Status | Pattern      | Personas                       | Duration | Depends On |
+| --- | ----------------- | ------ | ------------ | ------------------------------ | -------- | ---------- |
+| M0  | Monorepo Scaffold | 🔄     | Single agent | Developer                      | 1d       | —          |
+| M1  | Health Check      | ⏳     | Single agent | Developer                      | 1d       | M0         |
+| M2  | File Upload       | ⏳     | Sequential   | Architect → Developer          | 2d       | M1         |
+| M3  | Parse & Persist   | ⏳     | Sequential   | Architect → Developer → QA     | 3d       | M2         |
+| M4  | Chunk & Embed     | ⏳     | Sequential   | Architect → Developer + AI     | 2d       | M3         |
+| M5  | RAG Chat          | ⏳     | Hierarchical | Architect leads, Dev + AI      | 3d       | M4         |
+| M6  | Full Dashboard    | ⏳     | Parallel     | Dev (backend) + Dev (frontend) | 3d       | M5         |
+| M7  | Auth & Polish     | ⏳     | Parallel     | Dev + QA + Writer              | 2d       | M6         |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⏳ Pending | 🚫 Blocked
 
@@ -61,7 +61,7 @@ graph LR
 
 ### M0 — Monorepo Scaffold 🔄
 
-- [x] Initialize Bun project with `package.json`
+- [x] Initialize project with `package.json`
 - [x] Configure `.gitignore` for NestJS + Angular
 - [x] Set up GitHub Actions CI (lint, test, build)
 - [x] Add placeholder scripts for CI compatibility
@@ -75,12 +75,13 @@ graph LR
 - [ ] Scaffold NestJS backend (`backend/src/app.module.ts`)
 - [ ] Scaffold Angular frontend (`frontend/src/app/`)
 - [ ] Add `docker-compose.yml` for PostgreSQL + pgvector
-- [ ] Verify `bun install` + `bun run build` works end-to-end
+- [ ] Verify `pnpm install` + `pnpm run build` works end-to-end
 
 **Acceptance Criteria**:
-- [ ] `bun install` succeeds in root
-- [ ] `bun run build` passes (even if builds are empty shells)
-- [ ] `bun test` runs (even if no tests yet)
+
+- [ ] `pnpm install` succeeds in root
+- [ ] `pnpm run build` passes (even if builds are empty shells)
+- [ ] `pnpm test` runs (even if no tests yet)
 - [ ] CI passes on push
 - [ ] Both `backend/` and `frontend/` directories exist with starter code
 
@@ -90,11 +91,12 @@ graph LR
 
 - [ ] Create NestJS health module with `GET /health` endpoint
 - [ ] Return `{ status: "ok", timestamp, uptime }`
-- [ ] Add health check integration test (`bun test`)
+- [ ] Add health check integration test (`pnpm test`)
 - [ ] Verify endpoint works with `curl`
 - [ ] Add smoke test to CI pipeline
 
 **Acceptance Criteria**:
+
 - [ ] `curl http://localhost:3000/health` returns 200 with JSON
 - [ ] Integration test passes
 - [ ] CI green
@@ -115,6 +117,7 @@ graph LR
 - [ ] Write integration test for full upload flow
 
 **Acceptance Criteria**:
+
 - [ ] PDF and CSV files upload successfully
 - [ ] Invalid files are rejected with clear error
 - [ ] Statements are persisted in database
@@ -140,6 +143,7 @@ graph LR
 - [ ] Test idempotency (re-upload same file)
 
 **Acceptance Criteria**:
+
 - [ ] PDF and CSV statements produce correct transactions
 - [ ] Each transaction has: date, description, amount, type, category
 - [ ] Transactions are viewable and filterable in frontend
@@ -163,6 +167,7 @@ graph LR
 - [ ] Validate embedding dimensions = 1024
 
 **Acceptance Criteria**:
+
 - [ ] Statement text is chunked into ~500 token segments
 - [ ] Each chunk has a 1024-dim embedding stored in pgvector
 - [ ] Cosine similarity search returns relevant chunks
@@ -189,6 +194,7 @@ graph LR
 - [ ] Test with example queries from product doc
 
 **Acceptance Criteria**:
+
 - [ ] User can ask natural language questions about their finances
 - [ ] Responses cite specific transactions/chunks as sources
 - [ ] Chat history is persisted
@@ -200,6 +206,7 @@ graph LR
 ### M6 — Full Dashboard ⏳
 
 **Track A — Backend API**:
+
 - [ ] Create Analytics module (controller, service)
 - [ ] `GET /analytics/summary` — total in/out, top categories, savings rate
 - [ ] `GET /analytics/categories` — spending by category
@@ -208,6 +215,7 @@ graph LR
 - [ ] Write unit tests for analytics calculations
 
 **Track B — Frontend Dashboard**:
+
 - [ ] StatCards component (total spent, income, savings rate)
 - [ ] CategoryBreakdown component (pie chart + bar chart)
 - [ ] MonthlyTrends component (line chart)
@@ -216,6 +224,7 @@ graph LR
 - [ ] Responsive layout
 
 **Acceptance Criteria**:
+
 - [ ] Dashboard shows summary stats, category breakdown, trends, heatmap
 - [ ] Charts render correctly with real transaction data
 - [ ] Responsive on mobile and desktop
@@ -226,21 +235,25 @@ graph LR
 ### M7 — Auth & Polish ⏳
 
 **Track A — Authentication**:
+
 - [ ] Implement JWT-based login/register
 - [ ] Add auth guards to all endpoints
 - [ ] Login/register pages in Angular
 
 **Track B — Error Handling**:
+
 - [ ] Consistent error states across all pages
 - [ ] API error interceptor in Angular
 - [ ] NestJS exception filters
 
 **Track C — Documentation**:
+
 - [ ] API documentation
 - [ ] User guide
 - [ ] Deployment guide
 
 **Acceptance Criteria**:
+
 - [ ] Users can register, login, and access their own data
 - [ ] Errors are handled gracefully everywhere
 - [ ] Documentation is complete
@@ -264,20 +277,21 @@ graph LR
 **Legend**: ✅ Passed | ❌ Failed | ⚠️ Warning | ⏳ Pending | ➖ N/A
 
 **Commands**:
+
 ```bash
-bun run tsc --strict --noEmit   # Gates 1+2
-bun run lint                     # Gate 3
-bun test --coverage              # Gate 5
-bun run build                    # Gate 8
+pnpm run build                   # Gates 1+2 (tsc --noEmit)
+pnpm run lint                    # Gate 3
+pnpm test                        # Gate 5 (vitest)
+
 ```
 
 ---
 
 ## Blockers Register
 
-| # | Blocker | Severity | Milestone | Impact | Resolution | Status |
-| - | ------- | -------- | --------- | ------ | ---------- | ------ |
-|   | *None*  |          |           |        |            |        |
+| #   | Blocker | Severity | Milestone | Impact | Resolution | Status |
+| --- | ------- | -------- | --------- | ------ | ---------- | ------ |
+|     | _None_  |          |           |        |            |        |
 
 **Severity**: 🔴 Critical | 🟠 High | 🟡 Medium | 🟢 Low
 
@@ -285,9 +299,9 @@ bun run build                    # Gate 8
 
 ## Session Log Archive
 
-| # | Date       | Milestone | Persona(s)        | Focus                                      | Outcome             |
-| - | ---------- | --------- | ----------------- | ------------------------------------------ | ------------------- |
-| 1 | 2026-03-04 | M0        | Architect + Dev   | Project setup, CI, docs, agentic framework | Scaffold in progress |
+| #   | Date       | Milestone | Persona(s)      | Focus                                      | Outcome              |
+| --- | ---------- | --------- | --------------- | ------------------------------------------ | -------------------- |
+| 1   | 2026-03-04 | M0        | Architect + Dev | Project setup, CI, docs, agentic framework | Scaffold in progress |
 
 ---
 
@@ -295,12 +309,12 @@ bun run build                    # Gate 8
 
 Current Serena memory key values for cross-session continuity:
 
-| Key                         | Value                                                    |
-| --------------------------- | -------------------------------------------------------- |
-| `ledger/current-milestone`  | M0: Monorepo Scaffold — in progress                     |
-| `ledger/progress`           | M0: CI, docs, agentic framework done. Workspace scaffold remaining. |
-| `ledger/blockers`           | None                                                     |
-| `ledger/decisions`          | Bun runtime, NestJS+Angular, pgvector, Mistral AI, strategy pattern for parsers |
+| Key                        | Value                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| `ledger/current-milestone` | M0: Monorepo Scaffold — in progress                                                      |
+| `ledger/progress`          | M0: CI, docs, agentic framework done. Workspace scaffold remaining.                      |
+| `ledger/blockers`          | None                                                                                     |
+| `ledger/decisions`         | Node.js+pnpm runtime, NestJS+Angular, pgvector, Mistral AI, strategy pattern for parsers |
 
 **Convention**: `ledger/<topic>` for project state, `ledger/m<N>-<detail>` for milestone-specific notes.
 
@@ -308,9 +322,9 @@ Current Serena memory key values for cross-session continuity:
 
 ## Retrospective Links
 
-| Milestone | Date | Link | Key Takeaway |
-| --------- | ---- | ---- | ------------ |
-|           | *No retrospectives completed yet* | | |
+| Milestone | Date                              | Link | Key Takeaway |
+| --------- | --------------------------------- | ---- | ------------ |
+|           | _No retrospectives completed yet_ |      |              |
 
 ---
 

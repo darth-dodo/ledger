@@ -1158,7 +1158,7 @@ test.describe('Accessibility', () => {
     const accessibilityScanResults = await new AxeBuilder({ page }).include('main').analyze();
 
     const headingViolations = accessibilityScanResults.violations.filter(
-      (v) => v.id === 'heading-order'
+      (v) => v.id === 'heading-order',
     );
 
     expect(headingViolations).toHaveLength(0);

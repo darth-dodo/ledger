@@ -44,7 +44,7 @@ additional_responsibilities:
 principles:
   parsing:
     - 'Strategy pattern: each bank format gets its own parser'
-    - 'Detect file format before parsing (don''t assume from extension)'
+    - "Detect file format before parsing (don't assume from extension)"
     - 'Parse defensively — expect missing fields, wrong types, extra whitespace'
     - 'Normalize dates, amounts, and categories to canonical formats'
     - 'Return structured errors with line numbers for debugging'
@@ -66,7 +66,7 @@ principles:
     - 'Transient errors (network, timeout): retry with exponential backoff'
     - 'Validation errors (bad row): log, skip record, continue pipeline'
     - 'Schema errors (wrong file format): abort early with clear message'
-    - 'Collect all errors — don''t stop at first failure for validation'
+    - "Collect all errors — don't stop at first failure for validation"
 
 # ============================================================================
 # Quality Standards (additions to Developer gates)
