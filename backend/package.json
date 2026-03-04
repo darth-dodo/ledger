@@ -7,6 +7,7 @@
     "build": "tsc --noEmit",
     "start": "tsx src/main.ts",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "cd .. && pnpm lint -- backend/src/",
     "migrate": "tsx src/db/migrate.ts"
   },
@@ -22,6 +23,7 @@
     "@nestjs/testing": "^11.1.15",
     "@types/node": "^25.3.3",
     "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "supertest": "^7.2.2",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",

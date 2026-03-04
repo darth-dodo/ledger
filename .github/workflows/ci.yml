@@ -10,12 +10,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# ─────────────────────────────────────────────────
-# Reusable setup: Node 22 + pnpm + cache + install
-# ─────────────────────────────────────────────────
-env:
-  NODE_VERSION: '22'
-
 jobs:
   # ═══════════════════════════════════════════════
   # Gate 1 + 2: Syntax & Type Safety (tsc --noEmit)
@@ -25,25 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-node-pnpm
 
       - name: Backend type check
         run: cd backend && pnpm build
@@ -59,25 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-node-pnpm
 
       - name: ESLint
         run: pnpm lint
@@ -93,24 +51,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
+          install-frontend: 'false'
 
       - name: Dependency audit
         run: cd backend && pnpm audit --audit-level=high
@@ -132,28 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
-
-      - name: Backend tests
-        run: cd backend && pnpm test
+      - name: Backend tests with coverage
+        run: cd backend && pnpm test:coverage
 
       - name: Frontend tests
         run: cd frontend && pnpm test
@@ -169,31 +94,16 @@ jobs:
     needs: [gate-types, gate-lint, gate-tests]
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-node-pnpm
 
       - name: Backend build
         run: cd backend && pnpm build
 
       - name: Frontend build
         run: cd frontend && pnpm build
+
+      - name: Docker build validation
+        run: cd backend && docker build -t ledger-backend:ci .
 
       - name: Smoke test /health
         run: |
