@@ -39,12 +39,12 @@ The goal of M1 was to establish a health check endpoint (GET /health) with unit 
 
 ## Metrics
 
-| Metric                | Target   | Actual   |
-| --------------------- | -------- | -------- |
-| Duration              | ~1 hour  | ~1 hour  |
-| Test coverage         | 70%+     | Adequate (29 tests, full coverage of health module) |
-| Quality gates passing | 8/8      | 6/8 (2 N/A: Performance, Accessibility) |
-| Bugs found post-merge | 0        | 0        |
+| Metric                | Target  | Actual                                              |
+| --------------------- | ------- | --------------------------------------------------- |
+| Duration              | ~1 hour | ~1 hour                                             |
+| Test coverage         | 70%+    | Adequate (29 tests, full coverage of health module) |
+| Quality gates passing | 8/8     | 6/8 (2 N/A: Performance, Accessibility)             |
+| Bugs found post-merge | 0       | 0                                                   |
 
 ---
 
@@ -61,11 +61,11 @@ Changes to make to the agentic framework based on this milestone's experience:
 
 ## Action Items for Next Milestone
 
-| Action                                                        | Owner     | Priority |
-| ------------------------------------------------------------- | --------- | -------- |
+| Action                                                                                   | Owner     | Priority |
+| ---------------------------------------------------------------------------------------- | --------- | -------- |
 | Verify all quality gates pass from sub-directories before M0 gate-out in future projects | Developer | High     |
-| Add @types/node to standard NestJS scaffold checklist         | Architect | Medium   |
-| Consider shared test utilities if integration test setup becomes repetitive in M2 | Developer | Low      |
+| Add @types/node to standard NestJS scaffold checklist                                    | Architect | Medium   |
+| Consider shared test utilities if integration test setup becomes repetitive in M2        | Developer | Low      |
 
 ---
 

@@ -84,16 +84,16 @@
 
 **Quality Gates Progress**: 6/8 (2 N/A)
 
-| Gate          | Status | Details                                  |
-| ------------- | ------ | ---------------------------------------- |
-| Syntax        | ✅     | TypeScript compiles cleanly              |
-| Types         | ✅     | `tsc --noEmit` passes                   |
-| Lint          | ✅     | ESLint passes after fix                  |
-| Security      | ✅     | No new dependencies added                |
-| Tests         | ✅     | 29 tests passing                         |
-| Performance   | ➖     | N/A — backend-only milestone             |
-| Accessibility | ➖     | N/A — backend-only milestone             |
-| Integration   | ✅     | Smoke test verifies /health end-to-end   |
+| Gate          | Status | Details                                |
+| ------------- | ------ | -------------------------------------- |
+| Syntax        | ✅     | TypeScript compiles cleanly            |
+| Types         | ✅     | `tsc --noEmit` passes                  |
+| Lint          | ✅     | ESLint passes after fix                |
+| Security      | ✅     | No new dependencies added              |
+| Tests         | ✅     | 29 tests passing                       |
+| Performance   | ➖     | N/A — backend-only milestone           |
+| Accessibility | ➖     | N/A — backend-only milestone           |
+| Integration   | ✅     | Smoke test verifies /health end-to-end |
 
 **Outstanding Quality Issues**: None
 

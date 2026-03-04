@@ -23,11 +23,11 @@ Create a NestJS health module with a GET /health endpoint, integration tests, an
 
 ## Task Breakdown
 
-| #     | Task                                      | Sub-Workflow        | Coordination | Estimate |
-| ----- | ----------------------------------------- | ------------------- | ------------ | -------- |
+| #     | Task                                         | Sub-Workflow        | Coordination | Estimate |
+| ----- | -------------------------------------------- | ------------------- | ------------ | -------- |
 | AI-20 | Create NestJS health module with GET /health | feature-development | Single agent | ~30min   |
-| AI-21 | Add health check integration test         | feature-development | Single agent | ~20min   |
-| AI-22 | Add smoke test to CI pipeline             | feature-development | Single agent | ~15min   |
+| AI-21 | Add health check integration test            | feature-development | Single agent | ~20min   |
+| AI-22 | Add smoke test to CI pipeline                | feature-development | Single agent | ~15min   |
 
 ## Dependency Graph (within milestone)
 
@@ -39,11 +39,11 @@ AI-21 | AI-22 (independent of each other)
 
 ## Milestone Progress
 
-| Task  | Status   | Notes                                          |
-| ----- | -------- | ---------------------------------------------- |
-| AI-20 | Complete | Health controller + module created and registered |
+| Task  | Status   | Notes                                                 |
+| ----- | -------- | ----------------------------------------------------- |
+| AI-20 | Complete | Health controller + module created and registered     |
 | AI-21 | Complete | 3 integration tests using @nestjs/testing + supertest |
-| AI-22 | Complete | Smoke test job added to CI workflow             |
+| AI-22 | Complete | Smoke test job added to CI workflow                   |
 
 **Overall**: 3/3 complete
 **Blockers**: None
@@ -54,26 +54,26 @@ Single agent (Developer). All three tasks were executed sequentially by one deve
 
 ## Quality Gates
 
-| Gate             | Status | Notes                          |
-| ---------------- | ------ | ------------------------------ |
-| 1. Syntax        | Pass   | TypeScript compiles cleanly    |
-| 2. Types         | Pass   | `tsc --noEmit` passes         |
-| 3. Lint          | Pass   | ESLint passes (after fix)      |
-| 4. Security      | Pass   | No dependencies added          |
+| Gate             | Status | Notes                                                |
+| ---------------- | ------ | ---------------------------------------------------- |
+| 1. Syntax        | Pass   | TypeScript compiles cleanly                          |
+| 2. Types         | Pass   | `tsc --noEmit` passes                                |
+| 3. Lint          | Pass   | ESLint passes (after fix)                            |
+| 4. Security      | Pass   | No dependencies added                                |
 | 5. Tests         | Pass   | 29 tests passing (4 unit + 3 integration + existing) |
-| 6. Performance   | N/A    | Backend-only, no perf targets  |
-| 7. Accessibility | N/A    | Backend-only milestone         |
-| 8. Integration   | Pass   | Smoke test verifies end-to-end |
+| 6. Performance   | N/A    | Backend-only, no perf targets                        |
+| 7. Accessibility | N/A    | Backend-only milestone                               |
+| 8. Integration   | Pass   | Smoke test verifies end-to-end                       |
 
 ## Deliverables
 
-| File                                              | Description                                      |
-| ------------------------------------------------- | ------------------------------------------------ |
-| `backend/src/health/health.controller.ts`         | GET /health endpoint returning `{ status: "ok" }` |
-| `backend/src/health/health.module.ts`             | NestJS module encapsulating the health controller |
-| `backend/src/health/health.controller.spec.ts`    | 4 unit tests for the health controller            |
-| `backend/src/health/health.integration.spec.ts`   | 3 integration tests using @nestjs/testing + supertest |
-| `.github/workflows/ci.yml`                        | Smoke test job added to CI pipeline              |
+| File                                            | Description                                           |
+| ----------------------------------------------- | ----------------------------------------------------- |
+| `backend/src/health/health.controller.ts`       | GET /health endpoint returning `{ status: "ok" }`     |
+| `backend/src/health/health.module.ts`           | NestJS module encapsulating the health controller     |
+| `backend/src/health/health.controller.spec.ts`  | 4 unit tests for the health controller                |
+| `backend/src/health/health.integration.spec.ts` | 3 integration tests using @nestjs/testing + supertest |
+| `.github/workflows/ci.yml`                      | Smoke test job added to CI pipeline                   |
 
 ## Fixes Applied During M1
 
