@@ -6,13 +6,13 @@
 
 ## Progress Dashboard
 
-| Metric                | Value                      |
-| --------------------- | -------------------------- |
-| **Current Milestone** | M0 — Monorepo Scaffold 🔄  |
-| **Overall Progress**  | 1/8 milestones in progress |
-| **Active Blockers**   | 0                          |
-| **Quality Gates**     | ➖ Not yet applicable      |
-| **Last Updated**      | 2026-03-04                 |
+| Metric                | Value                   |
+| --------------------- | ----------------------- |
+| **Current Milestone** | M2 — File Upload ✅     |
+| **Overall Progress**  | 3/8 milestones complete |
+| **Active Blockers**   | 0                       |
+| **Quality Gates**     | 6/8 passing (2 N/A)     |
+| **Last Updated**      | 2026-03-04              |
 
 ---
 
@@ -20,9 +20,9 @@
 
 | #   | Milestone         | Status | Pattern      | Personas                       | Duration | Depends On |
 | --- | ----------------- | ------ | ------------ | ------------------------------ | -------- | ---------- |
-| M0  | Monorepo Scaffold | 🔄     | Single agent | Developer                      | 1d       | —          |
-| M1  | Health Check      | ⏳     | Single agent | Developer                      | 1d       | M0         |
-| M2  | File Upload       | ⏳     | Sequential   | Architect → Developer          | 2d       | M1         |
+| M0  | Monorepo Scaffold | ✅     | Single agent | Developer                      | 1d       | —          |
+| M1  | Health Check      | ✅     | Single agent | Developer                      | 1d       | M0         |
+| M2  | File Upload       | ✅     | Sequential   | Architect → Developer          | 1d       | M1         |
 | M3  | Parse & Persist   | ⏳     | Sequential   | Architect → Developer → QA     | 3d       | M2         |
 | M4  | Chunk & Embed     | ⏳     | Sequential   | Architect → Developer + AI     | 2d       | M3         |
 | M5  | RAG Chat          | ⏳     | Hierarchical | Architect leads, Dev + AI      | 3d       | M4         |
@@ -45,9 +45,9 @@ graph LR
     M5 --> M6[M6: Full Dashboard]
     M6 --> M7[M7: Auth & Polish]
 
-    style M0 fill:#fff3cd,stroke:#856404
-    style M1 fill:#f5f5f5,stroke:#999
-    style M2 fill:#f5f5f5,stroke:#999
+    style M0 fill:#d4edda,stroke:#28a745
+    style M1 fill:#d4edda,stroke:#28a745
+    style M2 fill:#d4edda,stroke:#28a745
     style M3 fill:#f5f5f5,stroke:#999
     style M4 fill:#f5f5f5,stroke:#999
     style M5 fill:#f5f5f5,stroke:#999
@@ -59,7 +59,7 @@ graph LR
 
 ## Per-Milestone Task Breakdown
 
-### M0 — Monorepo Scaffold 🔄
+### M0 — Monorepo Scaffold ✅
 
 - [x] Initialize project with `package.json`
 - [x] Configure `.gitignore` for NestJS + Angular
@@ -69,60 +69,60 @@ graph LR
 - [x] Write product document (`docs/product.md`)
 - [x] Write architecture document (`docs/architecture.md`)
 - [x] Set up agentic framework with personas, workflows, quality gates
-- [ ] Create monorepo workspace structure (`backend/`, `frontend/`)
-- [ ] Add `tsconfig.json` (root + per-workspace)
-- [ ] Configure ESLint + Prettier
-- [ ] Scaffold NestJS backend (`backend/src/app.module.ts`)
-- [ ] Scaffold Angular frontend (`frontend/src/app/`)
-- [ ] Add `docker-compose.yml` for PostgreSQL + pgvector
-- [ ] Verify `pnpm install` + `pnpm run build` works end-to-end
+- [x] Create monorepo workspace structure (`backend/`, `frontend/`)
+- [x] Add `tsconfig.json` (root + per-workspace)
+- [x] Configure ESLint + Prettier
+- [x] Scaffold NestJS backend (`backend/src/app.module.ts`)
+- [x] Scaffold Angular frontend (`frontend/src/app/`)
+- [x] Add `docker-compose.yml` for PostgreSQL + pgvector
+- [x] Verify `pnpm install` + `pnpm run build` works end-to-end
 
 **Acceptance Criteria**:
 
-- [ ] `pnpm install` succeeds in root
-- [ ] `pnpm run build` passes (even if builds are empty shells)
-- [ ] `pnpm test` runs (even if no tests yet)
-- [ ] CI passes on push
-- [ ] Both `backend/` and `frontend/` directories exist with starter code
+- [x] `pnpm install` succeeds in root
+- [x] `pnpm run build` passes
+- [x] `pnpm test` runs
+- [x] CI passes on push
+- [x] Both `backend/` and `frontend/` directories exist with starter code
 
 ---
 
-### M1 — Health Check ⏳
+### M1 — Health Check ✅
 
-- [ ] Create NestJS health module with `GET /health` endpoint
-- [ ] Return `{ status: "ok", timestamp, uptime }`
-- [ ] Add health check integration test (`pnpm test`)
-- [ ] Verify endpoint works with `curl`
-- [ ] Add smoke test to CI pipeline
+- [x] Create NestJS health module with `GET /health` endpoint
+- [x] Return `{ status: "ok", timestamp, uptime }`
+- [x] Add health check integration test (`pnpm test`)
+- [x] Verify endpoint works with `curl`
+- [x] Add smoke test to CI pipeline
 
 **Acceptance Criteria**:
 
-- [ ] `curl http://localhost:3000/health` returns 200 with JSON
-- [ ] Integration test passes
-- [ ] CI green
+- [x] `curl http://localhost:3000/health` returns 200 with JSON
+- [x] Integration test passes
+- [x] CI green
 
 ---
 
-### M2 — File Upload ⏳
+### M2 — File Upload ✅
 
-- [ ] Design upload strategy (ADR)
-- [ ] Create Upload module (controller, service)
-- [ ] Implement `POST /upload` with Multer for file handling
-- [ ] Validate file type (PDF/CSV only) and size (< 10MB)
-- [ ] Store uploaded file metadata in `statements` table
-- [ ] Create `GET /statements` and `GET /statements/:id` endpoints
-- [ ] Create `DELETE /statements/:id` endpoint
-- [ ] Add Angular upload page with drag-and-drop `FileDropzone` component
-- [ ] Write unit tests for upload validation
-- [ ] Write integration test for full upload flow
+- [x] Design upload strategy (ADR-001)
+- [x] Create Upload module (controller, service)
+- [x] Implement `POST /upload` with Multer for file handling
+- [x] Validate file type (PDF/CSV only) and size (< 10MB)
+- [x] Store uploaded file metadata in `statements` table
+- [x] Create `GET /statements` and `GET /statements/:id` endpoints
+- [x] Create `DELETE /statements/:id` endpoint
+- [x] Add Angular upload page with drag-and-drop `FileDropzone` component
+- [x] Write unit tests for upload validation
+- [x] Write integration test for full upload flow
 
 **Acceptance Criteria**:
 
-- [ ] PDF and CSV files upload successfully
-- [ ] Invalid files are rejected with clear error
-- [ ] Statements are persisted in database
-- [ ] Frontend drag-and-drop works
-- [ ] Quality gates pass
+- [x] PDF and CSV files upload successfully
+- [x] Invalid files are rejected with clear error
+- [x] Statements are persisted in database
+- [x] Frontend drag-and-drop works
+- [x] Quality gates pass
 
 ---
 
@@ -265,9 +265,9 @@ graph LR
 
 | Milestone | Syntax | Types | Lint | Security | Tests | Perf | A11y | Integration |
 | --------- | ------ | ----- | ---- | -------- | ----- | ---- | ---- | ----------- |
-| M0        | ➖     | ➖    | ➖   | ➖       | ➖    | ➖   | ➖   | ➖          |
-| M1        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ➖   | ⏳          |
-| M2        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
+| M0        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
+| M1        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
+| M2        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
 | M3        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 | M4        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ➖   | ⏳          |
 | M5        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
@@ -282,7 +282,6 @@ graph LR
 pnpm run build                   # Gates 1+2 (tsc --noEmit)
 pnpm run lint                    # Gate 3
 pnpm test                        # Gate 5 (vitest)
-
 ```
 
 ---
@@ -299,9 +298,11 @@ pnpm test                        # Gate 5 (vitest)
 
 ## Session Log Archive
 
-| #   | Date       | Milestone | Persona(s)      | Focus                                      | Outcome              |
-| --- | ---------- | --------- | --------------- | ------------------------------------------ | -------------------- |
-| 1   | 2026-03-04 | M0        | Architect + Dev | Project setup, CI, docs, agentic framework | Scaffold in progress |
+| #   | Date       | Milestone | Persona(s)      | Focus                                      | Outcome     |
+| --- | ---------- | --------- | --------------- | ------------------------------------------ | ----------- |
+| 1   | 2026-03-04 | M0        | Architect + Dev | Project setup, CI, docs, agentic framework | ✅ Complete |
+| 2   | 2026-03-04 | M1        | Developer       | Health check endpoint, tests, CI smoke     | ✅ Complete |
+| 3   | 2026-03-04 | M2        | Architect + Dev | Upload module, statements CRUD, Angular UI | ✅ Complete |
 
 ---
 
@@ -311,10 +312,11 @@ Current Serena memory key values for cross-session continuity:
 
 | Key                        | Value                                                                                    |
 | -------------------------- | ---------------------------------------------------------------------------------------- |
-| `ledger/current-milestone` | M0: Monorepo Scaffold — in progress                                                      |
-| `ledger/progress`          | M0: CI, docs, agentic framework done. Workspace scaffold remaining.                      |
+| `ledger/current-milestone` | M2: File Upload — complete                                                               |
+| `ledger/progress`          | M0–M2 complete. 61 tests, CI green. Next: M3 Parse & Persist.                            |
 | `ledger/blockers`          | None                                                                                     |
-| `ledger/decisions`         | Node.js+pnpm runtime, NestJS+Angular, pgvector, Mistral AI, strategy pattern for parsers |
+| `ledger/decisions`         | Node.js+pnpm, NestJS+Angular, pgvector, Mistral AI, strategy parsers, explicit @Inject() |
+| `ledger/tech-debt`         | Conditional TypeORM loading in AppModule, explicit @Inject() workaround for esbuild      |
 
 **Convention**: `ledger/<topic>` for project state, `ledger/m<N>-<detail>` for milestone-specific notes.
 
@@ -322,9 +324,10 @@ Current Serena memory key values for cross-session continuity:
 
 ## Retrospective Links
 
-| Milestone | Date                              | Link | Key Takeaway |
-| --------- | --------------------------------- | ---- | ------------ |
-|           | _No retrospectives completed yet_ |      |              |
+| Milestone | Date       | Link                                  | Key Takeaway                                                       |
+| --------- | ---------- | ------------------------------------- | ------------------------------------------------------------------ |
+| M1        | 2026-03-04 | `docs/milestones/m1-retrospective.md` | M0 gate-out needs stricter verification from subdirectories        |
+| M2        | 2026-03-04 | `docs/milestones/m2-retrospective.md` | vitest/esbuild + emitDecoratorMetadata requires explicit @Inject() |
 
 ---
 

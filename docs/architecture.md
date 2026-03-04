@@ -160,8 +160,10 @@ erDiagram
         uuid id PK
         varchar filename
         varchar file_type "pdf | csv"
-        text raw_text
-        timestamp uploaded_at
+        varchar file_path "UUID filename on disk"
+        int file_size "bytes"
+        text raw_text "nullable, populated by M3"
+        timestamptz uploaded_at
     }
 
     transactions {
@@ -269,17 +271,32 @@ graph TD
 ```
 backend/
 ├── src/
-│   ├── app.module.ts
-│   ├── upload/
+│   ├── app.module.ts              # Conditional TypeORM + module registration
+│   ├── main.ts                    # Bootstrap with graceful shutdown
+│   ├── config.ts                  # Typed env config loader
+│   ├── logger.ts                  # Structured JSON logger
+│   ├── health/                    # ✅ M1
+│   │   ├── health.module.ts
+│   │   ├── health.controller.ts
+│   │   ├── health.controller.spec.ts
+│   │   └── health.integration.spec.ts
+│   ├── upload/                    # ✅ M2
 │   │   ├── upload.module.ts
 │   │   ├── upload.controller.ts
 │   │   ├── upload.service.ts
-│   │   ├── parsers/
-│   │   │   ├── parser.interface.ts      # Strategy interface
+│   │   ├── upload.controller.spec.ts
+│   │   ├── upload.service.spec.ts
+│   │   ├── upload.integration.spec.ts
+│   │   ├── entities/
+│   │   │   └── statement.entity.ts
+│   │   ├── dto/
+│   │   │   └── upload-response.dto.ts
+│   │   ├── parsers/               # M3 (planned)
+│   │   │   ├── parser.interface.ts
 │   │   │   ├── pdf.parser.ts
 │   │   │   └── csv.parser.ts
-│   │   └── chunker.service.ts
-│   ├── transactions/
+│   │   └── chunker.service.ts     # M4 (planned)
+│   ├── transactions/              # M3 (planned)
 │   │   ├── transactions.module.ts
 │   │   ├── transactions.controller.ts
 │   │   ├── transactions.service.ts
@@ -358,23 +375,23 @@ graph TD
 frontend/
 ├── src/
 │   ├── app/
-│   │   ├── app.component.ts
-│   │   ├── app.routes.ts
+│   │   ├── app.component.ts           # Nav bar + router outlet
+│   │   ├── app.config.ts              # provideRouter + provideHttpClient
+│   │   ├── app.routes.ts              # Lazy-loaded routes
 │   │   ├── core/
 │   │   │   └── services/
-│   │   │       ├── api.service.ts          # HTTP client wrapper
-│   │   │       ├── upload.service.ts
-│   │   │       ├── transactions.service.ts
-│   │   │       ├── chat.service.ts
-│   │   │       └── analytics.service.ts
+│   │   │       ├── api.service.ts          # ✅ M2: HTTP client wrapper
+│   │   │       ├── transactions.service.ts # M3 (planned)
+│   │   │       ├── chat.service.ts         # M5 (planned)
+│   │   │       └── analytics.service.ts    # M6 (planned)
 │   │   ├── shared/
 │   │   │   └── components/
-│   │   │       ├── file-dropzone/
-│   │   │       ├── loading-spinner/
-│   │   │       └── stat-card/
+│   │   │       ├── file-dropzone/          # ✅ M2: Drag-and-drop
+│   │   │       ├── loading-spinner/        # (planned)
+│   │   │       └── stat-card/              # M6 (planned)
 │   │   └── features/
-│   │       ├── upload/
-│   │       ├── transactions/
+│   │       ├── upload/                     # ✅ M2: Upload page
+│   │       ├── transactions/               # M3 (planned)
 │   │       ├── chat/
 │   │       └── dashboard/
 │   ├── environments/
