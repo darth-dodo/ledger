@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add -D @vitest/coverage-v8@^3.1.0)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm prettier --write .claude/settings.json)",
+      "mcp__linear__get_milestone",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''Dependencies:''\\); [print\\(f''  {k}: {v}''\\) for k,v in d.get\\(''dependencies'',{}\\).items\\(\\)]\")",
+      "mcp__linear__get_issue",
+      "mcp__serena__list_dir",
+      "Bash(pnpm add @nestjs/typeorm typeorm pg)",
+      "Bash(pnpm remove @types/uuid)",
+      "Bash(pnpm add multer)",
+      "Bash(pnpm add -D @swc/core unplugin-swc)",
+      "Bash(pnpm approve-builds 2)",
+      "Bash(1:*)",
+      "Bash(python3 -c \" import json, sys d = json.load\\(sys.stdin\\) d.setdefault\\(''pnpm'', {}\\)[''onlyBuiltDependencies''] = [''@swc/core''] json.dump\\(d, sys.stdout, indent=2\\) \")",
+      "Bash(pnpm remove @swc/core unplugin-swc)",
+      "Bash(pnpm test -- src/upload/upload.integration.spec.ts)",
+      "Bash(npx eslint src/upload/upload.controller.spec.ts src/upload/upload.service.spec.ts src/upload/upload.integration.spec.ts)",
+      "Bash(npx prettier --write backend/package.json backend/src/upload/entities/statement.entity.ts backend/src/upload/upload.controller.spec.ts backend/src/upload/upload.controller.ts backend/src/upload/upload.integration.spec.ts backend/src/upload/upload.service.spec.ts docs/adrs/adr-001-upload-strategy.md frontend/src/app/app.routes.ts frontend/src/app/features/upload/upload.component.ts frontend/src/app/shared/components/file-dropzone/file-dropzone.component.ts)"
+    ]
+  }
+}

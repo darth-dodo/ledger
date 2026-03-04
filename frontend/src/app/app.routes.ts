@@ -1,9 +1,14 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+  {
+    path: 'upload',
+    loadComponent: () =>
+      import('./features/upload/upload.component').then((m) => m.UploadComponent),
+  },
+  { path: '', redirectTo: 'upload', pathMatch: 'full' },
   // Future routes:
-  // { path: 'upload', loadComponent: () => import('./pages/upload/upload.component').then(m => m.UploadComponent) },
-  // { path: 'transactions', loadComponent: () => import('./pages/transactions/transactions.component').then(m => m.TransactionsComponent) },
-  // { path: 'chat', loadComponent: () => import('./pages/chat/chat.component').then(m => m.ChatComponent) },
-  // { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  // { path: 'transactions', loadComponent: () => import('./features/transactions/transactions.component').then(m => m.TransactionsComponent) },
+  // { path: 'chat', loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent) },
+  // { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
 ];

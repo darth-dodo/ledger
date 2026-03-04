@@ -15,12 +15,18 @@
     "@nestjs/common": "^11.1.15",
     "@nestjs/core": "^11.1.15",
     "@nestjs/platform-express": "^11.1.15",
+    "@nestjs/typeorm": "^11.0.0",
     "dotenv": "^16.5.0",
+    "multer": "^2.1.1",
+    "pg": "^8.19.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.28",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^11.1.15",
+    "@types/multer": "^2.0.0",
     "@types/node": "^25.3.3",
     "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^3.2.4",
