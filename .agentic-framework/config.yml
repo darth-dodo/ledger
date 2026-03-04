@@ -1,0 +1,310 @@
+# Ledger — Agentic Framework Configuration
+# Instantiated from templates/project-config.yml for the Ledger project
+
+# ============================================================================
+# Project Information
+# ============================================================================
+project:
+  name: 'ledger'
+  description: 'Personal finance tool: upload bank statements, parse transactions, RAG chat, visual analytics'
+  type: 'web-app'
+
+# ============================================================================
+# Technology Stack
+# ============================================================================
+stack:
+  languages:
+    primary: 'typescript'
+    secondary: [] # Monorepo, all TypeScript
+
+  frameworks:
+    frontend: 'angular' # Angular 17+
+    backend: 'nestjs' # NestJS with modules, DI, decorators
+    testing: 'bun-test' # bun:test built-in runner
+
+  database:
+    primary: 'postgresql' # Transactions, statements, chat messages
+    extensions: ['pgvector'] # Vector similarity search for RAG
+    orm: '' # TBD (TypeORM, Prisma, or raw SQL)
+
+  ai:
+    provider: 'mistral'
+    models:
+      embeddings: 'mistral-embed' # 1024-dim embeddings
+      chat: 'mistral-large-latest' # RAG chat completions
+
+  build_tools:
+    package_manager: 'bun' # NOT npm — see CLAUDE.md
+    bundler: 'bun' # Bun build with HTML imports
+    task_runner: 'bun-scripts' # bun run <script>
+
+# ============================================================================
+# Quality Gate Thresholds
+# ============================================================================
+quality_gates:
+  syntax:
+    enabled: true
+    commands:
+      - 'bun run tsc --noEmit'
+
+  types:
+    enabled: true
+    strict_mode: true
+    commands:
+      - 'bun run tsc --strict --noEmit'
+
+  lint:
+    enabled: true
+    zero_warnings: true
+    commands:
+      - 'bun run lint'
+
+  security:
+    enabled: true
+    audit_level: 'high'
+    commands:
+      - 'grep -rE "(api_key|secret|password).*=.*[\x27\"][^\x27\"]+[\x27\"]" src/ && exit 1 || true'
+    notes: 'Bun lacks built-in audit. Use manual checks + Snyk for CI.'
+
+  tests:
+    enabled: true
+    coverage_threshold: 70
+    commands:
+      - 'bun test --coverage'
+
+  performance:
+    enabled: true
+    api_response_time: '200ms'
+    parse_time_100_pages: '5s'
+    bundle_size: '500KB'
+
+  accessibility:
+    enabled: true
+    wcag_level: 'AA'
+    notes: 'Applies to Angular frontend only'
+
+  integration:
+    enabled: true
+    commands:
+      - 'bun run build'
+      - 'curl -f http://localhost:3000/health'
+
+# ============================================================================
+# Persona Configuration
+# ============================================================================
+personas:
+  architect:
+    enabled: true
+    mcp_primary: 'sequential'
+    mcp_secondary: 'context7'
+    focus: ['architecture', 'design', 'scalability', 'data-modeling']
+
+  developer:
+    enabled: true
+    mcp_primary: 'context7'
+    mcp_secondary: 'sequential'
+    focus: ['implementation', 'coding', 'debugging', 'optimization']
+
+  writer:
+    enabled: true
+    mcp_primary: 'context7'
+    mcp_secondary: 'sequential'
+    focus: ['documentation', 'API-docs', 'README', 'guides']
+
+  qa:
+    enabled: true
+    mcp_primary: 'playwright'
+    mcp_secondary: 'sequential'
+    focus: ['testing', 'validation', 'quality', 'data-integrity']
+
+  # Persona overlays (see personas/overlays/)
+  overlays:
+    ai_engineer:
+      enabled: true
+      extends: 'developer'
+      focus: ['RAG-pipeline', 'embeddings', 'prompt-design', 'Mistral-API']
+
+    data_engineer:
+      enabled: true
+      extends: 'developer'
+      focus: ['parsing', 'ETL', 'data-validation', 'pipeline-design']
+
+# ============================================================================
+# Workflow Configuration
+# ============================================================================
+workflows:
+  feature_development:
+    phases:
+      - name: 'Design'
+        persona: 'architect'
+        duration: '30-60min'
+      - name: 'Implementation'
+        persona: 'developer'
+        duration: '1-4hr'
+      - name: 'Validation'
+        persona: 'qa'
+        duration: '30-60min'
+
+  data_pipeline:
+    phases:
+      - name: 'Pipeline Design'
+        persona: 'architect'
+        duration: '30-60min'
+      - name: 'Implementation'
+        persona: 'developer'
+        overlay: 'data_engineer'
+        duration: '2-4hr'
+      - name: 'Validation'
+        persona: 'qa'
+        duration: '1-2hr'
+
+  milestone_delivery:
+    phases:
+      - name: 'Scope & Design'
+        persona: 'architect'
+        duration: '30-90min'
+      - name: 'Implementation'
+        persona: 'developer'
+        duration: 'variable'
+      - name: 'Validation'
+        persona: 'qa'
+        duration: '1-3hr'
+      - name: 'Retrospective'
+        persona: 'all'
+        duration: '15-30min'
+
+  bug_fix:
+    phases:
+      - name: 'Investigate'
+        persona: 'developer'
+        duration: '15-30min'
+      - name: 'Fix'
+        persona: 'developer'
+        duration: '30-60min'
+      - name: 'Verify'
+        persona: 'qa'
+        duration: '15min'
+
+# ============================================================================
+# Milestone Configuration
+# ============================================================================
+milestones:
+  m0:
+    name: 'Monorepo Scaffold'
+    pattern: 'single-agent'
+    duration: '1d'
+    depends_on: []
+
+  m1:
+    name: 'Health Check'
+    pattern: 'single-agent'
+    duration: '1d'
+    depends_on: ['m0']
+
+  m2:
+    name: 'File Upload'
+    pattern: 'sequential'
+    duration: '2d'
+    depends_on: ['m1']
+
+  m3:
+    name: 'Parse & Persist'
+    pattern: 'sequential'
+    duration: '3d'
+    depends_on: ['m2']
+
+  m4:
+    name: 'Chunk & Embed'
+    pattern: 'sequential'
+    duration: '2d'
+    depends_on: ['m3']
+    overlays: ['ai_engineer']
+
+  m5:
+    name: 'RAG Chat'
+    pattern: 'hierarchical'
+    duration: '3d'
+    depends_on: ['m4']
+    overlays: ['ai_engineer']
+
+  m6:
+    name: 'Full Dashboard'
+    pattern: 'parallel'
+    duration: '3d'
+    depends_on: ['m5']
+    parallel_tracks: ['backend-api', 'frontend-dashboard']
+
+  m7:
+    name: 'Auth & Polish'
+    pattern: 'parallel'
+    duration: '2d'
+    depends_on: ['m6']
+    parallel_tracks: ['auth', 'error-handling', 'documentation']
+
+# ============================================================================
+# Multi-Agent Configuration
+# ============================================================================
+multi_agent:
+  enabled: true
+  max_parallel_agents: 3
+
+  patterns:
+    parallel:
+      description: 'Independent tasks with same persona'
+      use_when: "Tasks don't depend on each other (e.g., M6 backend + frontend)"
+
+    sequential:
+      description: 'Tasks with dependencies'
+      use_when: 'Output of one feeds into another (e.g., M3 parse → persist)'
+
+    hierarchical:
+      description: 'Lead + worker agents'
+      use_when: 'Complex features needing coordination (e.g., M5 RAG)'
+
+# ============================================================================
+# Session Management
+# ============================================================================
+session:
+  checkpoint_interval: '30min'
+  auto_save: true
+
+  context_retention:
+    target: 90
+    compress_at: 75
+
+  memory_keys:
+    current_milestone: 'ledger/current-milestone'
+    progress: 'ledger/progress'
+    blockers: 'ledger/blockers'
+    decisions: 'ledger/decisions'
+
+  handoff:
+    required_fields:
+      - 'current_task'
+      - 'next_action'
+      - 'blockers'
+      - 'quality_status'
+
+# ============================================================================
+# MCP Server Preferences
+# ============================================================================
+mcp_servers:
+  context7:
+    description: 'NestJS, Angular, PostgreSQL documentation and patterns'
+    use_for: ['framework-patterns', 'API-design', 'Angular-components']
+    auto_activate: ['nestjs imports', 'angular components', 'pg queries']
+
+  sequential:
+    description: 'Multi-step reasoning for architecture and debugging'
+    use_for: ['pipeline-design', 'debugging', 'architecture-review']
+    auto_activate: ['--think flags', 'system design', 'complex debugging']
+
+  playwright:
+    description: 'E2E testing for Angular frontend'
+    use_for: ['upload-flow-testing', 'chat-UI-testing', 'dashboard-validation']
+    auto_activate: ['e2e test requests', 'UI validation']
+
+  serena:
+    description: 'Semantic code understanding for NestJS modules'
+    use_for: ['refactoring', 'symbol-operations', 'cross-module-analysis']
+    auto_activate: ['rename operations', 'find references', 'module restructuring']

@@ -84,34 +84,42 @@ cp .agentic/templates/session-template.md docs/session-log.md
 ```
 .agentic/
 ├── README.md                     # This file
-├── config.yml                    # Project-specific configuration
+├── CHEATSHEET.md                 # Quick reference card
+├── config.yml                    # Project-specific configuration (Ledger)
 │
 ├── personas/                     # Persona configurations
 │   ├── architect.yml             # System design workflows
 │   ├── developer.yml             # Implementation workflows
 │   ├── writer.yml                # Content/docs workflows
-│   └── qa.yml                    # Testing/validation workflows
+│   ├── qa.yml                    # Testing/validation workflows
+│   └── overlays/                 # Domain-specific persona extensions
+│       ├── ai-engineer.yml       # RAG, embeddings, prompt engineering
+│       └── data-engineer.yml     # Parsing, ETL, data validation
 │
 ├── workflows/                    # Development patterns
-│   ├── feature-development.md    # Generic feature workflow
+│   ├── feature-development.md    # Generic feature workflow (with ADR integration)
 │   ├── content-creation.md       # Documentation/content workflow
 │   ├── bug-fix.md                # Bug investigation & fix workflow
-│   └── multi-agent-coordination.md  # Parallel agent patterns
+│   ├── data-pipeline.md          # Multi-stage ETL/ingest workflow
+│   ├── milestone-delivery.md     # Phased product delivery workflow
+│   └── multi-agent-coordination.md  # Parallel agent patterns (with error recovery)
 │
 ├── quality-gates/                # Validation framework
 │   ├── generic-gates.md          # Language-agnostic gates
 │   └── examples/                 # Language-specific examples
 │       ├── javascript.md
 │       ├── python.md
-│       └── go.md
+│       ├── go.md
+│       └── bun.md                # Bun runtime (bun test, bun build)
 │
 ├── integration/                  # Session management
-│   ├── session-template.md       # Persona-aware session log
+│   ├── session-template.md       # Persona-aware session log (with Serena memory examples)
 │   └── handoff-template.md       # Agent handoff documentation
 │
 └── templates/                    # Starter templates
     ├── project-config.yml        # Project configuration template
-    └── adr-template.md           # Architecture decision template
+    ├── adr-template.md           # Architecture decision template
+    └── retrospective.md          # Post-milestone reflection template
 ```
 
 ---
@@ -133,12 +141,14 @@ Specialized agent personalities with domain expertise:
 
 Structured patterns for common development tasks:
 
-| Workflow            | Duration  | Phases                             |
-| ------------------- | --------- | ---------------------------------- |
-| Feature Development | 1-3 hours | Design → Implement → Validate      |
-| Content Creation    | 1-2 hours | Outline → Write → Review           |
-| Bug Fix             | 30-90 min | Investigate → Fix → Verify         |
-| Multi-Agent         | Variable  | Coordinate → Parallel Work → Merge |
+| Workflow            | Duration  | Phases                                       |
+| ------------------- | --------- | -------------------------------------------- |
+| Feature Development | 1-3 hours | Design → Implement → Validate                |
+| Content Creation    | 1-2 hours | Outline → Write → Review                     |
+| Bug Fix             | 30-90 min | Investigate → Fix → Verify                   |
+| Data Pipeline       | 2-6 hours | Design → Implement Stages → Validate         |
+| Milestone Delivery  | Days-Weeks | Gate-In → Scope → Implement → Validate → Retro |
+| Multi-Agent         | Variable  | Coordinate → Parallel Work → Merge           |
 
 ### 3. Quality Gates
 
@@ -153,9 +163,18 @@ Structured patterns for common development tasks:
 7. **Accessibility** - Standards compliance
 8. **Integration** - Works with system
 
-### 4. Multi-Agent Coordination
+### 4. Persona Overlays
 
-Parallel agent patterns for faster development:
+Domain-specific extensions that augment core personas:
+
+| Overlay            | Extends   | Domain                         |
+| ------------------ | --------- | ------------------------------ |
+| **ai-engineer**    | Developer | RAG, embeddings, prompt design |
+| **data-engineer**  | Developer | Parsing, ETL, data validation  |
+
+### 5. Multi-Agent Coordination
+
+Parallel agent patterns for faster development (with error recovery):
 
 | Pattern          | Agents         | Use Case          |
 | ---------------- | -------------- | ----------------- |
@@ -293,10 +312,13 @@ refactoring: serena + sequential
 ## Getting Started
 
 1. **Copy framework** to your project
-2. **Configure** `config.yml` for your stack
-3. **Pick a workflow** for your first task
-4. **Start with single-agent** before multi-agent
-5. **Iterate** on personas and workflows
+2. **Configure** `config.yml` for your stack (see `templates/project-config.yml`)
+3. **Read the cheatsheet** — `CHEATSHEET.md` is a one-page reference
+4. **Pick a workflow** for your first task
+5. **Start with single-agent** before multi-agent
+6. **Run retrospectives** after each milestone to evolve the framework
+
+**Quick Reference**: See `CHEATSHEET.md` for a one-page summary.
 
 **Documentation**: See individual workflow files for detailed instructions.
 

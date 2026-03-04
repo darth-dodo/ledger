@@ -25,9 +25,14 @@
 - [ ] Assess technical risks and mitigation strategies
 - [ ] Create implementation task breakdown
 - [ ] Estimate complexity and resource requirements
+- [ ] Produce ADR if architectural decision was made (see `templates/adr-template.md`)
 - [ ] Review design with stakeholders (if applicable)
 
 ### Outputs
+
+**Architecture Decision Record** (when architectural decisions are made):
+
+If the design involves a significant technical choice (framework selection, data model design, API pattern, library choice), produce an ADR using `templates/adr-template.md` and save to `docs/adr/ADR-NNN-title.md`. Not every feature needs an ADR — only those involving decisions that a future developer would want to understand.
 
 **Design Document** (`docs/design/FEATURE-NAME.md`):
 
@@ -118,6 +123,7 @@ Endpoints, methods, request/response formats
 - [ ] Implementation tasks broken into <4h chunks
 - [ ] Risks identified with mitigation plans
 - [ ] Testing strategy defined
+- [ ] ADR created if architectural decision was made
 
 **Exit Condition**: All criteria met, design approved.
 

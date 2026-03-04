@@ -1,5 +1,5 @@
 {
-  "name": "ledge",
+  "name": "ledger",
   "module": "index.ts",
   "type": "module",
   "private": true,

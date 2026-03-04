@@ -180,11 +180,32 @@
 - **Open Questions**: [Unresolved items]
 - **Quality Status**: [Current gate progress]
 
-**Context Preservation**
+**Context Preservation (Serena Memory)**
 
-- Saved: `/sc:save` at [TIME]
-- Load command: `/sc:load`
-- Session ID: [IDENTIFIER]
+Session context is persisted using Serena MCP memory operations:
+
+```bash
+# Session start — load previous context
+list_memories()                                    # See what exists
+read_memory("ledger/current-milestone")             # Where are we?
+read_memory("ledger/progress")                      # What's done?
+read_memory("ledger/blockers")                      # Any blockers?
+
+# During work — checkpoint progress
+write_memory("ledger/progress", "M3 Phase 2: HDFC CSV parser complete, ICICI in progress")
+write_memory("ledger/decisions", "Chose strategy pattern for bank parsers — see ADR-003")
+
+# Session end — save state for next session
+write_memory("ledger/session-summary", "M3 Phase 2 complete. 2/3 parsers working. ICICI pending.")
+write_memory("ledger/current-milestone", "M3: Parse & Persist — Phase 2 in progress")
+write_memory("ledger/blockers", "None")
+
+# After milestone completion — clean up temporary state
+delete_memory("ledger/checkpoint-*")  # Remove transient checkpoints
+write_memory("ledger/m3-outcome", "Complete. 3 parsers, 94% test coverage, ADR-003 created.")
+```
+
+**Memory key conventions**: `ledger/<topic>` for project state, `ledger/m<N>-<detail>` for milestone-specific notes.
 
 ---
 

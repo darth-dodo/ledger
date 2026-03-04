@@ -1,12 +1,12 @@
-# Ledge — Product Document
+# Ledger — Product Document
 
-### *Your financial ledge. Ask anything.*
+### *Your financial ledger. Ask anything.*
 
 ---
 
 ## 1. Vision
 
-Ledge is a personal finance tool that lets you upload bank statements, automatically parse transactions, and interact with your financial data through natural language chat and visual analytics.
+Ledger is a personal finance tool that lets you upload bank statements, automatically parse transactions, and interact with your financial data through natural language chat and visual analytics.
 
 ---
 
@@ -57,7 +57,7 @@ Ledge is a personal finance tool that lets you upload bank statements, automatic
 
 ```mermaid
 flowchart TD
-    A[User opens Ledge] --> B[Drag & drop PDF/CSV]
+    A[User opens Ledger] --> B[Drag & drop PDF/CSV]
     B --> C[Show spinner]
     C --> D{File type?}
     D -->|PDF| E[PDF Parser]
@@ -138,7 +138,7 @@ flowchart TD
 
 ```mermaid
 gantt
-    title Ledge Development Milestones
+    title Ledger Development Milestones
     dateFormat YYYY-MM-DD
     axisFormat %b %d
 

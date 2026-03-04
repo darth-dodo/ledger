@@ -1,4 +1,4 @@
-# Ledge — Architecture Document
+# Ledger — Architecture Document
 
 ---
 
@@ -512,7 +512,7 @@ The `UploadService` iterates through registered parsers, calling `canParse()` to
 
 ```env
 # .env (never commit)
-DATABASE_URL=postgresql://ledge:ledge@localhost:5432/ledge
+DATABASE_URL=postgresql://ledger:ledger@localhost:5432/ledger
 MISTRAL_API_KEY=your-key-here
 JWT_SECRET=your-jwt-secret
 UPLOAD_DIR=./uploads
@@ -528,9 +528,9 @@ services:
   db:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: ledge
-      POSTGRES_USER: ledge
-      POSTGRES_PASSWORD: ledge
+      POSTGRES_DB: ledger
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ledger
     ports:
       - "5432:5432"
     volumes:
