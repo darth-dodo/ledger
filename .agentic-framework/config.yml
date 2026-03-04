@@ -1,0 +1,99 @@
+# Ledger — Agentic Framework Configuration
+# Instantiated from templates/project-config.yml for the Ledger project
+
+# ============================================================================
+# Project Information
+# ============================================================================
+project:
+  name: 'ledger'
+  description: 'Personal finance tool: upload bank statements, parse transactions, RAG chat, visual analytics'
+  type: 'web-app'
+
+# ============================================================================
+# Technology Stack
+# ============================================================================
+stack:
+  languages:
+    primary: 'typescript'
+    secondary: [] # Monorepo, all TypeScript
+
+  frameworks:
+    frontend: 'angular' # Angular 17+
+    backend: 'nestjs' # NestJS with modules, DI, decorators
+    testing: 'vitest' # Vitest for backend, Karma for Angular
+
+  database:
+    primary: 'postgresql' # Transactions, statements, chat messages
+    extensions: ['pgvector'] # Vector similarity search for RAG
+    orm: '' # TBD (TypeORM, Prisma, or raw SQL)
+
+  ai:
+    provider: 'mistral'
+    models:
+      embeddings: 'mistral-embed' # 1024-dim embeddings
+      chat: 'mistral-large-latest' # RAG chat completions
+
+  build_tools:
+    package_manager: 'pnpm'
+    bundler: 'angular-cli' # ng build for frontend
+    task_runner: 'pnpm-scripts' # pnpm run <script>
+
+# ============================================================================
+# Quality Gate Thresholds
+# ============================================================================
+quality_gates:
+  syntax:
+    enabled: true
+    commands:
+      - 'pnpm run build' # tsc --noEmit
+
+  types:
+    enabled: true
+    strict_mode: true
+    commands:
+      - 'pnpm run build' # tsc --noEmit with strict
+
+  lint:
+    enabled: true
+    zero_warnings: true
+    commands:
+      - 'pnpm run lint'
+
+  security:
+    enabled: true
+    audit_level: 'high'
+    commands:
+      - 'grep -rE "(api_key|secret|password).*=.*[\x27\"][^\x27\"]+[\x27\"]" src/ && exit 1 || true'
+    notes: 'Use pnpm audit + Snyk for CI.'
+
+  tests:
+    enabled: true
+    coverage_threshold: 70
+    commands:
+      - 'pnpm test'
+
+  performance:
+    enabled: true
+    api_response_time: '200ms'
+    parse_time_100_pages: '5s'
+    bundle_size: '500KB'
+
+  accessibility:
+    enabled: true
+    wcag_level: 'AA'
+    notes: 'Applies to Angular frontend only'
+
+  integration:
+    enabled: true
+    commands:
+      - 'pnpm run build'
+      - 'curl -f http://localhost:3000/health'
+
+# ============================================================================
+# Persona Configuration
+# ============================================================================
+personas:
+  architect:
+    enabled: true
+    mcp_primary: 'sequential'
+    mcp_secondary: 'context7'

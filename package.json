@@ -1,0 +1,25 @@
+{
+  "name": "ledger",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "cd backend && pnpm test && cd ../frontend && pnpm test",
+    "build": "cd backend && pnpm build && cd ../frontend && pnpm build",
+    "dev": "cd backend && pnpm dev & cd frontend && pnpm dev",
+    "dev:backend": "cd backend && pnpm dev",
+    "dev:frontend": "cd frontend && pnpm dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.0.0",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript": "^5",
+    "typescript-eslint": "^8.56.1"
+  }
+}

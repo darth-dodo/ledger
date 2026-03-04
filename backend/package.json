@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.15",
+    "@nestjs/core": "^11.1.15",
+    "@nestjs/platform-express": "^11.1.15",
+    "dotenv": "^16.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.1.0"
+  }
+}
