@@ -1,4 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { Readable } from 'stream';
 import { BadRequestException } from '@nestjs/common';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
@@ -24,7 +25,7 @@ function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.M
     filename: 'abc-123.pdf',
     path: './uploads/abc-123.pdf',
     buffer: Buffer.from(''),
-    stream: null as any,
+    stream: new Readable({ read() {} }),
     ...overrides,
   };
 }
@@ -81,7 +82,7 @@ describe('UploadController', () => {
 
     test('throws BadRequestException when no file provided', async () => {
       await expect(
-        controller.upload(undefined as any),
+        controller.upload(undefined as unknown as Express.Multer.File),
       ).rejects.toThrow(BadRequestException);
     });
 

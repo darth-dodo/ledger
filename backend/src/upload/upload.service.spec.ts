@@ -1,5 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { Readable } from 'stream';
 import { NotFoundException } from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { UploadService } from './upload.service';
 import { Statement } from './entities/statement.entity';
 import * as fs from 'fs/promises';
@@ -27,7 +29,7 @@ function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.M
     filename: 'abc-123.pdf',
     path: './uploads/abc-123.pdf',
     buffer: Buffer.from(''),
-    stream: null as any,
+    stream: new Readable({ read() {} }),
     ...overrides,
   };
 }
@@ -38,7 +40,7 @@ describe('UploadService', () => {
 
   beforeEach(() => {
     mockRepo = createMockRepo();
-    service = new UploadService(mockRepo as any);
+    service = new UploadService(mockRepo as unknown as Repository<Statement>);
     vi.clearAllMocks();
   });
 

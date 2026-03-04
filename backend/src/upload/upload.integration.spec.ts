@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Repository } from 'typeorm';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
 import { Statement } from './entities/statement.entity';
@@ -21,7 +22,7 @@ function nextFakeUuid(): string {
 describe('Upload Integration', () => {
   let app: INestApplication;
   let statements: Statement[];
-  let mockRepo: any;
+  let mockRepo: Partial<Repository<Statement>>;
 
   beforeAll(async () => {
     process.env.UPLOAD_DIR = TEST_UPLOAD_DIR;
@@ -39,7 +40,7 @@ describe('Upload Integration', () => {
         return Promise.resolve(entity);
       }),
       find: vi.fn(() => Promise.resolve(statements)),
-      findOne: vi.fn(({ where: { id } }: any) =>
+      findOne: vi.fn(({ where: { id } }: { where: { id: string } }) =>
         Promise.resolve(statements.find((s) => s.id === id) ?? null),
       ),
       remove: vi.fn((entity: Statement) => {
@@ -50,7 +51,7 @@ describe('Upload Integration', () => {
 
     // Build the module manually to avoid emitDecoratorMetadata dependency.
     // We provide UploadService explicitly with the mock repo.
-    const uploadService = new UploadService(mockRepo as any);
+    const uploadService = new UploadService(mockRepo as unknown as Repository<Statement>);
 
     const moduleRef = await Test.createTestingModule({
       controllers: [UploadController],
