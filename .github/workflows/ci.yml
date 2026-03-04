@@ -1,8 +1,8 @@
-name: CI
+name: CI — Quality Gates
 
 on:
   push:
-    branches: [main, feat/*]
+    branches: [main, feat/*, feature/*]
   pull_request:
     branches: [main]
 
@@ -11,93 +11,120 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
+  # ═══════════════════════════════════════════════
+  # Gate 1 + 2: Syntax & Type Safety (tsc --noEmit)
+  # ═══════════════════════════════════════════════
+  gate-types:
+    name: 'Gate 1+2: Syntax & Types'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Backend type check
+        run: cd backend && pnpm build
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
+      - name: Frontend type check
+        run: cd frontend && pnpm build
 
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
-
-      - run: pnpm lint
-      - run: pnpm format:check
-
-  test:
-    name: Test
+  # ═══════════════════════════════════════════════
+  # Gate 3: Code Quality (ESLint + Prettier)
+  # ═══════════════════════════════════════════════
+  gate-lint:
+    name: 'Gate 3: Lint & Format'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - uses: actions/setup-node@v4
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Prettier check
+        run: pnpm format:check
+
+  # ═══════════════════════════════════════════════
+  # Gate 4: Security
+  # ═══════════════════════════════════════════════
+  gate-security:
+    name: 'Gate 4: Security'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: '22'
+          install-frontend: 'false'
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
+      - name: Dependency audit
+        run: cd backend && pnpm audit --audit-level=high
+        continue-on-error: true
 
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rE "(api_key|secret|password)\s*=\s*['\"][^'\"]+['\"]" backend/src/ frontend/src/ --include="*.ts" 2>/dev/null; then
+            echo "::error::Hardcoded secrets detected!"
+            exit 1
+          fi
+          echo "No hardcoded secrets found"
 
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
+  # ═══════════════════════════════════════════════
+  # Gate 5: Tests
+  # ═══════════════════════════════════════════════
+  gate-tests:
+    name: 'Gate 5: Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-pnpm
 
-      - name: Backend tests
-        run: cd backend && pnpm test
+      - name: Backend tests with coverage
+        run: cd backend && pnpm test:coverage
 
       - name: Frontend tests
         run: cd frontend && pnpm test
 
-  build:
-    name: Build
+  # ═══════════════════════════════════════════════
+  # Gate 8: Integration (smoke test)
+  # Gates 6 (Performance) and 7 (Accessibility)
+  # will be added when frontend dashboard lands
+  # ═══════════════════════════════════════════════
+  gate-integration:
+    name: 'Gate 8: Integration'
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [gate-types, gate-lint, gate-tests]
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store/v10
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: pnpm-${{ runner.os }}-
-
-      - run: pnpm install --frozen-lockfile
-      - run: cd backend && pnpm install --frozen-lockfile
-      - run: cd frontend && pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-node-pnpm
 
       - name: Backend build
         run: cd backend && pnpm build
 
       - name: Frontend build
         run: cd frontend && pnpm build
+
+      - name: Docker build validation
+        run: cd backend && docker build -t ledger-backend:ci .
+
+      - name: Smoke test /health
+        run: |
+          cd backend
+          DATABASE_URL=fake MISTRAL_API_KEY=fake JWT_SECRET=fake pnpm start &
+          SERVER_PID=$!
+
+          # Wait for server to be ready (max 30s)
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # Smoke test
+          RESPONSE=$(curl -sf http://localhost:3000/health)
+          echo "Response: $RESPONSE"
+
+          echo "$RESPONSE" | grep -q '"status":"ok"'
+          echo "Smoke test passed"
+
+          kill $SERVER_PID

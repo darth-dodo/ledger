@@ -1,0 +1,36 @@
+name: Setup Node.js + pnpm
+description: Install Node 22, pnpm, cache store, and install dependencies
+
+inputs:
+  install-frontend:
+    description: Whether to install frontend dependencies
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: latest
+
+    - name: Cache pnpm store
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/pnpm/store/v10
+        key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: pnpm-${{ runner.os }}-
+
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+
+    - run: cd backend && pnpm install --frozen-lockfile
+      shell: bash
+
+    - run: cd frontend && pnpm install --frozen-lockfile
+      shell: bash
+      if: inputs.install-frontend == 'true'
