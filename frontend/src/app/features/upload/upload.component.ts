@@ -12,9 +12,7 @@ import { ApiService, UploadResponse } from '../../core/services/api.service';
       <h2>Upload Statement</h2>
       <p class="subtitle">Upload your bank statement (PDF or CSV) to get started.</p>
 
-      <app-file-dropzone
-        (fileSelected)="onFileSelected($event)"
-      />
+      <app-file-dropzone (fileSelected)="onFileSelected($event)" />
 
       @if (isUploading) {
         <div class="status uploading">Uploading...</div>
@@ -57,119 +55,121 @@ import { ApiService, UploadResponse } from '../../core/services/api.service';
       }
     </div>
   `,
-  styles: [`
-    .upload-page {
-      max-width: 640px;
-    }
+  styles: [
+    `
+      .upload-page {
+        max-width: 640px;
+      }
 
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
 
-    .subtitle {
-      color: #667085;
-      margin-bottom: 1.5rem;
-    }
+      .subtitle {
+        color: #667085;
+        margin-bottom: 1.5rem;
+      }
 
-    .status {
-      margin-top: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
+      .status {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
 
-    .status.uploading {
-      background: #f0f4ff;
-      color: #4361ee;
-    }
+      .status.uploading {
+        background: #f0f4ff;
+        color: #4361ee;
+      }
 
-    .status.error {
-      background: #fef2f2;
-      color: #e74c3c;
-    }
+      .status.error {
+        background: #fef2f2;
+        color: #e74c3c;
+      }
 
-    .statements-section {
-      margin-top: 2rem;
-    }
+      .statements-section {
+        margin-top: 2rem;
+      }
 
-    .statements-section h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
+      .statements-section h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
 
-    .statements-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+      .statements-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
 
-    .statement-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      background: #fff;
-      border: 1px solid #e4e7ec;
-      border-radius: 8px;
-    }
+      .statement-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: #fff;
+        border: 1px solid #e4e7ec;
+        border-radius: 8px;
+      }
 
-    .statement-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      min-width: 0;
-    }
+      .statement-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+      }
 
-    .statement-type {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.125rem 0.5rem;
-      border-radius: 4px;
-      background: #f0f4ff;
-      color: #4361ee;
-      flex-shrink: 0;
-    }
+      .statement-type {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        background: #f0f4ff;
+        color: #4361ee;
+        flex-shrink: 0;
+      }
 
-    .statement-name {
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+      .statement-name {
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
-    .statement-meta {
-      font-size: 0.8125rem;
-      color: #667085;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+      .statement-meta {
+        font-size: 0.8125rem;
+        color: #667085;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
 
-    .delete-btn {
-      background: none;
-      border: 1px solid #e4e7ec;
-      border-radius: 6px;
-      padding: 0.375rem 0.75rem;
-      font-size: 0.8125rem;
-      color: #667085;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.15s ease;
-    }
+      .delete-btn {
+        background: none;
+        border: 1px solid #e4e7ec;
+        border-radius: 6px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+        color: #667085;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+      }
 
-    .delete-btn:hover {
-      color: #e74c3c;
-      border-color: #e74c3c;
-    }
+      .delete-btn:hover {
+        color: #e74c3c;
+        border-color: #e74c3c;
+      }
 
-    .delete-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  `],
+      .delete-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    `,
+  ],
 })
 export class UploadComponent {
   private readonly api = inject(ApiService);

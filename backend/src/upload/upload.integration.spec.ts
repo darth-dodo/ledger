@@ -55,9 +55,7 @@ describe('Upload Integration', () => {
 
     const moduleRef = await Test.createTestingModule({
       controllers: [UploadController],
-      providers: [
-        { provide: UploadService, useValue: uploadService },
-      ],
+      providers: [{ provide: UploadService, useValue: uploadService }],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -133,9 +131,7 @@ describe('Upload Integration', () => {
     });
 
     test('rejects request without file', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/upload')
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/upload').expect(400);
 
       expect(response.body.message).toContain('No file provided');
     });
@@ -161,31 +157,23 @@ describe('Upload Integration', () => {
 
   describe('GET /statements', () => {
     test('returns empty list when no statements exist', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/statements')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/statements').expect(200);
 
       expect(response.body).toEqual([]);
     });
 
     test('returns list of uploaded statements', async () => {
-      await request(app.getHttpServer())
-        .post('/upload')
-        .attach('file', Buffer.from('%PDF-1.4'), {
-          filename: 'first.pdf',
-          contentType: 'application/pdf',
-        });
+      await request(app.getHttpServer()).post('/upload').attach('file', Buffer.from('%PDF-1.4'), {
+        filename: 'first.pdf',
+        contentType: 'application/pdf',
+      });
 
-      await request(app.getHttpServer())
-        .post('/upload')
-        .attach('file', Buffer.from('a,b\n1,2'), {
-          filename: 'second.csv',
-          contentType: 'text/csv',
-        });
+      await request(app.getHttpServer()).post('/upload').attach('file', Buffer.from('a,b\n1,2'), {
+        filename: 'second.csv',
+        contentType: 'text/csv',
+      });
 
-      const response = await request(app.getHttpServer())
-        .get('/statements')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/statements').expect(200);
 
       expect(response.body).toHaveLength(2);
     });
@@ -202,9 +190,7 @@ describe('Upload Integration', () => {
 
       const id = uploadResponse.body.id;
 
-      const response = await request(app.getHttpServer())
-        .get(`/statements/${id}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/statements/${id}`).expect(200);
 
       expect(response.body.id).toBe(id);
       expect(response.body).toHaveProperty('rawText');
@@ -217,9 +203,7 @@ describe('Upload Integration', () => {
     });
 
     test('returns 400 for invalid UUID', async () => {
-      await request(app.getHttpServer())
-        .get('/statements/not-a-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/statements/not-a-uuid').expect(400);
     });
   });
 
@@ -234,9 +218,7 @@ describe('Upload Integration', () => {
 
       const id = uploadResponse.body.id;
 
-      await request(app.getHttpServer())
-        .delete(`/statements/${id}`)
-        .expect(200);
+      await request(app.getHttpServer()).delete(`/statements/${id}`).expect(200);
 
       expect(mockRepo.remove).toHaveBeenCalled();
     });

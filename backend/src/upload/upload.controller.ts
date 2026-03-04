@@ -29,9 +29,7 @@ function getUploadDir(): string {
 
 @Controller()
 export class UploadController {
-  constructor(
-    @Inject(UploadService) private readonly uploadService: UploadService,
-  ) {}
+  constructor(@Inject(UploadService) private readonly uploadService: UploadService) {}
 
   @Post('upload')
   @UseInterceptors(
@@ -50,9 +48,7 @@ export class UploadController {
       limits: { fileSize: MAX_FILE_SIZE },
     }),
   )
-  async upload(
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<UploadResponseDto> {
+  async upload(@UploadedFile() file: Express.Multer.File): Promise<UploadResponseDto> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -70,9 +66,7 @@ export class UploadController {
   }
 
   @Get('statements/:id')
-  async findOne(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<StatementDetailDto> {
+  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<StatementDetailDto> {
     const statement = await this.uploadService.findOne(id);
     return this.toDetailResponse(statement);
   }
@@ -86,15 +80,11 @@ export class UploadController {
     const ext = path.extname(file.originalname).toLowerCase();
 
     if (!ALLOWED_MIMES.includes(file.mimetype)) {
-      throw new BadRequestException(
-        `Invalid file type: ${file.mimetype}. Allowed: PDF, CSV`,
-      );
+      throw new BadRequestException(`Invalid file type: ${file.mimetype}. Allowed: PDF, CSV`);
     }
 
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      throw new BadRequestException(
-        `Invalid file extension: ${ext}. Allowed: .pdf, .csv`,
-      );
+      throw new BadRequestException(`Invalid file extension: ${ext}. Allowed: .pdf, .csv`);
     }
   }
 

@@ -81,9 +81,9 @@ describe('UploadController', () => {
     });
 
     test('throws BadRequestException when no file provided', async () => {
-      await expect(
-        controller.upload(undefined as unknown as Express.Multer.File),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.upload(undefined as unknown as Express.Multer.File)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     test('throws BadRequestException for invalid MIME type', async () => {

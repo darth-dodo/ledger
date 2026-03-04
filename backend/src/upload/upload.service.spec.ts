@@ -10,7 +10,10 @@ vi.mock('fs/promises');
 
 function createMockRepo() {
   return {
-    create: vi.fn((data: Partial<Statement>) => ({ id: 'test-uuid', uploadedAt: new Date(), rawText: null, ...data }) as Statement),
+    create: vi.fn(
+      (data: Partial<Statement>) =>
+        ({ id: 'test-uuid', uploadedAt: new Date(), rawText: null, ...data }) as Statement,
+    ),
     save: vi.fn((entity: Statement) => Promise.resolve(entity)),
     find: vi.fn(() => Promise.resolve([])),
     findOne: vi.fn(() => Promise.resolve(null)),
@@ -68,9 +71,7 @@ describe('UploadService', () => {
 
       const result = await service.createStatement(file);
 
-      expect(mockRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ fileType: 'csv' }),
-      );
+      expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ fileType: 'csv' }));
       expect(result.fileType).toBe('csv');
     });
 
@@ -117,9 +118,7 @@ describe('UploadService', () => {
     test('throws NotFoundException when statement does not exist', async () => {
       mockRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('nonexistent')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -153,9 +152,7 @@ describe('UploadService', () => {
     test('throws NotFoundException when deleting nonexistent statement', async () => {
       mockRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent', './uploads')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.remove('nonexistent', './uploads')).rejects.toThrow(NotFoundException);
     });
   });
 });

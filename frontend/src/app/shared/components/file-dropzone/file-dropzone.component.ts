@@ -19,18 +19,22 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
       (drop)="onDrop($event)"
       (click)="fileInput.click()"
     >
-      <input
-        #fileInput
-        type="file"
-        accept=".pdf,.csv"
-        (change)="onFileSelect($event)"
-        hidden
-      />
+      <input #fileInput type="file" accept=".pdf,.csv" (change)="onFileSelect($event)" hidden />
 
       <div class="dropzone-content">
-        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg
+          class="dropzone-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
         <p class="dropzone-text">
           @if (isDragOver) {
@@ -47,67 +51,69 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
       }
     </div>
   `,
-  styles: [`
-    .dropzone {
-      border: 2px dashed #d0d5dd;
-      border-radius: 12px;
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: #fafafa;
-    }
+  styles: [
+    `
+      .dropzone {
+        border: 2px dashed #d0d5dd;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fafafa;
+      }
 
-    .dropzone:hover,
-    .dropzone.dragover {
-      border-color: #4361ee;
-      background: #f0f4ff;
-    }
+      .dropzone:hover,
+      .dropzone.dragover {
+        border-color: #4361ee;
+        background: #f0f4ff;
+      }
 
-    .dropzone.error {
-      border-color: #e74c3c;
-      background: #fef2f2;
-    }
+      .dropzone.error {
+        border-color: #e74c3c;
+        background: #fef2f2;
+      }
 
-    .dropzone-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
+      .dropzone-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-    .dropzone-icon {
-      width: 48px;
-      height: 48px;
-      color: #667085;
-    }
+      .dropzone-icon {
+        width: 48px;
+        height: 48px;
+        color: #667085;
+      }
 
-    .dropzone.dragover .dropzone-icon {
-      color: #4361ee;
-    }
+      .dropzone.dragover .dropzone-icon {
+        color: #4361ee;
+      }
 
-    .dropzone-text {
-      font-size: 1rem;
-      color: #344054;
-    }
+      .dropzone-text {
+        font-size: 1rem;
+        color: #344054;
+      }
 
-    .link {
-      color: #4361ee;
-      font-weight: 500;
-    }
+      .link {
+        color: #4361ee;
+        font-weight: 500;
+      }
 
-    .dropzone-hint {
-      font-size: 0.875rem;
-      color: #667085;
-    }
+      .dropzone-hint {
+        font-size: 0.875rem;
+        color: #667085;
+      }
 
-    .dropzone-error {
-      margin-top: 0.75rem;
-      color: #e74c3c;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-  `],
+      .dropzone-error {
+        margin-top: 0.75rem;
+        color: #e74c3c;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+    `,
+  ],
 })
 export class FileDropzoneComponent {
   @Output() fileSelected = new EventEmitter<File>();

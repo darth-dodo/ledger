@@ -50,11 +50,11 @@ Key constraints:
 
 Validation happens at three levels:
 
-| Layer          | Check                            | Response            |
-| -------------- | -------------------------------- | ------------------- |
+| Layer          | Check                            | Response              |
+| -------------- | -------------------------------- | --------------------- |
 | **Multer**     | File size limit (10MB)           | 413 Payload Too Large |
-| **Controller** | MIME type (PDF/CSV only)         | 400 Bad Request     |
-| **Controller** | File extension matches MIME type | 400 Bad Request     |
+| **Controller** | MIME type (PDF/CSV only)         | 400 Bad Request       |
+| **Controller** | File extension matches MIME type | 400 Bad Request       |
 
 **Rationale**: Multer rejects oversized files before they hit the application. The controller validates type and extension. No need for magic-byte detection at this stage — MIME type + extension is sufficient for a personal finance app.
 
@@ -99,12 +99,12 @@ CREATE TABLE statements (
 
 ### 6. API Design
 
-| Method | Endpoint            | Description                     |
-| ------ | ------------------- | ------------------------------- |
-| POST   | `/upload`           | Upload a PDF/CSV file           |
-| GET    | `/statements`       | List all uploaded statements    |
-| GET    | `/statements/:id`   | Get statement detail            |
-| DELETE | `/statements/:id`   | Delete statement + stored file  |
+| Method | Endpoint          | Description                    |
+| ------ | ----------------- | ------------------------------ |
+| POST   | `/upload`         | Upload a PDF/CSV file          |
+| GET    | `/statements`     | List all uploaded statements   |
+| GET    | `/statements/:id` | Get statement detail           |
+| DELETE | `/statements/:id` | Delete statement + stored file |
 
 **DELETE behavior**: Removes the database row AND the file from disk. Cascading deletes for related transactions/embeddings will be added in later milestones.
 

@@ -4,9 +4,7 @@ export const routes: Routes = [
   {
     path: 'upload',
     loadComponent: () =>
-      import('./features/upload/upload.component').then(
-        (m) => m.UploadComponent,
-      ),
+      import('./features/upload/upload.component').then((m) => m.UploadComponent),
   },
   { path: '', redirectTo: 'upload', pathMatch: 'full' },
   // Future routes:
