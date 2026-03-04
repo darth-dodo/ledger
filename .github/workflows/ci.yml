@@ -101,3 +101,52 @@ jobs:
 
       - name: Frontend build
         run: cd frontend && pnpm build
+
+  smoke:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v10
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - run: pnpm install --frozen-lockfile
+      - run: cd backend && pnpm install --frozen-lockfile
+
+      - name: Start server and smoke test /health
+        run: |
+          cd backend
+          DATABASE_URL=fake MISTRAL_API_KEY=fake JWT_SECRET=fake pnpm start &
+          SERVER_PID=$!
+
+          # Wait for server to be ready (max 30s)
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo "Server ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+          # Smoke test
+          RESPONSE=$(curl -sf http://localhost:3000/health)
+          echo "Response: $RESPONSE"
+
+          echo "$RESPONSE" | grep -q '"status":"ok"'
+          echo "Smoke test passed"
+
+          kill $SERVER_PID
