@@ -11,9 +11,12 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
   imports: [CommonModule],
   template: `
     <div
-      class="dropzone"
-      [class.dragover]="isDragOver"
-      [class.error]="error"
+      class="card border-2 border-dashed border-base-300 bg-base-200/50 cursor-pointer
+             transition-all duration-200 hover:border-primary hover:bg-primary/5"
+      [class.!border-primary]="isDragOver"
+      [class.!bg-primary/5]="isDragOver"
+      [class.!border-error]="error"
+      [class.!bg-error/5]="error"
       (dragover)="onDragOver($event)"
       (dragleave)="onDragLeave()"
       (drop)="onDrop($event)"
@@ -21,9 +24,10 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
     >
       <input #fileInput type="file" accept=".pdf,.csv" (change)="onFileSelect($event)" hidden />
 
-      <div class="dropzone-content">
+      <div class="card-body items-center text-center py-12">
         <svg
-          class="dropzone-icon"
+          class="w-12 h-12 text-base-content/40"
+          [class.!text-primary]="isDragOver"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -36,84 +40,26 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
             stroke-linejoin="round"
           />
         </svg>
-        <p class="dropzone-text">
+        <p class="text-base text-base-content/80">
           @if (isDragOver) {
             Drop your file here
           } @else {
-            Drag & drop a bank statement or <span class="link">browse</span>
+            Drag & drop a bank statement or <span class="text-primary font-medium">browse</span>
           }
         </p>
-        <p class="dropzone-hint">PDF or CSV, up to 10MB</p>
+        <p class="text-sm text-base-content/50">PDF or CSV, up to 10MB</p>
       </div>
 
       @if (error) {
-        <p class="dropzone-error">{{ error }}</p>
+        <div class="px-6 pb-4">
+          <div role="alert" class="alert alert-error alert-sm">
+            <span>{{ error }}</span>
+          </div>
+        </div>
       }
     </div>
   `,
-  styles: [
-    `
-      .dropzone {
-        border: 2px dashed #d0d5dd;
-        border-radius: 12px;
-        padding: 3rem 2rem;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #fafafa;
-      }
-
-      .dropzone:hover,
-      .dropzone.dragover {
-        border-color: #4361ee;
-        background: #f0f4ff;
-      }
-
-      .dropzone.error {
-        border-color: #e74c3c;
-        background: #fef2f2;
-      }
-
-      .dropzone-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .dropzone-icon {
-        width: 48px;
-        height: 48px;
-        color: #667085;
-      }
-
-      .dropzone.dragover .dropzone-icon {
-        color: #4361ee;
-      }
-
-      .dropzone-text {
-        font-size: 1rem;
-        color: #344054;
-      }
-
-      .link {
-        color: #4361ee;
-        font-weight: 500;
-      }
-
-      .dropzone-hint {
-        font-size: 0.875rem;
-        color: #667085;
-      }
-
-      .dropzone-error {
-        margin-top: 0.75rem;
-        color: #e74c3c;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class FileDropzoneComponent {
   @Output() fileSelected = new EventEmitter<File>();

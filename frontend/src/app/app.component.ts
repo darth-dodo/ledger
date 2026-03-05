@@ -6,56 +6,26 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <header class="app-header">
-      <h1>Ledger</h1>
-      <nav>
-        <a routerLink="/upload" routerLinkActive="active">Upload</a>
+    <div class="navbar bg-neutral text-neutral-content px-4 sm:px-8">
+      <div class="flex-none">
+        <h1 class="text-xl font-semibold tracking-tight">Ledger</h1>
+      </div>
+      <nav class="flex gap-1 ml-8">
+        <a routerLink="/upload" routerLinkActive="active"
+           class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content">Upload</a>
+        <a routerLink="/transactions" routerLinkActive="active"
+           class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content">Transactions</a>
       </nav>
-    </header>
-    <main class="app-main">
+    </div>
+    <main class="max-w-6xl mx-auto p-4 sm:p-8">
       <router-outlet />
     </main>
   `,
   styles: [
     `
-      .app-header {
-        padding: 1rem 2rem;
-        background-color: #1a1a2e;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-      }
-
-      .app-header h1 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-      }
-
-      nav {
-        display: flex;
-        gap: 1rem;
-      }
-
-      nav a {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.875rem;
-        font-weight: 500;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        transition: color 0.15s ease;
-      }
-
-      nav a:hover,
-      nav a.active {
-        color: #ffffff;
-      }
-
-      .app-main {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
+      :host a.active {
+        color: oklch(var(--nc));
+        opacity: 1;
       }
     `,
   ],

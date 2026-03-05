@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Statement } from './entities/statement.entity';
+import type { ParserInterface, ParsedTransaction } from './parsers/parser.interface.js';
+import { TransactionsService } from '../transactions/transactions.service';
+import { MistralService } from '../mistral/mistral.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -10,9 +13,18 @@ export class UploadService {
   constructor(
     @InjectRepository(Statement)
     private readonly statementRepo: Repository<Statement>,
+    @Inject('PARSERS')
+    private readonly parsers: ParserInterface[],
+    @Inject(TransactionsService)
+    private readonly transactionsService: TransactionsService,
+    @Inject(MistralService)
+    private readonly mistralService: MistralService,
   ) {}
 
-  async createStatement(file: Express.Multer.File): Promise<Statement> {
+  async createStatement(
+    file: Express.Multer.File,
+    uploadDir?: string,
+  ): Promise<Statement> {
     const statement = this.statementRepo.create({
       filename: file.originalname,
       fileType: this.extractFileType(file.originalname),
@@ -20,7 +32,61 @@ export class UploadService {
       fileSize: file.size,
     });
 
-    return this.statementRepo.save(statement);
+    const saved = await this.statementRepo.save(statement);
+
+    if (uploadDir) {
+      try {
+        await this.processFile(saved, uploadDir);
+      } catch {
+        // Parsing/categorization failure should not block the upload
+      }
+    }
+
+    return saved;
+  }
+
+  async processFile(statement: Statement, uploadDir: string): Promise<void> {
+    const parsed = await this.parseFile(statement, uploadDir);
+    if (parsed.length === 0) return;
+
+    await this.statementRepo.save(statement);
+
+    const descriptions = parsed.map((t) => t.description);
+    const categories = await this.mistralService.categorize(descriptions);
+
+    // Delete existing transactions for idempotency (re-upload)
+    await this.transactionsService.removeByStatement(statement.id);
+
+    const transactionsData = parsed.map((t, i) => ({
+      date: t.date,
+      description: t.description,
+      amount: t.amount,
+      type: t.type,
+      category: categories[i] ?? undefined,
+    }));
+
+    await this.transactionsService.createMany(statement.id, transactionsData);
+  }
+
+  async parseFile(
+    statement: Statement,
+    uploadDir: string,
+  ): Promise<ParsedTransaction[]> {
+    const filePath = path.join(uploadDir, statement.filePath);
+    const buffer = await fs.readFile(filePath);
+
+    const parser = this.parsers.find((p) =>
+      p.canParse(buffer, statement.filename),
+    );
+
+    if (!parser) {
+      return [];
+    }
+
+    const transactions = await parser.parse(buffer);
+    statement.rawText = buffer.toString('utf-8');
+
+    return transactions;
   }
 
   async findAll(): Promise<Statement[]> {

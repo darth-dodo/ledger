@@ -26,6 +26,9 @@ build/
 # NestJS
 # ========================
 # NestJS builds to dist/ (covered above)
+backend/uploads/*
+!backend/uploads/.gitkeep
+!backend/uploads/.gitignore
 
 # ========================
 # Testing & Coverage

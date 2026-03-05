@@ -55,7 +55,7 @@ export class UploadController {
 
     this.validateFile(file);
 
-    const statement = await this.uploadService.createStatement(file);
+    const statement = await this.uploadService.createStatement(file, getUploadDir());
     return this.toUploadResponse(statement);
   }
 
