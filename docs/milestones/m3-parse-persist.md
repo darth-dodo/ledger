@@ -6,20 +6,20 @@ Implement strategy-pattern parsers for PDF/CSV bank statements, extract and pers
 
 ## Acceptance Criteria
 
-- [ ] ADR-002 documents the parser strategy pattern decisions
-- [ ] `ParserInterface` with `canParse()` and `parse()` methods
-- [ ] PDF parser extracts transactions using `pdf-parse`
-- [ ] CSV parser extracts transactions using `csv-parse`
-- [ ] Transaction entity with statement FK, date, description, amount, type, category
-- [ ] Upload flow triggers parsing and populates `raw_text` on Statement
-- [ ] Mistral AI assigns categories to parsed transactions
-- [ ] `GET /transactions` with filters (date range, category, amount range)
-- [ ] `PATCH /transactions/:id` for manual category edits
-- [ ] Angular transactions page with filterable table
-- [ ] Unit tests per parser (happy path + malformed input)
-- [ ] Integration test for full pipeline (upload → parse → persist → query)
-- [ ] Re-upload idempotency (same file doesn't create duplicate transactions)
-- [ ] CI passes (lint, types, tests)
+- [x] ADR-002 documents the parser strategy pattern decisions
+- [x] `ParserInterface` with `canParse()` and `parse()` methods
+- [x] PDF parser extracts transactions using `pdf-parse`
+- [x] CSV parser extracts transactions using `csv-parse`
+- [x] Transaction entity with statement FK, date, description, amount, type, category
+- [x] Upload flow triggers parsing and populates `raw_text` on Statement
+- [x] Mistral AI assigns categories to parsed transactions
+- [x] `GET /transactions` with filters (date range, category, amount range)
+- [x] `PATCH /transactions/:id` for manual category edits
+- [x] Angular transactions page with filterable table
+- [x] Unit tests per parser (happy path + malformed input)
+- [x] Integration test for full pipeline (upload → parse → persist → query)
+- [x] Re-upload idempotency (same file doesn't create duplicate transactions)
+- [x] CI passes (lint, types, tests)
 
 ## Prerequisites (Gate-In)
 
