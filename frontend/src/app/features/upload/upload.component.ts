@@ -8,168 +8,71 @@ import { ApiService, UploadResponse } from '../../core/services/api.service';
   standalone: true,
   imports: [CommonModule, FileDropzoneComponent],
   template: `
-    <div class="upload-page">
-      <h2>Upload Statement</h2>
-      <p class="subtitle">Upload your bank statement (PDF or CSV) to get started.</p>
+    <div class="max-w-xl">
+      <h2 class="text-2xl font-semibold mb-1">Upload Statement</h2>
+      <p class="text-base-content/60 mb-6">Upload your bank statement (PDF or CSV) to get started.</p>
 
       <app-file-dropzone (fileSelected)="onFileSelected($event)" />
 
       @if (isUploading) {
-        <div class="status uploading">Uploading...</div>
+        <div class="alert alert-info mt-4">
+          <span class="loading loading-spinner loading-sm"></span>
+          <span>Uploading...</span>
+        </div>
       }
 
       @if (uploadError) {
-        <div class="status error">{{ uploadError }}</div>
+        <div role="alert" class="alert alert-error mt-4">
+          <span>{{ uploadError }}</span>
+        </div>
       }
 
       @if (statements.length > 0) {
-        <div class="statements-section">
-          <h3>Uploaded Statements</h3>
-          <div class="statements-list">
-            @for (statement of statements; track statement.id) {
-              <div class="statement-card">
-                <div class="statement-info">
-                  <span class="statement-type">{{ statement.fileType | uppercase }}</span>
-                  <span class="statement-name">{{ statement.filename }}</span>
-                  <span class="statement-meta">
-                    {{ formatSize(statement.fileSize) }}
-                    &middot;
-                    {{ formatDate(statement.uploadedAt) }}
-                  </span>
-                </div>
-                <button
-                  class="delete-btn"
-                  (click)="deleteStatement(statement.id)"
-                  [disabled]="deletingId === statement.id"
-                >
-                  @if (deletingId === statement.id) {
-                    ...
-                  } @else {
-                    Delete
-                  }
-                </button>
-              </div>
-            }
+        <div class="mt-8">
+          <h3 class="text-lg font-semibold mb-3">Uploaded Statements</h3>
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Filename</th>
+                  <th>Size</th>
+                  <th>Uploaded</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (statement of statements; track statement.id) {
+                  <tr class="hover">
+                    <td>
+                      <span class="badge badge-info badge-sm font-semibold">{{ statement.fileType | uppercase }}</span>
+                    </td>
+                    <td class="font-medium max-w-xs truncate">{{ statement.filename }}</td>
+                    <td class="text-base-content/60 text-sm whitespace-nowrap">{{ formatSize(statement.fileSize) }}</td>
+                    <td class="text-base-content/60 text-sm whitespace-nowrap">{{ formatDate(statement.uploadedAt) }}</td>
+                    <td>
+                      <button
+                        class="btn btn-ghost btn-xs text-base-content/50 hover:text-error"
+                        (click)="deleteStatement(statement.id)"
+                        [disabled]="deletingId === statement.id"
+                      >
+                        @if (deletingId === statement.id) {
+                          <span class="loading loading-spinner loading-xs"></span>
+                        } @else {
+                          Delete
+                        }
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       }
     </div>
   `,
-  styles: [
-    `
-      .upload-page {
-        max-width: 640px;
-      }
-
-      h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-      }
-
-      .subtitle {
-        color: #667085;
-        margin-bottom: 1.5rem;
-      }
-
-      .status {
-        margin-top: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
-      .status.uploading {
-        background: #f0f4ff;
-        color: #4361ee;
-      }
-
-      .status.error {
-        background: #fef2f2;
-        color: #e74c3c;
-      }
-
-      .statements-section {
-        margin-top: 2rem;
-      }
-
-      .statements-section h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-      }
-
-      .statements-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .statement-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.75rem 1rem;
-        background: #fff;
-        border: 1px solid #e4e7ec;
-        border-radius: 8px;
-      }
-
-      .statement-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        min-width: 0;
-      }
-
-      .statement-type {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.125rem 0.5rem;
-        border-radius: 4px;
-        background: #f0f4ff;
-        color: #4361ee;
-        flex-shrink: 0;
-      }
-
-      .statement-name {
-        font-weight: 500;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .statement-meta {
-        font-size: 0.8125rem;
-        color: #667085;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-
-      .delete-btn {
-        background: none;
-        border: 1px solid #e4e7ec;
-        border-radius: 6px;
-        padding: 0.375rem 0.75rem;
-        font-size: 0.8125rem;
-        color: #667085;
-        cursor: pointer;
-        flex-shrink: 0;
-        transition: all 0.15s ease;
-      }
-
-      .delete-btn:hover {
-        color: #e74c3c;
-        border-color: #e74c3c;
-      }
-
-      .delete-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class UploadComponent {
   private readonly api = inject(ApiService);
