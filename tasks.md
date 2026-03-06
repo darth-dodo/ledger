@@ -8,11 +8,12 @@
 
 | Metric                | Value                   |
 | --------------------- | ----------------------- |
-| **Current Milestone** | M2 — File Upload ✅     |
-| **Overall Progress**  | 3/8 milestones complete |
+| **Current Milestone** | M4 — Chunk & Embed ✅   |
+| **Overall Progress**  | 5/8 milestones complete |
 | **Active Blockers**   | 0                       |
 | **Quality Gates**     | 6/8 passing (2 N/A)     |
-| **Last Updated**      | 2026-03-04              |
+| **Tests**             | 178                     |
+| **Last Updated**      | 2026-03-06              |
 
 ---
 
@@ -23,8 +24,8 @@
 | M0  | Monorepo Scaffold | ✅     | Single agent | Developer                      | 1d       | —          |
 | M1  | Health Check      | ✅     | Single agent | Developer                      | 1d       | M0         |
 | M2  | File Upload       | ✅     | Sequential   | Architect → Developer          | 1d       | M1         |
-| M3  | Parse & Persist   | ⏳     | Sequential   | Architect → Developer → QA     | 3d       | M2         |
-| M4  | Chunk & Embed     | ⏳     | Sequential   | Architect → Developer + AI     | 2d       | M3         |
+| M3  | Parse & Persist   | ✅     | Sequential   | Architect → Developer → QA     | 3d       | M2         |
+| M4  | Chunk & Embed     | ✅     | Sequential   | Architect → Developer + AI     | 2d       | M3         |
 | M5  | RAG Chat          | ⏳     | Hierarchical | Architect leads, Dev + AI      | 3d       | M4         |
 | M6  | Full Dashboard    | ⏳     | Parallel     | Dev (backend) + Dev (frontend) | 3d       | M5         |
 | M7  | Auth & Polish     | ⏳     | Parallel     | Dev + QA + Writer              | 2d       | M6         |
@@ -48,8 +49,8 @@ graph LR
     style M0 fill:#d4edda,stroke:#28a745
     style M1 fill:#d4edda,stroke:#28a745
     style M2 fill:#d4edda,stroke:#28a745
-    style M3 fill:#f5f5f5,stroke:#999
-    style M4 fill:#f5f5f5,stroke:#999
+    style M3 fill:#d4edda,stroke:#28a745
+    style M4 fill:#d4edda,stroke:#28a745
     style M5 fill:#f5f5f5,stroke:#999
     style M6 fill:#f5f5f5,stroke:#999
     style M7 fill:#f5f5f5,stroke:#999
@@ -126,53 +127,53 @@ graph LR
 
 ---
 
-### M3 — Parse & Persist ⏳
+### M3 — Parse & Persist ✅
 
-- [ ] Design parser strategy pattern (ADR)
-- [ ] Create `ParserInterface` with `canParse()` and `parse()` methods
-- [ ] Implement generic PDF parser (`pdf-parse`)
-- [ ] Implement generic CSV parser (`csv-parse`)
-- [ ] Extract transactions: date, description, amount, type
-- [ ] AI category assignment via Mistral
-- [ ] Store transactions in `transactions` table
-- [ ] Create `GET /transactions` with filters (date, category, amount)
-- [ ] Create `PATCH /transactions/:id` for category edits
-- [ ] Add Angular transactions view with filterable table
-- [ ] Write unit tests per parser (happy path + malformed input)
-- [ ] Write integration test for full parse pipeline
-- [ ] Test idempotency (re-upload same file)
+- [x] Design parser strategy pattern (ADR)
+- [x] Create `ParserInterface` with `canParse()` and `parse()` methods
+- [x] Implement generic PDF parser (`pdf-parse`)
+- [x] Implement generic CSV parser (`csv-parse`)
+- [x] Extract transactions: date, description, amount, type
+- [x] AI category assignment via Mistral
+- [x] Store transactions in `transactions` table
+- [x] Create `GET /transactions` with filters (date, category, amount)
+- [x] Create `PATCH /transactions/:id` for category edits
+- [x] Add Angular transactions view with filterable table
+- [x] Write unit tests per parser (happy path + malformed input)
+- [x] Write integration test for full parse pipeline
+- [x] Test idempotency (re-upload same file)
 
 **Acceptance Criteria**:
 
-- [ ] PDF and CSV statements produce correct transactions
-- [ ] Each transaction has: date, description, amount, type, category
-- [ ] Transactions are viewable and filterable in frontend
-- [ ] Duplicate uploads don't create duplicate records
-- [ ] Quality gates pass
+- [x] PDF and CSV statements produce correct transactions
+- [x] Each transaction has: date, description, amount, type, category
+- [x] Transactions are viewable and filterable in frontend
+- [x] Duplicate uploads don't create duplicate records
+- [x] Quality gates pass
 
 ---
 
-### M4 — Chunk & Embed ⏳
+### M4 — Chunk & Embed ✅
 
 **Overlay**: ai-engineer
 
-- [ ] Design embedding strategy (ADR)
-- [ ] Implement `ChunkerService` (~500 token chunks with overlap)
-- [ ] Integrate Mistral Embed API (1024-dim vectors)
-- [ ] Store chunks + embeddings in `embeddings` table with pgvector
-- [ ] Create IVFFlat index for cosine similarity search
-- [ ] Wire chunking + embedding into upload pipeline (post-parse)
-- [ ] Write unit tests for chunker (boundary cases, overlap)
-- [ ] Write integration test: upload → parse → chunk → embed → verify vectors
-- [ ] Validate embedding dimensions = 1024
+- [x] Design embedding strategy (ADR)
+- [x] Implement `ChunkerService` (~500 token chunks with overlap)
+- [x] Integrate Mistral Embed API (1024-dim vectors)
+- [x] Store chunks + embeddings in `embeddings` table with pgvector
+- [x] Create IVFFlat index for cosine similarity search
+- [x] Wire chunking + embedding into upload pipeline (post-parse)
+- [x] Write unit tests for chunker (boundary cases, overlap)
+- [x] Write integration test: upload → parse → chunk → embed → verify vectors
+- [x] Validate embedding dimensions = 1024
 
 **Acceptance Criteria**:
 
-- [ ] Statement text is chunked into ~500 token segments
-- [ ] Each chunk has a 1024-dim embedding stored in pgvector
-- [ ] Cosine similarity search returns relevant chunks
-- [ ] Pipeline runs end-to-end on upload
-- [ ] Quality gates pass
+- [x] Statement text is chunked into ~500 token segments
+- [x] Each chunk has a 1024-dim embedding stored in pgvector
+- [x] Cosine similarity search returns relevant chunks
+- [x] Pipeline runs end-to-end on upload
+- [x] Quality gates pass
 
 ---
 
@@ -268,8 +269,8 @@ graph LR
 | M0        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
 | M1        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
 | M2        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
-| M3        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
-| M4        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ➖   | ⏳          |
+| M3        | ✅     | ✅    | ✅   | ✅       | ✅    | ➖   | ➖   | ✅          |
+| M4        | ✅     | ✅    | ✅   | ✅       | ✅    | ✅   | ➖   | ✅          |
 | M5        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 | M6        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 | M7        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
@@ -298,11 +299,13 @@ pnpm test                        # Gate 5 (vitest)
 
 ## Session Log Archive
 
-| #   | Date       | Milestone | Persona(s)      | Focus                                      | Outcome     |
-| --- | ---------- | --------- | --------------- | ------------------------------------------ | ----------- |
-| 1   | 2026-03-04 | M0        | Architect + Dev | Project setup, CI, docs, agentic framework | ✅ Complete |
-| 2   | 2026-03-04 | M1        | Developer       | Health check endpoint, tests, CI smoke     | ✅ Complete |
-| 3   | 2026-03-04 | M2        | Architect + Dev | Upload module, statements CRUD, Angular UI | ✅ Complete |
+| #   | Date       | Milestone | Persona(s)           | Focus                                                                 | Outcome     |
+| --- | ---------- | --------- | -------------------- | --------------------------------------------------------------------- | ----------- |
+| 1   | 2026-03-04 | M0        | Architect + Dev      | Project setup, CI, docs, agentic framework                            | ✅ Complete |
+| 2   | 2026-03-04 | M1        | Developer            | Health check endpoint, tests, CI smoke                                | ✅ Complete |
+| 3   | 2026-03-04 | M2        | Architect + Dev      | Upload module, statements CRUD, Angular UI                            | ✅ Complete |
+| 4   | 2026-03-04 | M3        | Architect + Dev      | Parse pipeline, Mistral categorization, transactions CRUD, Angular UI | ✅ Complete |
+| 5   | 2026-03-06 | M4        | Architect + Dev + AI | Embedding pipeline, pgvector, TypeORM migrations, DI fix              | ✅ Complete |
 
 ---
 
@@ -310,13 +313,13 @@ pnpm test                        # Gate 5 (vitest)
 
 Current Serena memory key values for cross-session continuity:
 
-| Key                        | Value                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| `ledger/current-milestone` | M2: File Upload — complete                                                               |
-| `ledger/progress`          | M0–M2 complete. 61 tests, CI green. Next: M3 Parse & Persist.                            |
-| `ledger/blockers`          | None                                                                                     |
-| `ledger/decisions`         | Node.js+pnpm, NestJS+Angular, pgvector, Mistral AI, strategy parsers, explicit @Inject() |
-| `ledger/tech-debt`         | Conditional TypeORM loading in AppModule, explicit @Inject() workaround for esbuild      |
+| Key                        | Value                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ledger/current-milestone` | M4: Chunk & Embed — complete                                                                                                                           |
+| `ledger/progress`          | M0–M4 complete. 178 tests, 73% coverage, CI green. Next: M5 RAG Chat.                                                                                  |
+| `ledger/blockers`          | None                                                                                                                                                   |
+| `ledger/decisions`         | Node.js+pnpm, NestJS+Angular, pgvector, Mistral AI, strategy parsers, explicit @Inject(), TypeORM migrations (not synchronize), pgvector over Pinecone |
+| `ledger/tech-debt`         | Conditional TypeORM loading in AppModule, explicit @Inject() workaround for esbuild                                                                    |
 
 **Convention**: `ledger/<topic>` for project state, `ledger/m<N>-<detail>` for milestone-specific notes.
 

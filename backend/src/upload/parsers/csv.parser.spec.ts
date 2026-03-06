@@ -91,10 +91,7 @@ describe('CsvParser', () => {
     });
 
     it('handles amounts with currency symbols and commas', async () => {
-      const csv = [
-        'Date,Description,Amount',
-        '2025-03-01,Big Purchase,"$1,250.99"',
-      ].join('\n');
+      const csv = ['Date,Description,Amount', '2025-03-01,Big Purchase,"$1,250.99"'].join('\n');
 
       const result = await parser.parse(toBuffer(csv));
 
@@ -245,11 +242,9 @@ describe('CsvParser', () => {
     });
 
     it('skips rows with missing description', async () => {
-      const csv = [
-        'Date,Description,Amount',
-        '2025-01-01,,50.00',
-        '2025-01-02,Valid,30.00',
-      ].join('\n');
+      const csv = ['Date,Description,Amount', '2025-01-01,,50.00', '2025-01-02,Valid,30.00'].join(
+        '\n',
+      );
 
       const result = await parser.parse(toBuffer(csv));
 

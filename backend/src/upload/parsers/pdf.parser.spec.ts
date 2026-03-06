@@ -50,10 +50,7 @@ describe('PdfParser', () => {
   describe('parse', () => {
     it('extracts transactions from lines with dates and amounts', async () => {
       mockGetText.mockResolvedValue({
-        text: [
-          '2025-06-15 Coffee Shop -4.50',
-          '2025-06-16 Salary Deposit 3000.00',
-        ].join('\n'),
+        text: ['2025-06-15 Coffee Shop -4.50', '2025-06-16 Salary Deposit 3000.00'].join('\n'),
       });
 
       const result = await parser.parse(Buffer.from('fake-pdf'));
@@ -128,10 +125,7 @@ describe('PdfParser', () => {
 
     it('skips lines without amounts', async () => {
       mockGetText.mockResolvedValue({
-        text: [
-          '2025-06-15 Transaction with no amount',
-          '2025-06-16 Has Amount -10.00',
-        ].join('\n'),
+        text: ['2025-06-15 Transaction with no amount', '2025-06-16 Has Amount -10.00'].join('\n'),
       });
 
       const result = await parser.parse(Buffer.from('fake-pdf'));
@@ -164,10 +158,7 @@ describe('PdfParser', () => {
 
     it('treats negative amounts as debit and positive as credit', async () => {
       mockGetText.mockResolvedValue({
-        text: [
-          '2025-01-01 Withdrawal -500.00',
-          '2025-01-02 Deposit 1000.00',
-        ].join('\n'),
+        text: ['2025-01-01 Withdrawal -500.00', '2025-01-02 Deposit 1000.00'].join('\n'),
       });
 
       const result = await parser.parse(Buffer.from('fake-pdf'));

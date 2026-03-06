@@ -9,9 +9,7 @@ export const routes: Routes = [
   {
     path: 'transactions',
     loadComponent: () =>
-      import('./features/transactions/transactions.component').then(
-        (m) => m.TransactionsComponent,
-      ),
+      import('./features/transactions/transactions.component').then((m) => m.TransactionsComponent),
   },
   { path: '', redirectTo: 'upload', pathMatch: 'full' },
   // Future routes:

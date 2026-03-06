@@ -77,6 +77,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # ========================
+# Claude Code
+# ========================
+.claude/settings.json
+
+# ========================
 # Miscellaneous
 # ========================
 .eslintcache

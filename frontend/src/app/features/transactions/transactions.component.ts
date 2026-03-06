@@ -48,7 +48,12 @@ import {
               <label class="label py-0 pb-1" for="category">
                 <span class="label-text text-xs uppercase tracking-wide">Category</span>
               </label>
-              <select id="category" class="select select-bordered select-sm" [(ngModel)]="filters.category" (change)="applyFilters()">
+              <select
+                id="category"
+                class="select select-bordered select-sm"
+                [(ngModel)]="filters.category"
+                (change)="applyFilters()"
+              >
                 <option value="">All</option>
                 @for (cat of categories; track cat) {
                   <option [value]="cat">{{ cat | titlecase }}</option>
@@ -59,7 +64,12 @@ import {
               <label class="label py-0 pb-1" for="type">
                 <span class="label-text text-xs uppercase tracking-wide">Type</span>
               </label>
-              <select id="type" class="select select-bordered select-sm" [(ngModel)]="filterType" (change)="applyFilters()">
+              <select
+                id="type"
+                class="select select-bordered select-sm"
+                [(ngModel)]="filterType"
+                (change)="applyFilters()"
+              >
                 <option value="">All</option>
                 <option value="debit">Debit</option>
                 <option value="credit">Credit</option>
@@ -139,15 +149,19 @@ import {
                   <tr class="hover">
                     <td class="whitespace-nowrap tabular-nums">{{ formatDate(txn.date) }}</td>
                     <td class="max-w-[280px] truncate">{{ txn.description }}</td>
-                    <td class="text-right font-semibold tabular-nums whitespace-nowrap"
-                        [class.text-success]="txn.type === 'credit'"
-                        [class.text-error]="txn.type === 'debit'">
+                    <td
+                      class="text-right font-semibold tabular-nums whitespace-nowrap"
+                      [class.text-success]="txn.type === 'credit'"
+                      [class.text-error]="txn.type === 'debit'"
+                    >
                       {{ txn.type === 'credit' ? '+' : '-' }}{{ formatAmount(txn.amount) }}
                     </td>
                     <td>
-                      <span class="badge badge-sm font-semibold"
-                            [class.badge-success]="txn.type === 'credit'"
-                            [class.badge-error]="txn.type === 'debit'">
+                      <span
+                        class="badge badge-sm font-semibold"
+                        [class.badge-success]="txn.type === 'credit'"
+                        [class.badge-error]="txn.type === 'debit'"
+                      >
                         {{ txn.type | titlecase }}
                       </span>
                     </td>
@@ -178,7 +192,11 @@ import {
                           [attr.aria-label]="'Edit category: ' + (txn.category ?? 'None')"
                         >
                           {{ txn.category ? (txn.category | titlecase) : 'Uncategorized' }}
-                          <span class="text-xs text-base-content/30 opacity-0 group-hover:opacity-100 transition-opacity edit-hint" aria-hidden="true">&#9998;</span>
+                          <span
+                            class="text-xs text-base-content/30 opacity-0 group-hover:opacity-100 transition-opacity edit-hint"
+                            aria-hidden="true"
+                            >&#9998;</span
+                          >
                         </span>
                       }
                     </td>
@@ -190,7 +208,9 @@ import {
         } @else {
           <div class="card bg-base-100 border border-base-300">
             <div class="card-body items-center text-center py-12">
-              <p class="text-base-content/60 text-sm">No transactions found. Try adjusting your filters or upload a statement first.</p>
+              <p class="text-base-content/60 text-sm">
+                No transactions found. Try adjusting your filters or upload a statement first.
+              </p>
             </div>
           </div>
         }

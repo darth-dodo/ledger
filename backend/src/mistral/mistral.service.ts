@@ -32,9 +32,7 @@ export class MistralService {
   constructor() {
     const apiKey = process.env.MISTRAL_API_KEY;
     if (!apiKey) {
-      this.logger.warn(
-        'MISTRAL_API_KEY not set — AI categorization will be disabled',
-      );
+      this.logger.warn('MISTRAL_API_KEY not set — AI categorization will be disabled');
       this.client = null;
     } else {
       this.client = new Mistral({ apiKey });
@@ -71,7 +69,7 @@ export class MistralService {
       const categories: unknown[] = Array.isArray(parsed)
         ? parsed
         : Array.isArray((parsed as Record<string, unknown>).categories)
-          ? (parsed as Record<string, unknown>).categories as unknown[]
+          ? ((parsed as Record<string, unknown>).categories as unknown[])
           : [];
 
       if (categories.length !== descriptions.length) {

@@ -30,14 +30,14 @@ Implement strategy-pattern parsers for PDF/CSV bank statements, extract and pers
 
 ## Task Breakdown
 
-| # | Task | Labels | Coordination | Estimate |
-|---|------|--------|-------------|----------|
-| AI-28 | Design parser strategy pattern (ADR-002) | Docs, Backend | Architect | ~30min |
-| AI-29 | Implement PDF and CSV parsers with ParserInterface | Backend | Developer | ~2h |
-| AI-31 | Create transactions table and CRUD endpoints | Backend | Developer | ~1.5h |
-| AI-30 | AI category assignment via Mistral | AI, Backend | Developer | ~1.5h |
-| AI-32 | Add Angular transactions view with filterable table | Frontend | Developer | ~1.5h |
-| AI-33 | Write parser unit and integration tests | Testing | QA | ~1.5h |
+| #     | Task                                                | Labels        | Coordination | Estimate |
+| ----- | --------------------------------------------------- | ------------- | ------------ | -------- |
+| AI-28 | Design parser strategy pattern (ADR-002)            | Docs, Backend | Architect    | ~30min   |
+| AI-29 | Implement PDF and CSV parsers with ParserInterface  | Backend       | Developer    | ~2h      |
+| AI-31 | Create transactions table and CRUD endpoints        | Backend       | Developer    | ~1.5h    |
+| AI-30 | AI category assignment via Mistral                  | AI, Backend   | Developer    | ~1.5h    |
+| AI-32 | Add Angular transactions view with filterable table | Frontend      | Developer    | ~1.5h    |
+| AI-33 | Write parser unit and integration tests             | Testing       | QA           | ~1.5h    |
 
 ## Dependency Graph
 
@@ -136,22 +136,22 @@ This is more token-efficient than one call per transaction. Store the category o
 
 ### API Endpoints (New)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/transactions` | List transactions with query filters |
-| PATCH | `/transactions/:id` | Update category or description |
+| Method | Endpoint            | Description                          |
+| ------ | ------------------- | ------------------------------------ |
+| GET    | `/transactions`     | List transactions with query filters |
+| PATCH  | `/transactions/:id` | Update category or description       |
 
 **GET /transactions query params:**
 
-| Param | Type | Example |
-|-------|------|---------|
-| `statementId` | UUID | Filter by statement |
-| `startDate` | ISO date | `2026-01-01` |
-| `endDate` | ISO date | `2026-01-31` |
-| `category` | string | `groceries` |
-| `minAmount` | number | `100` |
-| `maxAmount` | number | `5000` |
-| `type` | string | `debit` or `credit` |
+| Param         | Type     | Example             |
+| ------------- | -------- | ------------------- |
+| `statementId` | UUID     | Filter by statement |
+| `startDate`   | ISO date | `2026-01-01`        |
+| `endDate`     | ISO date | `2026-01-31`        |
+| `category`    | string   | `groceries`         |
+| `minAmount`   | number   | `100`               |
+| `maxAmount`   | number   | `5000`              |
+| `type`        | string   | `debit` or `credit` |
 
 ### Angular Transactions Page
 
@@ -200,11 +200,11 @@ docs/adrs/
 
 ## New Dependencies
 
-| Package | Purpose | Workspace |
-|---------|---------|-----------|
-| `pdf-parse` | PDF text extraction | backend |
-| `csv-parse` | CSV parsing | backend |
-| `@mistralai/mistralai` | Mistral AI SDK for categorization | backend |
+| Package                | Purpose                           | Workspace |
+| ---------------------- | --------------------------------- | --------- |
+| `pdf-parse`            | PDF text extraction               | backend   |
+| `csv-parse`            | CSV parsing                       | backend   |
+| `@mistralai/mistralai` | Mistral AI SDK for categorization | backend   |
 
 ## Key Conventions (from M2 handoff)
 
@@ -231,13 +231,13 @@ Recommended: Option 2 (delete-and-reparse) — simplest, handles the case where 
 
 ## Quality Gates
 
-| Gate | Target | Notes |
-|------|--------|-------|
-| 1. Syntax | Pass | TypeScript compiles cleanly |
-| 2. Types | Pass | `tsc --noEmit` for backend and frontend |
-| 3. Lint | Pass | ESLint + Prettier |
-| 4. Security | Pass | Validate Mistral API key exists, sanitize parsed text |
-| 5. Tests | Pass | Parser unit tests + pipeline integration test |
-| 6. Performance | N/A | No performance targets for parsing |
-| 7. Accessibility | N/A | Basic table UI |
-| 8. Integration | Pass | CI smoke test passes |
+| Gate             | Target | Notes                                                 |
+| ---------------- | ------ | ----------------------------------------------------- |
+| 1. Syntax        | Pass   | TypeScript compiles cleanly                           |
+| 2. Types         | Pass   | `tsc --noEmit` for backend and frontend               |
+| 3. Lint          | Pass   | ESLint + Prettier                                     |
+| 4. Security      | Pass   | Validate Mistral API key exists, sanitize parsed text |
+| 5. Tests         | Pass   | Parser unit tests + pipeline integration test         |
+| 6. Performance   | N/A    | No performance targets for parsing                    |
+| 7. Accessibility | N/A    | Basic table UI                                        |
+| 8. Integration   | Pass   | CI smoke test passes                                  |
