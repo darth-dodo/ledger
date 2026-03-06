@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "ng serve",
     "build": "ng build",
-    "test": "ng test --no-watch --browsers=ChromeHeadless",
+    "test": "ng test --no-watch",
     "lint": "ng lint"
   },
   "dependencies": {
@@ -27,14 +27,9 @@
     "@angular/cli": "latest",
     "@angular/compiler-cli": "latest",
     "@tailwindcss/postcss": "^4.2.1",
-    "@types/jasmine": "^6.0.0",
     "daisyui": "^5.5.19",
-    "jasmine-core": "^6.1.0",
-    "karma": "^6.4.4",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-coverage": "^2.2.1",
-    "karma-jasmine": "^5.1.0",
-    "karma-jasmine-html-reporter": "^2.2.0",
+    "jsdom": "latest",
+    "vitest": "latest",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "typescript": "latest"
