@@ -121,6 +121,9 @@ db-logs: ## Tail PostgreSQL container logs
 db-migrate: ## Run database migrations
 	cd backend && pnpm run migrate
 
+db-migrate-revert: ## Revert last database migration
+	cd backend && pnpm run migration:revert
+
 # ── Cleanup ──────────────────────────────────────────
 
 clean: ## Remove build artifacts and node_modules

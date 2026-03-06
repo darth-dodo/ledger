@@ -5,6 +5,7 @@ import { Statement } from './entities/statement.entity';
 import type { ParserInterface, ParsedTransaction } from './parsers/parser.interface.js';
 import { TransactionsService } from '../transactions/transactions.service';
 import { MistralService } from '../mistral/mistral.service';
+import { EmbeddingsService } from '../embeddings/embeddings.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -19,6 +20,8 @@ export class UploadService {
     private readonly transactionsService: TransactionsService,
     @Inject(MistralService)
     private readonly mistralService: MistralService,
+    @Inject(EmbeddingsService)
+    private readonly embeddingsService: EmbeddingsService,
   ) {}
 
   async createStatement(
@@ -66,6 +69,15 @@ export class UploadService {
     }));
 
     await this.transactionsService.createMany(statement.id, transactionsData);
+
+    // Chunk and embed the raw text for RAG search
+    if (statement.rawText) {
+      try {
+        await this.embeddingsService.embedStatement(statement.id, statement.rawText);
+      } catch {
+        // Embedding failure should not block the upload
+      }
+    }
   }
 
   async parseFile(

@@ -1,31 +1,30 @@
 /**
- * Migration runner scaffold.
+ * Migration runner — executes pending TypeORM migrations.
  *
- * Establishes the pattern for future database migrations.
- * Actual DB connection logic will be added when real migrations are introduced.
+ * Usage: pnpm migrate
  */
-
-import 'dotenv/config';
-
-const DATABASE_URL = process.env.DATABASE_URL;
-
-export interface Migration {
-  name: string;
-  up: string;
-  down: string;
-}
-
-const migrations: Migration[] = [];
+import dataSource from './data-source';
 
 async function main(): Promise<void> {
-  console.log('Migration runner started');
-  console.log(`DATABASE_URL configured: ${DATABASE_URL ? 'yes' : 'no'}`);
-  console.log(`Migrations found: ${migrations.length}`);
+  console.log('Initializing data source...');
+  await dataSource.initialize();
+
+  console.log('Running pending migrations...');
+  const migrations = await dataSource.runMigrations();
 
   if (migrations.length === 0) {
-    console.log('No migrations to run');
-    return;
+    console.log('No pending migrations.');
+  } else {
+    console.log(`Executed ${migrations.length} migration(s):`);
+    for (const m of migrations) {
+      console.log(`  - ${m.name}`);
+    }
   }
+
+  await dataSource.destroy();
 }
 
-main();
+main().catch((err) => {
+  console.error('Migration failed:', err);
+  process.exit(1);
+});

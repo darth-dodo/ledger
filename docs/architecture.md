@@ -179,9 +179,11 @@ erDiagram
     embeddings {
         uuid id PK
         uuid statement_id FK
-        text chunk_text
-        vector embedding "1024-dim"
-        timestamp created_at
+        int chunk_index
+        text content "chunk text"
+        int token_count
+        vector embedding "1024-dim, nullable"
+        timestamptz created_at
     }
 
     chat_messages {
@@ -222,7 +224,6 @@ graph TD
             US2[UploadService]
             PDF[PdfParser]
             CSV[CsvParser]
-            CHK[ChunkerService]
         end
 
         subgraph TransactionsModule
@@ -233,28 +234,25 @@ graph TD
 
         subgraph EmbeddingsModule
             ES2[EmbeddingsService]
+            CHK[ChunkerService]
             EE[Embedding Entity]
         end
 
-        subgraph RagModule
+        subgraph RagModule ["RagModule 🚧 M5"]
             RC2[RagController]
             RS2[RagService]
         end
 
-        subgraph AnalyticsModule
+        subgraph AnalyticsModule ["AnalyticsModule 🚧 M6"]
             AC2[AnalyticsController]
             AS2[AnalyticsService]
         end
 
         subgraph MistralModule
             MS2[MistralService]
-            MC2[MistralConfig]
         end
 
-        subgraph CommonModule
-            DTO[Shared DTOs]
-            INT[Interceptors]
-        end
+        DB["db/ (migrations + data-source)"]
     end
 
     style UploadModule fill:#e8f4f8
@@ -263,7 +261,6 @@ graph TD
     style RagModule fill:#f8d7da
     style AnalyticsModule fill:#e2d9f3
     style MistralModule fill:#fce4ec
-    style CommonModule fill:#f5f5f5
 ```
 
 ### Directory Layout
@@ -272,56 +269,49 @@ graph TD
 backend/
 ├── src/
 │   ├── app.module.ts              # Conditional TypeORM + module registration
+│   ├── app.controller.ts          # Root controller
 │   ├── main.ts                    # Bootstrap with graceful shutdown
 │   ├── config.ts                  # Typed env config loader
 │   ├── logger.ts                  # Structured JSON logger
 │   ├── health/                    # ✅ M1
 │   │   ├── health.module.ts
-│   │   ├── health.controller.ts
-│   │   ├── health.controller.spec.ts
-│   │   └── health.integration.spec.ts
+│   │   └── health.controller.ts
 │   ├── upload/                    # ✅ M2
 │   │   ├── upload.module.ts
 │   │   ├── upload.controller.ts
 │   │   ├── upload.service.ts
-│   │   ├── upload.controller.spec.ts
-│   │   ├── upload.service.spec.ts
-│   │   ├── upload.integration.spec.ts
 │   │   ├── entities/
 │   │   │   └── statement.entity.ts
 │   │   ├── dto/
 │   │   │   └── upload-response.dto.ts
-│   │   ├── parsers/               # M3 (planned)
-│   │   │   ├── parser.interface.ts
-│   │   │   ├── pdf.parser.ts
-│   │   │   └── csv.parser.ts
-│   │   └── chunker.service.ts     # M4 (planned)
-│   ├── transactions/              # M3 (planned)
+│   │   └── parsers/               # ✅ M3
+│   │       ├── parser.interface.ts
+│   │       ├── pdf.parser.ts
+│   │       └── csv.parser.ts
+│   ├── transactions/              # ✅ M3
 │   │   ├── transactions.module.ts
 │   │   ├── transactions.controller.ts
 │   │   ├── transactions.service.ts
 │   │   └── entities/
 │   │       └── transaction.entity.ts
-│   ├── embeddings/
+│   ├── embeddings/                # ✅ M4
 │   │   ├── embeddings.module.ts
 │   │   ├── embeddings.service.ts
+│   │   ├── chunker.service.ts
 │   │   └── entities/
 │   │       └── embedding.entity.ts
-│   ├── rag/
-│   │   ├── rag.module.ts
-│   │   ├── rag.controller.ts
-│   │   └── rag.service.ts
-│   ├── analytics/
-│   │   ├── analytics.module.ts
-│   │   ├── analytics.controller.ts
-│   │   └── analytics.service.ts
-│   ├── mistral/
+│   ├── mistral/                   # ✅ M3
 │   │   ├── mistral.module.ts
-│   │   ├── mistral.service.ts
-│   │   └── mistral.config.ts
-│   └── common/
-│       ├── dto/
-│       └── interceptors/
+│   │   └── mistral.service.ts
+│   ├── db/                        # ✅ M4
+│   │   ├── data-source.ts
+│   │   ├── migrate.ts
+│   │   └── migrations/
+│   │       ├── index.ts
+│   │       └── 1709700000000-InitialSchema.ts
+│   ├── rag/                       # 🚧 M5 (planned)
+│   ├── analytics/                 # 🚧 M6 (planned)
+│   └── common/                    # 🚧 M7 (planned)
 ├── nest-cli.json
 ├── tsconfig.json
 └── package.json
@@ -381,20 +371,15 @@ frontend/
 │   │   ├── core/
 │   │   │   └── services/
 │   │   │       ├── api.service.ts          # ✅ M2: HTTP client wrapper
-│   │   │       ├── transactions.service.ts # M3 (planned)
-│   │   │       ├── chat.service.ts         # M5 (planned)
-│   │   │       └── analytics.service.ts    # M6 (planned)
+│   │   │       └── transactions.service.ts # ✅ M3: Transaction HTTP client
 │   │   ├── shared/
 │   │   │   └── components/
-│   │   │       ├── file-dropzone/          # ✅ M2: Drag-and-drop
-│   │   │       ├── loading-spinner/        # (planned)
-│   │   │       └── stat-card/              # M6 (planned)
+│   │   │       └── file-dropzone/          # ✅ M2: Drag-and-drop
 │   │   └── features/
 │   │       ├── upload/                     # ✅ M2: Upload page
-│   │       ├── transactions/               # M3 (planned)
-│   │       ├── chat/
-│   │       └── dashboard/
-│   ├── environments/
+│   │       ├── transactions/               # ✅ M3: Transactions page
+│   │       ├── chat/                       # 🚧 M5 (planned)
+│   │       └── dashboard/                  # 🚧 M6 (planned)
 │   └── styles.scss
 ├── angular.json
 ├── tsconfig.json
@@ -567,16 +552,15 @@ volumes:
 | ---------------------------------- | ---------------------------------- |
 | `@nestjs/core`                     | NestJS framework                   |
 | `@nestjs/typeorm` + `typeorm`      | ORM + database                     |
-| `pg` + `pgvector`                  | PostgreSQL driver + vector support |
+| `pg`                               | PostgreSQL driver                  |
 | `@mistralai/mistralai`             | Mistral AI SDK                     |
 | `pdf-parse`                        | PDF text extraction                |
 | `csv-parse`                        | CSV parsing                        |
 | `multer`                           | File upload handling               |
-| `@nestjs/jwt` + `@nestjs/passport` | Authentication (M7)                |
 
 ### Frontend (Angular)
 
-| Package                   | Purpose            |
-| ------------------------- | ------------------ |
-| `@angular/core`           | Angular framework  |
-| `chart.js` + `ng2-charts` | Data visualization |
+| Package                   | Purpose                          |
+| ------------------------- | -------------------------------- |
+| `@angular/core`           | Angular framework                |
+| `tailwindcss` + `daisyui` | Utility-first CSS + components   |

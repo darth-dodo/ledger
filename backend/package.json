@@ -9,7 +9,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "cd .. && pnpm lint -- backend/src/",
-    "migrate": "tsx src/db/migrate.ts"
+    "migrate": "tsx src/db/migrate.ts",
+    "migration:run": "tsx node_modules/typeorm/cli.js migration:run -d src/db/data-source.ts",
+    "migration:revert": "tsx node_modules/typeorm/cli.js migration:revert -d src/db/data-source.ts"
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.14.1",

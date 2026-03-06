@@ -165,12 +165,12 @@ gantt
 
 | Layer           | Technology               | Purpose                                                  |
 | --------------- | ------------------------ | -------------------------------------------------------- |
-| Frontend        | Angular 17+ (TypeScript) | SPA with components, services, routing                   |
+| Frontend        | Angular 19 (TypeScript) | SPA with components, services, routing                   |
 | Backend         | NestJS (TypeScript)      | REST API with modules, DI, decorators                    |
 | Database        | PostgreSQL + pgvector    | Transactions + vector similarity search                  |
 | AI              | Mistral AI               | Embeddings (mistral-embed) + Chat (mistral-large-latest) |
 | File Parsing    | pdf-parse, csv-parse     | Extract text from bank statements                        |
-| Charts          | Chart.js / ngx-charts    | Dashboard visualizations                                 |
+| Charts          | Chart.js / ngx-charts (planned M6) | Dashboard visualizations                                 |
 | Package Manager | pnpm                     | Fast installs, strict dependency resolution              |
 | Deployment      | Docker Compose (local)   | PostgreSQL + pgvector container                          |
 

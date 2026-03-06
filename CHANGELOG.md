@@ -4,6 +4,47 @@ All notable changes to the Ledger project.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-03-06
+
+### Milestone 4: Chunk & Embed
+
+### Added
+
+- ADR-003 documenting embedding strategy (chunking, pgvector, Mistral Embed)
+- ChunkerService with ~500 token character-based chunks and configurable overlap
+- Mistral Embed API integration (1024-dim vectors via mistral-embed model)
+- Embedding entity with pgvector column and IVFFlat cosine similarity index
+- TypeORM migration infrastructure (InitialSchema migration, data-source config, migrate script)
+- Similarity search method for future RAG pipeline
+- 17 embedding service tests + 21 chunker service tests (178 total)
+
+### Changed
+
+- Switched from `synchronize: true` to TypeORM migrations to fix pgvector column drop bug (typeorm#10056)
+- Added explicit `@Inject()` decorators for ChunkerService and DataSource (esbuild DI compatibility)
+- Upload pipeline now chains: parse → categorize → persist → chunk → embed
+
+## [0.4.0] — 2026-03-04
+
+### Milestone 3: Parse & Persist
+
+### Added
+
+- ADR-002 documenting parser strategy pattern (ParserInterface, heuristic detection)
+- ParserInterface with `canParse()` and `parse()` methods
+- PDF parser using pdf-parse with heuristic transaction line detection
+- CSV parser using csv-parse with heuristic column detection
+- Transaction TypeORM entity with statement FK, date, description, amount, type, category
+- Mistral AI batch categorization of transaction descriptions
+- `GET /transactions` with filters (statementId, date range, category, amount range, type)
+- `PATCH /transactions/:id` for manual category and description edits
+- Angular transactions page with filterable table and category editing
+- Upload pipeline integration: upload → parse → categorize → persist
+- Delete-and-reparse idempotency strategy for re-uploads
+- DaisyUI integration and restyled frontend components
+- Project Makefile with common development commands
+- 117 new tests (178 total): parser, transaction, mistral, integration tests
+
 ## [0.3.0] — 2026-03-04
 
 ### Milestone 2: File Upload

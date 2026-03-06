@@ -7,12 +7,14 @@ import { CsvParser } from './parsers/csv.parser';
 import { PdfParser } from './parsers/pdf.parser';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { MistralModule } from '../mistral/mistral.module';
+import { EmbeddingsModule } from '../embeddings/embeddings.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Statement]),
     TransactionsModule,
     MistralModule,
+    EmbeddingsModule,
   ],
   controllers: [UploadController],
   providers: [
