@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Mistral } from '@mistralai/mistralai';
+import { createMistral } from '@ai-sdk/mistral';
+import { streamText, stepCountIs, type ModelMessage, type ToolSet } from 'ai';
 
 const VALID_CATEGORIES = new Set([
   'groceries',
@@ -28,14 +30,17 @@ Example output: ["groceries","transport","entertainment"]`;
 export class MistralService {
   private readonly logger = new Logger(MistralService.name);
   private readonly client: Mistral | null;
+  private readonly aiModel: ReturnType<ReturnType<typeof createMistral>> | null;
 
   constructor() {
     const apiKey = process.env.MISTRAL_API_KEY;
     if (!apiKey) {
       this.logger.warn('MISTRAL_API_KEY not set — AI categorization will be disabled');
       this.client = null;
+      this.aiModel = null;
     } else {
       this.client = new Mistral({ apiKey });
+      this.aiModel = createMistral({ apiKey })('mistral-large-latest');
     }
   }
 
@@ -91,5 +96,25 @@ export class MistralService {
       );
       return descriptions.map(() => null);
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  chatStream(params: {
+    system: string;
+    messages: ModelMessage[];
+    tools?: ToolSet;
+    maxSteps?: number;
+  }): ReturnType<typeof streamText> {
+    if (!this.aiModel) {
+      throw new Error('Mistral API key not configured');
+    }
+
+    return streamText({
+      model: this.aiModel,
+      system: params.system,
+      messages: params.messages,
+      tools: params.tools,
+      stopWhen: stepCountIs(params.maxSteps ?? 3),
+    });
   }
 }

@@ -23,6 +23,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
           class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content"
           >Transactions</a
         >
+        <a
+          routerLink="/chat"
+          routerLinkActive="active"
+          class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content"
+          >Chat</a
+        >
       </nav>
     </div>
     <main class="max-w-6xl mx-auto p-4 sm:p-8">

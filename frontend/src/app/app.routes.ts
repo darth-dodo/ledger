@@ -12,7 +12,11 @@ export const routes: Routes = [
       import('./features/transactions/transactions.component').then((m) => m.TransactionsComponent),
   },
   { path: '', redirectTo: 'upload', pathMatch: 'full' },
+  {
+    path: 'chat',
+    loadComponent: () =>
+      import('./features/chat/chat.component').then((m) => m.ChatComponent),
+  },
   // Future routes:
-  // { path: 'chat', loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent) },
   // { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
 ];
