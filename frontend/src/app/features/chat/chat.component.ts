@@ -7,6 +7,7 @@ import {
   ChatMessage,
   Source,
 } from '../../core/services/chat.service';
+import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 interface DisplayMessage {
   role: 'user' | 'assistant';
@@ -17,7 +18,7 @@ interface DisplayMessage {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MarkdownPipe],
   template: `
     <div class="flex h-[calc(100vh-8rem)] gap-4">
       <!-- Sidebar -->
@@ -85,7 +86,11 @@ interface DisplayMessage {
                 [class.chat-bubble-primary]="msg.role === 'user'"
                 [class.chat-bubble-neutral]="msg.role === 'assistant'"
               >
-                <span class="whitespace-pre-wrap">{{ msg.content }}</span>
+                <div
+                  class="markdown-content prose prose-sm max-w-none"
+                  [class.prose-invert]="msg.role === 'user'"
+                  [innerHTML]="msg.content | markdown"
+                ></div>
                 @if (msg.role === 'assistant' && isStreaming && $index === messages.length - 1 && !msg.content) {
                   <span class="loading loading-dots loading-sm"></span>
                 }
@@ -177,6 +182,52 @@ interface DisplayMessage {
       @media (max-width: 768px) {
         aside {
           display: none;
+        }
+      }
+
+      /* Markdown content within chat bubbles */
+      :host ::ng-deep .markdown-content {
+        /* Reset prose spacing for compact chat bubbles */
+        --tw-prose-body: currentColor;
+        --tw-prose-headings: currentColor;
+        --tw-prose-bold: currentColor;
+        --tw-prose-links: currentColor;
+        --tw-prose-code: currentColor;
+        --tw-prose-counters: currentColor;
+        --tw-prose-bullets: currentColor;
+
+        p:first-child {
+          margin-top: 0;
+        }
+        p:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Inline code styling */
+        code {
+          padding: 0.125rem 0.375rem;
+          border-radius: 0.25rem;
+          font-size: 0.8em;
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Code block styling */
+        pre {
+          border-radius: 0.375rem;
+          font-size: 0.8em;
+          overflow-x: auto;
+        }
+
+        /* Tables */
+        table {
+          font-size: 0.85em;
+        }
+      }
+
+      /* Inverted prose for user bubbles (light text on primary bg) */
+      :host ::ng-deep .chat-bubble-primary .markdown-content {
+        code {
+          background-color: rgba(255, 255, 255, 0.15);
         }
       }
     `,
