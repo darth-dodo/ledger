@@ -20,9 +20,7 @@ export class EmbeddingsService {
   ) {
     const apiKey = process.env.MISTRAL_API_KEY;
     if (!apiKey) {
-      this.logger.warn(
-        'MISTRAL_API_KEY not set — embeddings will be disabled',
-      );
+      this.logger.warn('MISTRAL_API_KEY not set — embeddings will be disabled');
       this.client = null;
     } else {
       this.client = new Mistral({ apiKey });
@@ -66,16 +64,14 @@ export class EmbeddingsService {
       const vector = vectors[i];
       if (vector) {
         const vectorStr = `[${vector.join(',')}]`;
-        await this.dataSource.query(
-          'UPDATE embeddings SET embedding = $1::vector WHERE id = $2',
-          [vectorStr, saved.id],
-        );
+        await this.dataSource.query('UPDATE embeddings SET embedding = $1::vector WHERE id = $2', [
+          vectorStr,
+          saved.id,
+        ]);
       }
     }
 
-    this.logger.log(
-      `Embedded ${chunks.length} chunks for statement ${statementId}`,
-    );
+    this.logger.log(`Embedded ${chunks.length} chunks for statement ${statementId}`);
   }
 
   async removeByStatement(statementId: string): Promise<void> {

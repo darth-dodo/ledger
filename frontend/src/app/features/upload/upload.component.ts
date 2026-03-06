@@ -10,7 +10,9 @@ import { ApiService, UploadResponse } from '../../core/services/api.service';
   template: `
     <div class="max-w-xl">
       <h2 class="text-2xl font-semibold mb-1">Upload Statement</h2>
-      <p class="text-base-content/60 mb-6">Upload your bank statement (PDF or CSV) to get started.</p>
+      <p class="text-base-content/60 mb-6">
+        Upload your bank statement (PDF or CSV) to get started.
+      </p>
 
       <app-file-dropzone (fileSelected)="onFileSelected($event)" />
 
@@ -45,11 +47,17 @@ import { ApiService, UploadResponse } from '../../core/services/api.service';
                 @for (statement of statements; track statement.id) {
                   <tr class="hover">
                     <td>
-                      <span class="badge badge-info badge-sm font-semibold">{{ statement.fileType | uppercase }}</span>
+                      <span class="badge badge-info badge-sm font-semibold">{{
+                        statement.fileType | uppercase
+                      }}</span>
                     </td>
                     <td class="font-medium max-w-xs truncate">{{ statement.filename }}</td>
-                    <td class="text-base-content/60 text-sm whitespace-nowrap">{{ formatSize(statement.fileSize) }}</td>
-                    <td class="text-base-content/60 text-sm whitespace-nowrap">{{ formatDate(statement.uploadedAt) }}</td>
+                    <td class="text-base-content/60 text-sm whitespace-nowrap">
+                      {{ formatSize(statement.fileSize) }}
+                    </td>
+                    <td class="text-base-content/60 text-sm whitespace-nowrap">
+                      {{ formatDate(statement.uploadedAt) }}
+                    </td>
                     <td>
                       <button
                         class="btn btn-ghost btn-xs text-base-content/50 hover:text-error"

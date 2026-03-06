@@ -26,9 +26,11 @@ function makeMockRepo() {
       id: 'test-uuid',
       ...data,
     })),
-    save: vi.fn().mockImplementation((entity: Record<string, unknown>) =>
-      Promise.resolve({ ...entity, id: entity.id || 'test-uuid' }),
-    ),
+    save: vi
+      .fn()
+      .mockImplementation((entity: Record<string, unknown>) =>
+        Promise.resolve({ ...entity, id: entity.id || 'test-uuid' }),
+      ),
     delete: vi.fn().mockResolvedValue({ affected: 1 }),
   };
 }
@@ -228,9 +230,7 @@ describe('EmbeddingsService', () => {
       const { service, repo } = createService();
 
       // Should not throw
-      await expect(
-        service.embedStatement('stmt-1', 'text'),
-      ).resolves.toBeUndefined();
+      await expect(service.embedStatement('stmt-1', 'text')).resolves.toBeUndefined();
 
       // Should not attempt to save when embeddings failed
       expect(repo.save).not.toHaveBeenCalled();
@@ -258,16 +258,16 @@ describe('EmbeddingsService', () => {
     it('returns vectors from the response', async () => {
       process.env.MISTRAL_API_KEY = 'test-key';
       mockEmbeddingsCreate.mockResolvedValue({
-        data: [
-          { embedding: [0.1, 0.2, 0.3] },
-          { embedding: [0.4, 0.5, 0.6] },
-        ],
+        data: [{ embedding: [0.1, 0.2, 0.3] }, { embedding: [0.4, 0.5, 0.6] }],
       });
 
       const { service } = createService();
       const result = await service.getEmbeddings(['a', 'b']);
 
-      expect(result).toEqual([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]);
+      expect(result).toEqual([
+        [0.1, 0.2, 0.3],
+        [0.4, 0.5, 0.6],
+      ]);
     });
 
     it('returns null when client is not available', async () => {
@@ -332,9 +332,7 @@ describe('EmbeddingsService', () => {
   describe('similaritySearch', () => {
     it('executes correct SQL with vector parameter and limit', async () => {
       process.env.MISTRAL_API_KEY = 'test-key';
-      const mockResults = [
-        { id: '1', content: 'match', statementId: 'stmt-1', distance: 0.1 },
-      ];
+      const mockResults = [{ id: '1', content: 'match', statementId: 'stmt-1', distance: 0.1 }];
       const { service, dataSource } = createService();
       dataSource.query.mockResolvedValue(mockResults);
 
@@ -354,10 +352,7 @@ describe('EmbeddingsService', () => {
 
       await service.similaritySearch([0.1]);
 
-      expect(dataSource.query).toHaveBeenCalledWith(
-        expect.any(String),
-        ['[0.1]', 5],
-      );
+      expect(dataSource.query).toHaveBeenCalledWith(expect.any(String), ['[0.1]', 5]);
     });
   });
 });

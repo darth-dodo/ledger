@@ -24,10 +24,7 @@ export class UploadService {
     private readonly embeddingsService: EmbeddingsService,
   ) {}
 
-  async createStatement(
-    file: Express.Multer.File,
-    uploadDir?: string,
-  ): Promise<Statement> {
+  async createStatement(file: Express.Multer.File, uploadDir?: string): Promise<Statement> {
     const statement = this.statementRepo.create({
       filename: file.originalname,
       fileType: this.extractFileType(file.originalname),
@@ -80,16 +77,11 @@ export class UploadService {
     }
   }
 
-  async parseFile(
-    statement: Statement,
-    uploadDir: string,
-  ): Promise<ParsedTransaction[]> {
+  async parseFile(statement: Statement, uploadDir: string): Promise<ParsedTransaction[]> {
     const filePath = path.join(uploadDir, statement.filePath);
     const buffer = await fs.readFile(filePath);
 
-    const parser = this.parsers.find((p) =>
-      p.canParse(buffer, statement.filename),
-    );
+    const parser = this.parsers.find((p) => p.canParse(buffer, statement.filename));
 
     if (!parser) {
       return [];

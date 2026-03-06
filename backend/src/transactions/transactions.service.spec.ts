@@ -82,10 +82,9 @@ describe('TransactionsService', () => {
 
       await service.findAll({ statementId: 'stmt-123' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.statement_id = :statementId',
-        { statementId: 'stmt-123' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.statement_id = :statementId', {
+        statementId: 'stmt-123',
+      });
     });
 
     it('applies startDate filter', async () => {
@@ -93,10 +92,9 @@ describe('TransactionsService', () => {
 
       await service.findAll({ startDate: '2025-01-01' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.date >= :startDate',
-        { startDate: '2025-01-01' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.date >= :startDate', {
+        startDate: '2025-01-01',
+      });
     });
 
     it('applies endDate filter', async () => {
@@ -104,10 +102,7 @@ describe('TransactionsService', () => {
 
       await service.findAll({ endDate: '2025-12-31' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.date <= :endDate',
-        { endDate: '2025-12-31' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.date <= :endDate', { endDate: '2025-12-31' });
     });
 
     it('applies date range (startDate and endDate)', async () => {
@@ -116,14 +111,10 @@ describe('TransactionsService', () => {
       await service.findAll({ startDate: '2025-01-01', endDate: '2025-06-30' });
 
       expect(qb.andWhere).toHaveBeenCalledTimes(2);
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.date >= :startDate',
-        { startDate: '2025-01-01' },
-      );
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.date <= :endDate',
-        { endDate: '2025-06-30' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.date >= :startDate', {
+        startDate: '2025-01-01',
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.date <= :endDate', { endDate: '2025-06-30' });
     });
 
     it('applies category filter', async () => {
@@ -131,10 +122,9 @@ describe('TransactionsService', () => {
 
       await service.findAll({ category: 'groceries' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.category = :category',
-        { category: 'groceries' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.category = :category', {
+        category: 'groceries',
+      });
     });
 
     it('applies minAmount filter', async () => {
@@ -142,10 +132,7 @@ describe('TransactionsService', () => {
 
       await service.findAll({ minAmount: 100 });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.amount >= :minAmount',
-        { minAmount: 100 },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.amount >= :minAmount', { minAmount: 100 });
     });
 
     it('applies maxAmount filter', async () => {
@@ -153,10 +140,7 @@ describe('TransactionsService', () => {
 
       await service.findAll({ maxAmount: 500 });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.amount <= :maxAmount',
-        { maxAmount: 500 },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.amount <= :maxAmount', { maxAmount: 500 });
     });
 
     it('applies amount range (minAmount and maxAmount)', async () => {
@@ -164,14 +148,8 @@ describe('TransactionsService', () => {
 
       await service.findAll({ minAmount: 10, maxAmount: 200 });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.amount >= :minAmount',
-        { minAmount: 10 },
-      );
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.amount <= :maxAmount',
-        { maxAmount: 200 },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.amount >= :minAmount', { minAmount: 10 });
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.amount <= :maxAmount', { maxAmount: 200 });
     });
 
     it('applies type filter', async () => {
@@ -179,10 +157,7 @@ describe('TransactionsService', () => {
 
       await service.findAll({ type: 'credit' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.type = :type',
-        { type: 'credit' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.type = :type', { type: 'credit' });
     });
 
     it('applies multiple filters simultaneously', async () => {
@@ -211,10 +186,7 @@ describe('TransactionsService', () => {
 
       await service.findAll({ minAmount: 0 });
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'txn.amount >= :minAmount',
-        { minAmount: 0 },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('txn.amount >= :minAmount', { minAmount: 0 });
     });
   });
 
@@ -237,9 +209,7 @@ describe('TransactionsService', () => {
     it('throws NotFoundException when transaction does not exist', async () => {
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(service.findOne('nonexistent-id')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.findOne('nonexistent-id')).rejects.toThrow(NotFoundException);
       await expect(service.findOne('nonexistent-id')).rejects.toThrow(
         'Transaction nonexistent-id not found',
       );
@@ -253,8 +223,8 @@ describe('TransactionsService', () => {
     it('updates the category of a transaction', async () => {
       const txn = makeTxn();
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(txn);
-      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation(
-        (entity: Transaction) => Promise.resolve(entity),
+      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation((entity: Transaction) =>
+        Promise.resolve(entity),
       );
 
       const result = await service.update('txn-uuid-1', {
@@ -270,8 +240,8 @@ describe('TransactionsService', () => {
     it('updates the description of a transaction', async () => {
       const txn = makeTxn();
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(txn);
-      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation(
-        (entity: Transaction) => Promise.resolve(entity),
+      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation((entity: Transaction) =>
+        Promise.resolve(entity),
       );
 
       const result = await service.update('txn-uuid-1', {
@@ -284,8 +254,8 @@ describe('TransactionsService', () => {
     it('updates both category and description at once', async () => {
       const txn = makeTxn();
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(txn);
-      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation(
-        (entity: Transaction) => Promise.resolve(entity),
+      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation((entity: Transaction) =>
+        Promise.resolve(entity),
       );
 
       const result = await service.update('txn-uuid-1', {
@@ -300,9 +270,9 @@ describe('TransactionsService', () => {
     it('throws NotFoundException if transaction to update does not exist', async () => {
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-      await expect(
-        service.update('missing-id', { category: 'groceries' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('missing-id', { category: 'groceries' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('does not modify fields that are not provided', async () => {
@@ -311,8 +281,8 @@ describe('TransactionsService', () => {
         description: 'Original Desc',
       });
       (mockRepo.findOne as ReturnType<typeof vi.fn>).mockResolvedValue(txn);
-      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation(
-        (entity: Transaction) => Promise.resolve(entity),
+      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation((entity: Transaction) =>
+        Promise.resolve(entity),
       );
 
       const result = await service.update('txn-uuid-1', {
@@ -348,8 +318,8 @@ describe('TransactionsService', () => {
       (mockRepo.create as ReturnType<typeof vi.fn>).mockImplementation(
         (data: Partial<Transaction>) => ({ id: 'generated-id', ...data }) as Transaction,
       );
-      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation(
-        (entities: Transaction[]) => Promise.resolve(entities),
+      (mockRepo.save as ReturnType<typeof vi.fn>).mockImplementation((entities: Transaction[]) =>
+        Promise.resolve(entities),
       );
 
       const result = await service.createMany('stmt-uuid-1', input);
@@ -413,9 +383,7 @@ describe('TransactionsService', () => {
         affected: 0,
       });
 
-      await expect(
-        service.removeByStatement('nonexistent-stmt'),
-      ).resolves.toBeUndefined();
+      await expect(service.removeByStatement('nonexistent-stmt')).resolves.toBeUndefined();
     });
   });
 });

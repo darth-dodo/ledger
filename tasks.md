@@ -299,13 +299,13 @@ pnpm test                        # Gate 5 (vitest)
 
 ## Session Log Archive
 
-| #   | Date       | Milestone | Persona(s)      | Focus                                      | Outcome     |
-| --- | ---------- | --------- | --------------- | ------------------------------------------ | ----------- |
-| 1   | 2026-03-04 | M0        | Architect + Dev | Project setup, CI, docs, agentic framework | ✅ Complete |
-| 2   | 2026-03-04 | M1        | Developer       | Health check endpoint, tests, CI smoke     | ✅ Complete |
-| 3   | 2026-03-04 | M2        | Architect + Dev | Upload module, statements CRUD, Angular UI | ✅ Complete |
-| 4   | 2026-03-04 | M3        | Architect + Dev | Parse pipeline, Mistral categorization, transactions CRUD, Angular UI | ✅ Complete |
-| 5   | 2026-03-06 | M4        | Architect + Dev + AI | Embedding pipeline, pgvector, TypeORM migrations, DI fix | ✅ Complete |
+| #   | Date       | Milestone | Persona(s)           | Focus                                                                 | Outcome     |
+| --- | ---------- | --------- | -------------------- | --------------------------------------------------------------------- | ----------- |
+| 1   | 2026-03-04 | M0        | Architect + Dev      | Project setup, CI, docs, agentic framework                            | ✅ Complete |
+| 2   | 2026-03-04 | M1        | Developer            | Health check endpoint, tests, CI smoke                                | ✅ Complete |
+| 3   | 2026-03-04 | M2        | Architect + Dev      | Upload module, statements CRUD, Angular UI                            | ✅ Complete |
+| 4   | 2026-03-04 | M3        | Architect + Dev      | Parse pipeline, Mistral categorization, transactions CRUD, Angular UI | ✅ Complete |
+| 5   | 2026-03-06 | M4        | Architect + Dev + AI | Embedding pipeline, pgvector, TypeORM migrations, DI fix              | ✅ Complete |
 
 ---
 
@@ -313,13 +313,13 @@ pnpm test                        # Gate 5 (vitest)
 
 Current Serena memory key values for cross-session continuity:
 
-| Key                        | Value                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| `ledger/current-milestone` | M4: Chunk & Embed — complete                                                                                      |
-| `ledger/progress`          | M0–M4 complete. 178 tests, 73% coverage, CI green. Next: M5 RAG Chat.                                            |
-| `ledger/blockers`          | None                                                                                                              |
+| Key                        | Value                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ledger/current-milestone` | M4: Chunk & Embed — complete                                                                                                                           |
+| `ledger/progress`          | M0–M4 complete. 178 tests, 73% coverage, CI green. Next: M5 RAG Chat.                                                                                  |
+| `ledger/blockers`          | None                                                                                                                                                   |
 | `ledger/decisions`         | Node.js+pnpm, NestJS+Angular, pgvector, Mistral AI, strategy parsers, explicit @Inject(), TypeORM migrations (not synchronize), pgvector over Pinecone |
-| `ledger/tech-debt`         | Conditional TypeORM loading in AppModule, explicit @Inject() workaround for esbuild                               |
+| `ledger/tech-debt`         | Conditional TypeORM loading in AppModule, explicit @Inject() workaround for esbuild                                                                    |
 
 **Convention**: `ledger/<topic>` for project state, `ledger/m<N>-<detail>` for milestone-specific notes.
 

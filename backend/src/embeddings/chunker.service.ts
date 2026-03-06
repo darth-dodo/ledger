@@ -60,11 +60,7 @@ export class ChunkerService {
     return chunks;
   }
 
-  private findSentenceBreak(
-    text: string,
-    start: number,
-    end: number,
-  ): number {
+  private findSentenceBreak(text: string, start: number, end: number): number {
     // Search backwards from end for sentence-ending punctuation
     const searchRegion = text.slice(start, end);
     const lastPeriod = searchRegion.lastIndexOf('. ');

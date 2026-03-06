@@ -548,19 +548,19 @@ volumes:
 
 ### Backend (NestJS)
 
-| Package                            | Purpose                            |
-| ---------------------------------- | ---------------------------------- |
-| `@nestjs/core`                     | NestJS framework                   |
-| `@nestjs/typeorm` + `typeorm`      | ORM + database                     |
-| `pg`                               | PostgreSQL driver                  |
-| `@mistralai/mistralai`             | Mistral AI SDK                     |
-| `pdf-parse`                        | PDF text extraction                |
-| `csv-parse`                        | CSV parsing                        |
-| `multer`                           | File upload handling               |
+| Package                       | Purpose              |
+| ----------------------------- | -------------------- |
+| `@nestjs/core`                | NestJS framework     |
+| `@nestjs/typeorm` + `typeorm` | ORM + database       |
+| `pg`                          | PostgreSQL driver    |
+| `@mistralai/mistralai`        | Mistral AI SDK       |
+| `pdf-parse`                   | PDF text extraction  |
+| `csv-parse`                   | CSV parsing          |
+| `multer`                      | File upload handling |
 
 ### Frontend (Angular)
 
-| Package                   | Purpose                          |
-| ------------------------- | -------------------------------- |
-| `@angular/core`           | Angular framework                |
-| `tailwindcss` + `daisyui` | Utility-first CSS + components   |
+| Package                   | Purpose                        |
+| ------------------------- | ------------------------------ |
+| `@angular/core`           | Angular framework              |
+| `tailwindcss` + `daisyui` | Utility-first CSS + components |

@@ -25,16 +25,19 @@ Default to using Node.js with pnpm.
 ## M3 Modules (Parse & Persist)
 
 ### Transactions module (`backend/src/transactions/`)
+
 - `GET /transactions` — list with filters (statementId, date range, category, amount range, type)
 - `PATCH /transactions/:id` — update category or description
 - Transactions are created automatically during upload (via parser pipeline)
 
 ### Mistral module (`backend/src/mistral/`)
+
 - Wraps `@mistralai/mistralai` SDK
 - Batch-categorizes transaction descriptions in a single API call
 - Requires `MISTRAL_API_KEY` in `.env`; categorization gracefully skips if key is absent
 
 ### Parser strategy (`backend/src/upload/parsers/`)
+
 - `ParserInterface` with `canParse(buffer, filename)` and `parse(buffer)` methods
 - `PdfParser` — extracts text via `pdf-parse`, heuristic transaction detection
 - `CsvParser` — parses via `csv-parse`, heuristic column detection

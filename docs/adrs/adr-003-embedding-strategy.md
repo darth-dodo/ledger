@@ -27,6 +27,7 @@ Key constraints:
 **Choice**: Character-based chunking targeting ~500 tokens (~2000 characters) with configurable overlap (default 200 characters / ~50 tokens).
 
 **Splitting rules**:
+
 - Split on paragraph boundaries (`\n\n`) when possible
 - Fall back to sentence boundaries (`. `) when paragraphs are too large
 - Fall back to character split at the target size as a last resort
@@ -101,6 +102,7 @@ embeddings table:
 **Problem discovered**: TypeORM's `synchronize: true` has a known bug ([typeorm#10056](https://github.com/typeorm/typeorm/issues/10056)) where its schema diff algorithm cannot properly compare `vector(N)` column types. On every server restart, it treats the vector column as "changed" and drops/recreates it — destroying all embedding data.
 
 **Solution**:
+
 - `synchronize: false` + `migrationsRun: true` in TypeORM config
 - Entity declares `@Column('vector', { length: 1024 })` using TypeORM 0.3.27+ native support
 - Initial migration creates all tables including the `vector(1024)` column and IVFFlat index via explicit SQL
@@ -108,6 +110,7 @@ embeddings table:
 - Migration classes are imported explicitly (no glob patterns) for tsx compatibility
 
 **Migration infrastructure**:
+
 - `pnpm migrate` — run pending migrations
 - `pnpm migration:run` — run via TypeORM CLI
 - `pnpm migration:revert` — revert last migration

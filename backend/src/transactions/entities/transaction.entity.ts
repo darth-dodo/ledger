@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Statement } from '../../upload/entities/statement.entity.js';
 
 @Entity('transactions')
@@ -34,8 +27,7 @@ export class Transaction {
     scale: 2,
     transformer: {
       to: (value: number): number => value,
-      from: (value: string | null): number | null =>
-        value === null ? null : parseFloat(value),
+      from: (value: string | null): number | null => (value === null ? null : parseFloat(value)),
     },
   })
   amount!: number;

@@ -30,20 +30,20 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 1. **Upload** -- Drag and drop any bank statement (PDF or CSV)
 2. **Parse** -- Transactions are automatically extracted and categorized by AI
 3. **Embed** -- Statement content is chunked and vectorized for semantic search
-4. **Ask** -- Chat with your financial data in natural language *(coming soon)*
-5. **Visualize** -- See spending patterns on interactive dashboards *(coming soon)*
+4. **Ask** -- Chat with your financial data in natural language _(coming soon)_
+5. **Visualize** -- See spending patterns on interactive dashboards _(coming soon)_
 
 ## Features
 
-| Feature | Status | Description |
-|---|---|---|
-| Statement Upload | :white_check_mark: | Drag-and-drop PDF/CSV with multi-bank support |
-| Transaction Parsing | :white_check_mark: | Extensible parser strategy (PDF + CSV heuristics) |
-| AI Categorization | :white_check_mark: | Mistral-powered batch categorization of transactions |
-| Vector Embeddings | :white_check_mark: | pgvector storage with cosine similarity search |
-| RAG Chat | :construction: | Natural language Q&A over your financial data |
-| Dashboard | :construction: | Visual analytics and spending breakdowns |
-| Auth & Polish | :construction: | User accounts and production hardening |
+| Feature             | Status             | Description                                          |
+| ------------------- | ------------------ | ---------------------------------------------------- |
+| Statement Upload    | :white_check_mark: | Drag-and-drop PDF/CSV with multi-bank support        |
+| Transaction Parsing | :white_check_mark: | Extensible parser strategy (PDF + CSV heuristics)    |
+| AI Categorization   | :white_check_mark: | Mistral-powered batch categorization of transactions |
+| Vector Embeddings   | :white_check_mark: | pgvector storage with cosine similarity search       |
+| RAG Chat            | :construction:     | Natural language Q&A over your financial data        |
+| Dashboard           | :construction:     | Visual analytics and spending breakdowns             |
+| Auth & Polish       | :construction:     | User accounts and production hardening               |
 
 ## Architecture
 
@@ -134,14 +134,14 @@ cd backend && pnpm migration:revert # Revert last migration
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| Frontend | Angular 19, Tailwind CSS 4, daisyUI | SPA with standalone components |
-| Backend | NestJS 11, TypeORM | REST API with dependency injection |
-| Database | PostgreSQL + pgvector | Relational data + vector embeddings |
-| AI | Mistral AI | Transaction categorization + embeddings |
-| Testing | Vitest, Karma/Jasmine | Unit + integration tests |
-| Runtime | tsx, pnpm | TypeScript execution, package management |
+| Layer    | Technology                          | Purpose                                  |
+| -------- | ----------------------------------- | ---------------------------------------- |
+| Frontend | Angular 19, Tailwind CSS 4, daisyUI | SPA with standalone components           |
+| Backend  | NestJS 11, TypeORM                  | REST API with dependency injection       |
+| Database | PostgreSQL + pgvector               | Relational data + vector embeddings      |
+| AI       | Mistral AI                          | Transaction categorization + embeddings  |
+| Testing  | Vitest, Karma/Jasmine               | Unit + integration tests                 |
+| Runtime  | tsx, pnpm                           | TypeScript execution, package management |
 
 ## Project Structure
 

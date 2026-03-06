@@ -62,13 +62,14 @@ interface ParserInterface {
 
 **Choice**: Detect CSV columns by header name patterns rather than fixed positions.
 
-| Field | Header patterns |
-|-------|----------------|
-| date | `date`, `transaction date`, `posting date`, `txn date`, `value date` |
+| Field       | Header patterns                                                         |
+| ----------- | ----------------------------------------------------------------------- |
+| date        | `date`, `transaction date`, `posting date`, `txn date`, `value date`    |
 | description | `description`, `details`, `narration`, `particulars`, `remarks`, `memo` |
-| amount | `amount`, `debit`, `credit`, `withdrawal`, `deposit`, `dr`, `cr` |
+| amount      | `amount`, `debit`, `credit`, `withdrawal`, `deposit`, `dr`, `cr`        |
 
 **Separate debit/credit columns**: Some banks use separate columns for debits and credits instead of a single amount. Detect both patterns:
+
 - Single `amount` column + `type` indicator
 - Separate `debit`/`withdrawal` and `credit`/`deposit` columns
 
@@ -105,7 +106,7 @@ interface ParserInterface {
 interface ParsedTransaction {
   date: Date;
   description: string;
-  amount: number;          // always positive
+  amount: number; // always positive
   type: 'debit' | 'credit';
 }
 ```
@@ -126,11 +127,10 @@ backend/src/upload/parsers/
 Parsers live inside the upload module since they're called by `UploadService.processFile()`. They're not a separate NestJS module — they're plain classes injected via a multi-provider token.
 
 **Registration pattern**:
+
 ```typescript
 // upload.module.ts
-providers: [
-  { provide: 'PARSERS', useFactory: () => [new CsvParser(), new PdfParser()] },
-]
+providers: [{ provide: 'PARSERS', useFactory: () => [new CsvParser(), new PdfParser()] }];
 ```
 
 Generic parsers are registered last so bank-specific parsers (added later) get priority in the `canParse()` chain.

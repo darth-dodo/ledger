@@ -5,12 +5,8 @@ export class InitialSchema1709700000000 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     // Enable pgvector extension
-    await queryRunner.query(
-      'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"',
-    );
-    await queryRunner.query(
-      'CREATE EXTENSION IF NOT EXISTS vector',
-    );
+    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vector');
 
     // Statements table
     await queryRunner.query(`

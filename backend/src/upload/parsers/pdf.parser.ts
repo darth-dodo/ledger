@@ -21,14 +21,17 @@ export class PdfParser implements ParserInterface {
 
   private extractTransactions(text: string): ParsedTransaction[] {
     const transactions: ParsedTransaction[] = [];
-    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    const lines = text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
 
     // Date patterns:
     // DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD MMM YYYY
     const datePatterns = [
-      /(\d{2}\/\d{2}\/\d{4})/,        // DD/MM/YYYY
-      /(\d{2}-\d{2}-\d{4})/,           // DD-MM-YYYY
-      /(\d{4}-\d{2}-\d{2})/,           // YYYY-MM-DD
+      /(\d{2}\/\d{2}\/\d{4})/, // DD/MM/YYYY
+      /(\d{2}-\d{2}-\d{4})/, // DD-MM-YYYY
+      /(\d{4}-\d{2}-\d{2})/, // YYYY-MM-DD
       /(\d{2}\s+[A-Za-z]{3}\s+\d{4})/, // DD MMM YYYY
     ];
 
@@ -68,7 +71,10 @@ export class PdfParser implements ParserInterface {
 
       let description = line.substring(dateEnd, amountStart).trim();
       // Clean up separators and extra whitespace
-      description = description.replace(/^[\s|,\-:]+/, '').replace(/[\s|,\-:]+$/, '').trim();
+      description = description
+        .replace(/^[\s|,\-:]+/, '')
+        .replace(/[\s|,\-:]+$/, '')
+        .trim();
 
       if (!description) continue;
 

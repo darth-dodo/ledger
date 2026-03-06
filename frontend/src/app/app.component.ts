@@ -11,10 +11,18 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
         <h1 class="text-xl font-semibold tracking-tight">Ledger</h1>
       </div>
       <nav class="flex gap-1 ml-8">
-        <a routerLink="/upload" routerLinkActive="active"
-           class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content">Upload</a>
-        <a routerLink="/transactions" routerLinkActive="active"
-           class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content">Transactions</a>
+        <a
+          routerLink="/upload"
+          routerLinkActive="active"
+          class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content"
+          >Upload</a
+        >
+        <a
+          routerLink="/transactions"
+          routerLinkActive="active"
+          class="btn btn-ghost btn-sm text-neutral-content/60 hover:text-neutral-content"
+          >Transactions</a
+        >
       </nav>
     </div>
     <main class="max-w-6xl mx-auto p-4 sm:p-8">
