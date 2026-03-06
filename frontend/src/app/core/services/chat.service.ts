@@ -43,14 +43,14 @@ export class ChatService {
     return this.http.delete<void>(`${this.baseUrl}/chat/sessions/${sessionId}`);
   }
 
-  sendMessage(sessionId: string | null, message: string): Observable<string> {
+  sendMessage(sessionId: string | null, message: string, currency: string): Observable<string> {
     return new Observable((subscriber) => {
       const abortController = new AbortController();
 
       fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, message }),
+        body: JSON.stringify({ sessionId, message, currency }),
         signal: abortController.signal,
       })
         .then(async (response) => {

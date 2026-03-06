@@ -9,7 +9,8 @@ import { MistralService } from '../mistral/mistral.service';
 import { createVectorSearchTool } from './tools/vector-search.tool';
 import { createSqlQueryTool } from './tools/sql-query.tool';
 
-const SYSTEM_PROMPT = `You are a helpful financial assistant analyzing the user's bank statements and transactions.
+function buildSystemPrompt(currency: string): string {
+  return `You are a helpful financial assistant analyzing the user's bank statements and transactions.
 
 You have access to two tools:
 - vector_search: Search through bank statement text chunks using semantic similarity. Best for contextual questions like "what was that charge from last week?" or "tell me about my Amazon purchases."
@@ -38,10 +39,12 @@ Example SQL queries:
 - Income vs expenses this month:
   SELECT type, SUM(amount) AS total FROM transactions WHERE date >= date_trunc('month', CURRENT_DATE) GROUP BY type;
 
+The user's preferred currency is ${currency}. Format all monetary amounts using ${currency}.
 Choose the appropriate tool based on the question. You may use multiple tools if needed.
 Always cite specific transactions or data in your response.
 If the data doesn't contain the answer, say so honestly.
 Format currency amounts clearly.`;
+}
 
 @Injectable()
 export class RagService {
@@ -60,7 +63,7 @@ export class RagService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async chat(sessionId: string | null, message: string): Promise<{ streamResult: ReturnType<typeof import('ai').streamText>; sessionId: string }> {
+  async chat(sessionId: string | null, message: string, currency: string = 'USD'): Promise<{ streamResult: ReturnType<typeof import('ai').streamText>; sessionId: string }> {
     // 1. Create or get session
     let session: ChatSession;
     let isNewSession = false;
@@ -106,7 +109,7 @@ export class RagService {
 
     // 5. Call mistralService.chatStream()
     const streamResult = this.mistralService.chatStream({
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(currency),
       messages,
       tools,
       maxSteps: 3,

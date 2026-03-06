@@ -11,12 +11,13 @@ export class RagController {
 
   @Post()
   async chat(
-    @Body() body: { sessionId?: string; message: string },
+    @Body() body: { sessionId?: string; message: string; currency?: string },
     @Res() res: ServerResponse,
   ): Promise<void> {
     const { streamResult, sessionId } = await this.ragService.chat(
       body.sessionId ?? null,
       body.message,
+      body.currency ?? 'USD',
     );
 
     // Set session ID header before piping (pipeUIMessageStreamToResponse sets its own SSE headers)

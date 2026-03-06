@@ -8,6 +8,7 @@ import {
   Source,
 } from '../../core/services/chat.service';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
+import { SettingsService } from '../../core/services/settings.service';
 
 interface DisplayMessage {
   role: 'user' | 'assistant';
@@ -235,6 +236,7 @@ interface DisplayMessage {
 })
 export class ChatComponent implements AfterViewChecked {
   private readonly chatService = inject(ChatService);
+  private readonly settingsService = inject(SettingsService);
 
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
 
@@ -303,7 +305,7 @@ export class ChatComponent implements AfterViewChecked {
     this.isStreaming = true;
     const assistantIdx = this.messages.length - 1;
 
-    this.chatService.sendMessage(this.activeSessionId, text).subscribe({
+    this.chatService.sendMessage(this.activeSessionId, text, this.settingsService.currency).subscribe({
       next: (token) => {
         if (token.startsWith('__SESSION_ID__:')) {
           this.activeSessionId = token.slice('__SESSION_ID__:'.length);
