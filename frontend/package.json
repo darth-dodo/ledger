@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "ng serve",
     "build": "ng build",
-    "test": "ng test --no-watch",
+    "test": "ng test --watch false",
     "lint": "ng lint"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "@angular/compiler-cli": "latest",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/typography": "^0.5.19",
+    "@vitest/coverage-v8": "^4.0.18",
     "daisyui": "^5.5.19",
     "jsdom": "latest",
     "postcss": "^8.5.8",
