@@ -22,7 +22,9 @@ describe('RagController', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    controller = new RagController(mockRagService as any);
+    controller = new RagController(
+      mockRagService as unknown as ConstructorParameters<typeof RagController>[0],
+    );
   });
 
   // ---------------------------------------------------------------
@@ -31,7 +33,10 @@ describe('RagController', () => {
   describe('chat()', () => {
     it('calls ragService.chat with sessionId, message, and currency; sets X-Session-Id header; pipes stream', async () => {
       const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
-      mockRagService.chat.mockResolvedValue({ streamResult: mockStreamResult, sessionId: 'sess-1' });
+      mockRagService.chat.mockResolvedValue({
+        streamResult: mockStreamResult,
+        sessionId: 'sess-1',
+      });
       const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
 
       await controller.chat(
@@ -46,7 +51,10 @@ describe('RagController', () => {
 
     it('defaults currency to USD when not provided', async () => {
       const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
-      mockRagService.chat.mockResolvedValue({ streamResult: mockStreamResult, sessionId: 'sess-2' });
+      mockRagService.chat.mockResolvedValue({
+        streamResult: mockStreamResult,
+        sessionId: 'sess-2',
+      });
       const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
 
       await controller.chat({ message: 'hello' }, mockRes);
@@ -56,7 +64,10 @@ describe('RagController', () => {
 
     it('defaults sessionId to null when not provided', async () => {
       const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
-      mockRagService.chat.mockResolvedValue({ streamResult: mockStreamResult, sessionId: 'sess-3' });
+      mockRagService.chat.mockResolvedValue({
+        streamResult: mockStreamResult,
+        sessionId: 'sess-3',
+      });
       const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
 
       await controller.chat({ message: 'test' }, mockRes);

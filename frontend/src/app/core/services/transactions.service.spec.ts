@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TransactionsService, Transaction } from './transactions.service';
 
 describe('TransactionsService', () => {
@@ -67,9 +64,7 @@ describe('TransactionsService', () => {
 
       service.getTransactions(filters).subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url === 'http://localhost:3000/transactions',
-      );
+      const req = httpTesting.expectOne((r) => r.url === 'http://localhost:3000/transactions');
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('statementId')).toBe('stmt-1');
       expect(req.request.params.get('startDate')).toBe('2025-01-01');
@@ -89,9 +84,7 @@ describe('TransactionsService', () => {
 
       service.getTransactions(filters).subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url === 'http://localhost:3000/transactions',
-      );
+      const req = httpTesting.expectOne((r) => r.url === 'http://localhost:3000/transactions');
       expect(req.request.params.get('category')).toBe('transport');
       expect(req.request.params.get('type')).toBe('credit');
       expect(req.request.params.has('statementId')).toBe(false);
@@ -107,9 +100,7 @@ describe('TransactionsService', () => {
 
       service.getTransactions(filters).subscribe();
 
-      const req = httpTesting.expectOne((r) =>
-        r.url === 'http://localhost:3000/transactions',
-      );
+      const req = httpTesting.expectOne((r) => r.url === 'http://localhost:3000/transactions');
       expect(req.request.params.get('minAmount')).toBe('0');
       expect(req.request.params.get('maxAmount')).toBe('0');
       req.flush([]);

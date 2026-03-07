@@ -1,11 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  SettingsService,
-  CURRENCIES,
-  CurrencyOption,
-} from '../../core/services/settings.service';
+import { SettingsService, CURRENCIES, CurrencyOption } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -51,7 +47,9 @@ export class SettingsComponent {
   selectedCurrency: string = this.settingsService.currency;
 
   get selectedCurrencyName(): string {
-    return this.currencies.find((c) => c.code === this.selectedCurrency)?.name ?? this.selectedCurrency;
+    return (
+      this.currencies.find((c) => c.code === this.selectedCurrency)?.name ?? this.selectedCurrency
+    );
   }
 
   selectCurrency(code: string): void {

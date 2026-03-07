@@ -10,7 +10,9 @@ describe('TransactionsController', () => {
       findAll: vi.fn(),
       update: vi.fn(),
     };
-    controller = new TransactionsController(mockService as any);
+    controller = new TransactionsController(
+      mockService as unknown as ConstructorParameters<typeof TransactionsController>[0],
+    );
   });
 
   describe('findAll', () => {
@@ -68,14 +70,7 @@ describe('TransactionsController', () => {
     it('should parse minAmount and maxAmount from strings to numbers', async () => {
       mockService.findAll.mockResolvedValue([]);
 
-      await controller.findAll(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        '10.50',
-        '500.99',
-      );
+      await controller.findAll(undefined, undefined, undefined, undefined, '10.50', '500.99');
 
       expect(mockService.findAll).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -111,23 +106,13 @@ describe('TransactionsController', () => {
         'debit',
       );
 
-      expect(mockService.findAll).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'debit' }),
-      );
+      expect(mockService.findAll).toHaveBeenCalledWith(expect.objectContaining({ type: 'debit' }));
     });
 
     it('should pass all filters together to service', async () => {
       mockService.findAll.mockResolvedValue([]);
 
-      await controller.findAll(
-        'stmt-1',
-        '2025-01-01',
-        '2025-06-30',
-        'food',
-        '5',
-        '100',
-        'credit',
-      );
+      await controller.findAll('stmt-1', '2025-01-01', '2025-06-30', 'food', '5', '100', 'credit');
 
       expect(mockService.findAll).toHaveBeenCalledWith({
         statementId: 'stmt-1',

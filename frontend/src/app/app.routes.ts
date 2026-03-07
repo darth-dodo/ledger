@@ -14,8 +14,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'upload', pathMatch: 'full' },
   {
     path: 'chat',
-    loadComponent: () =>
-      import('./features/chat/chat.component').then((m) => m.ChatComponent),
+    loadComponent: () => import('./features/chat/chat.component').then((m) => m.ChatComponent),
   },
   {
     path: 'settings',

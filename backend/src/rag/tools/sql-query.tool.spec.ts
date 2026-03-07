@@ -19,7 +19,7 @@ function buildTool() {
 
 async function execute(sql: string) {
   const tool = buildTool();
-  return tool.execute({ sql }, {} as any);
+  return tool.execute({ sql }, {} as Record<string, never>);
 }
 
 // ---------------------------------------------------------------------------

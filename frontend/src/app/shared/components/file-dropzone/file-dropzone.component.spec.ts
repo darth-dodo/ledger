@@ -1,19 +1,12 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FileDropzoneComponent } from './file-dropzone.component';
 
-function createMockFile(
-  name: string,
-  size: number,
-  type: string,
-): File {
+function createMockFile(name: string, size: number, type: string): File {
   const content = new ArrayBuffer(size);
   return new File([content], name, { type });
 }
 
-function createDragEvent(
-  type: string,
-  files?: File[],
-): DragEvent {
+function createDragEvent(type: string, files?: File[]): DragEvent {
   const event = new Event(type, {
     bubbles: true,
     cancelable: true,
@@ -108,7 +101,10 @@ describe('FileDropzoneComponent', () => {
       const file = createMockFile('transactions.csv', 2048, 'text/csv');
       const emitSpy = vi.spyOn(component.fileSelected, 'emit');
 
-      const input = { files: [file] as unknown as FileList, value: 'C:\\fakepath\\transactions.csv' };
+      const input = {
+        files: [file] as unknown as FileList,
+        value: 'C:\\fakepath\\transactions.csv',
+      };
       Object.defineProperty(input.files, 'length', { value: 1 });
       const event = { target: input } as unknown as Event;
 
@@ -128,9 +124,7 @@ describe('FileDropzoneComponent', () => {
       component.onDrop(event);
 
       expect(emitSpy).not.toHaveBeenCalled();
-      expect(component.error).toBe(
-        'Invalid file type. Please upload a PDF or CSV file.',
-      );
+      expect(component.error).toBe('Invalid file type. Please upload a PDF or CSV file.');
     });
 
     it('should reject a file with an invalid MIME type but valid extension pattern', () => {

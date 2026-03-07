@@ -21,7 +21,7 @@ describe('createVectorSearchTool', () => {
 
     const result = await vectorTool.execute(
       { query: 'dining expenses' },
-      {} as any,
+      {} as Record<string, never>,
     );
 
     expect(result).toEqual({
@@ -41,7 +41,7 @@ describe('createVectorSearchTool', () => {
 
     const result = await vectorTool.execute(
       { query: 'dining expenses' },
-      {} as any,
+      {} as Record<string, never>,
     );
 
     expect(result).toEqual({
@@ -63,10 +63,7 @@ describe('createVectorSearchTool', () => {
       { content: 'Payment', statementId: 3, distance: 0.15 },
     ]);
 
-    const result = await vectorTool.execute(
-      { query: 'payments' },
-      {} as any,
-    );
+    const result = await vectorTool.execute({ query: 'payments' }, {} as Record<string, never>);
 
     expect(result.results[0].relevanceScore).toBeCloseTo(0.85);
   });
@@ -75,7 +72,7 @@ describe('createVectorSearchTool', () => {
     mockGetQueryEmbedding.mockResolvedValue([0.1]);
     mockSimilaritySearch.mockResolvedValue([]);
 
-    await vectorTool.execute({ query: 'grocery shopping' }, {} as any);
+    await vectorTool.execute({ query: 'grocery shopping' }, {} as Record<string, never>);
 
     expect(mockGetQueryEmbedding).toHaveBeenCalledWith('grocery shopping');
   });
@@ -85,7 +82,7 @@ describe('createVectorSearchTool', () => {
     mockGetQueryEmbedding.mockResolvedValue(fakeVector);
     mockSimilaritySearch.mockResolvedValue([]);
 
-    await vectorTool.execute({ query: 'rent payment' }, {} as any);
+    await vectorTool.execute({ query: 'rent payment' }, {} as Record<string, never>);
 
     expect(mockSimilaritySearch).toHaveBeenCalledWith(fakeVector, 5);
   });
@@ -96,7 +93,7 @@ describe('createVectorSearchTool', () => {
 
     const result = await vectorTool.execute(
       { query: 'nonexistent query' },
-      {} as any,
+      {} as Record<string, never>,
     );
 
     expect(result).toEqual({ results: [] });

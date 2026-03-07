@@ -4,14 +4,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Hoisted mock variables (available inside vi.mock factories)
 // ---------------------------------------------------------------------------
 
-const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral } = vi.hoisted(
-  () => ({
-    mockChatComplete: vi.fn(),
-    mockStreamText: vi.fn(),
-    mockStepCountIs: vi.fn(),
-    mockCreateMistral: vi.fn(),
-  }),
-);
+const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral } = vi.hoisted(() => ({
+  mockChatComplete: vi.fn(),
+  mockStreamText: vi.fn(),
+  mockStepCountIs: vi.fn(),
+  mockCreateMistral: vi.fn(),
+}));
 
 // ---------------------------------------------------------------------------
 // Mock the @mistralai/mistralai module
@@ -262,7 +260,7 @@ describe('MistralService', () => {
       expect(() =>
         service.chatStream({
           system: 'You are a helper',
-          messages: [{ role: 'user', content: 'hello' }] as any,
+          messages: [{ role: 'user', content: 'hello' }] as unknown[],
         }),
       ).toThrow('Mistral API key not configured');
     });
@@ -273,8 +271,8 @@ describe('MistralService', () => {
       mockStreamText.mockReturnValue('stream-result');
 
       const service = new MistralService();
-      const tools = { myTool: {} } as any;
-      const messages = [{ role: 'user', content: 'hello' }] as any;
+      const tools = { myTool: {} } as unknown as Record<string, unknown>;
+      const messages = [{ role: 'user', content: 'hello' }] as unknown[];
 
       const result = service.chatStream({
         system: 'You are a helper',
@@ -303,7 +301,7 @@ describe('MistralService', () => {
 
       service.chatStream({
         system: 'system prompt',
-        messages: [] as any,
+        messages: [] as unknown[],
       });
 
       expect(mockStepCountIs).toHaveBeenCalledWith(3);
@@ -318,7 +316,7 @@ describe('MistralService', () => {
 
       service.chatStream({
         system: 'system prompt',
-        messages: [] as any,
+        messages: [] as unknown[],
         maxSteps: 10,
       });
 

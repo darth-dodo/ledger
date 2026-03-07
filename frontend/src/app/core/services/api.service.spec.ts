@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApiService, UploadResponse, StatementDetail } from './api.service';
 
 describe('ApiService', () => {
@@ -103,9 +100,7 @@ describe('ApiService', () => {
         expect(detail.rawText).toBe('Extracted text content');
       });
 
-      const req = httpTesting.expectOne(
-        `http://localhost:3000/statements/${statementId}`,
-      );
+      const req = httpTesting.expectOne(`http://localhost:3000/statements/${statementId}`);
       expect(req.request.method).toBe('GET');
       req.flush(mockDetail);
     });
@@ -125,9 +120,7 @@ describe('ApiService', () => {
         expect(detail.rawText).toBeNull();
       });
 
-      const req = httpTesting.expectOne(
-        `http://localhost:3000/statements/${statementId}`,
-      );
+      const req = httpTesting.expectOne(`http://localhost:3000/statements/${statementId}`);
       req.flush(mockDetail);
     });
   });
@@ -138,9 +131,7 @@ describe('ApiService', () => {
 
       service.deleteStatement(statementId).subscribe();
 
-      const req = httpTesting.expectOne(
-        `http://localhost:3000/statements/${statementId}`,
-      );
+      const req = httpTesting.expectOne(`http://localhost:3000/statements/${statementId}`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

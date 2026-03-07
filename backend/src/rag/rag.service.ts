@@ -63,7 +63,11 @@ export class RagService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async chat(sessionId: string | null, message: string, currency: string = 'USD'): Promise<{ streamResult: ReturnType<typeof import('ai').streamText>; sessionId: string }> {
+  async chat(
+    sessionId: string | null,
+    message: string,
+    currency: string = 'USD',
+  ): Promise<{ streamResult: ReturnType<typeof import('ai').streamText>; sessionId: string }> {
     // 1. Create or get session
     let session: ChatSession;
     let isNewSession = false;

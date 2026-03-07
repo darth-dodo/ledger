@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { DomSanitizer } from '@angular/platform-browser';
 import { MarkdownPipe } from './markdown.pipe';
 
 describe('MarkdownPipe', () => {
@@ -40,7 +39,9 @@ describe('MarkdownPipe', () => {
     // SafeHtml objects created by bypassSecurityTrustHtml are not plain strings
     expect(typeof result).not.toBe('string');
     // They do have a changingThisBreaksApplicationSecurity property (Angular internal)
-    expect((result as any).changingThisBreaksApplicationSecurity).toBeDefined();
+    expect(
+      (result as unknown as Record<string, unknown>).changingThisBreaksApplicationSecurity,
+    ).toBeDefined();
   });
 
   it('should handle inline code', () => {

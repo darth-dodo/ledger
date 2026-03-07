@@ -8,11 +8,7 @@ import { RagService } from './rag.service';
 import { RagController } from './rag.controller';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([ChatSession, ChatMessage]),
-    EmbeddingsModule,
-    MistralModule,
-  ],
+  imports: [TypeOrmModule.forFeature([ChatSession, ChatMessage]), EmbeddingsModule, MistralModule],
   controllers: [RagController],
   providers: [RagService],
   exports: [RagService],

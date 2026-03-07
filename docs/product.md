@@ -28,14 +28,14 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 
 ### MVP (M0–M5) -- Complete
 
-| Feature            | Description                                                                  | Priority | Status |
-| ------------------ | ---------------------------------------------------------------------------- | -------- | ------ |
-| Statement Upload   | Drag-and-drop PDF/CSV upload with fire-and-forget UX                         | P0       | Done   |
-| Multi-Bank Parsing | Extensible parser strategy for various bank formats                          | P0       | Done   |
-| Transaction View   | Filterable, sortable table of parsed transactions                            | P0       | Done   |
-| RAG Chat           | Session-based chat with SSE streaming, tool calling (vector search + SQL)    | P0       | Done   |
-| Markdown Rendering | Chat responses rendered as Markdown with proper formatting                   | P0       | Done   |
-| Settings           | Currency selector persisted in localStorage, formats amounts in chat         | P1       | Done   |
+| Feature            | Description                                                               | Priority | Status |
+| ------------------ | ------------------------------------------------------------------------- | -------- | ------ |
+| Statement Upload   | Drag-and-drop PDF/CSV upload with fire-and-forget UX                      | P0       | Done   |
+| Multi-Bank Parsing | Extensible parser strategy for various bank formats                       | P0       | Done   |
+| Transaction View   | Filterable, sortable table of parsed transactions                         | P0       | Done   |
+| RAG Chat           | Session-based chat with SSE streaming, tool calling (vector search + SQL) | P0       | Done   |
+| Markdown Rendering | Chat responses rendered as Markdown with proper formatting                | P0       | Done   |
+| Settings           | Currency selector persisted in localStorage, formats amounts in chat      | P1       | Done   |
 
 ### Analytics (M6)
 
@@ -159,7 +159,7 @@ flowchart TD
 
 | Milestone | Name              | Status   | Key Deliverables                                                             |
 | --------- | ----------------- | -------- | ---------------------------------------------------------------------------- |
-| M0        | Monorepo Scaffold | Complete | pnpm workspace, NestJS + Angular, Docker Compose for PostgreSQL             |
+| M0        | Monorepo Scaffold | Complete | pnpm workspace, NestJS + Angular, Docker Compose for PostgreSQL              |
 | M1        | Health Check      | Complete | `/health` endpoint, CI pipeline, basic connectivity                          |
 | M2        | File Upload       | Complete | Drag-and-drop upload, statement entity, file storage                         |
 | M3        | Parse & Persist   | Complete | PDF/CSV parsers (strategy pattern), transactions table, Mistral categories   |
@@ -195,32 +195,32 @@ gantt
 
 ## 7. Tech Stack
 
-| Layer           | Technology                         | Purpose                                                       |
-| --------------- | ---------------------------------- | ------------------------------------------------------------- |
-| Frontend        | Angular 19 (TypeScript)            | SPA with components, services, routing                        |
-| Backend         | NestJS (TypeScript)                | REST API with modules, DI, decorators                         |
-| Database        | PostgreSQL + pgvector              | Transactions + vector similarity search                       |
-| AI              | Mistral AI                         | Embeddings (mistral-embed) + Chat (mistral-large-latest)      |
-| AI SDK          | Vercel AI SDK (`ai` + `@ai-sdk/mistral`) | Streaming chat completions, tool-calling loop, SSE transport |
-| File Parsing    | pdf-parse, csv-parse               | Extract text from bank statements                             |
-| Markdown        | marked                             | Render AI chat responses as formatted Markdown (via MarkdownPipe) |
-| Testing         | Vitest + @vitest/coverage-v8       | Unit/integration tests with V8 coverage (302 tests, 95%+ coverage) |
-| Charts          | Chart.js / ngx-charts (planned M6) | Dashboard visualizations                                      |
-| Package Manager | pnpm                               | Fast installs, strict dependency resolution                   |
-| Deployment      | Docker Compose (local)             | PostgreSQL + pgvector container                               |
+| Layer           | Technology                               | Purpose                                                            |
+| --------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| Frontend        | Angular 19 (TypeScript)                  | SPA with components, services, routing                             |
+| Backend         | NestJS (TypeScript)                      | REST API with modules, DI, decorators                              |
+| Database        | PostgreSQL + pgvector                    | Transactions + vector similarity search                            |
+| AI              | Mistral AI                               | Embeddings (mistral-embed) + Chat (mistral-large-latest)           |
+| AI SDK          | Vercel AI SDK (`ai` + `@ai-sdk/mistral`) | Streaming chat completions, tool-calling loop, SSE transport       |
+| File Parsing    | pdf-parse, csv-parse                     | Extract text from bank statements                                  |
+| Markdown        | marked                                   | Render AI chat responses as formatted Markdown (via MarkdownPipe)  |
+| Testing         | Vitest + @vitest/coverage-v8             | Unit/integration tests with V8 coverage (302 tests, 95%+ coverage) |
+| Charts          | Chart.js / ngx-charts (planned M6)       | Dashboard visualizations                                           |
+| Package Manager | pnpm                                     | Fast installs, strict dependency resolution                        |
+| Deployment      | Docker Compose (local)                   | PostgreSQL + pgvector container                                    |
 
 ---
 
 ## 8. Constraints & Decisions
 
-| Decision          | Choice                         | Rationale                                                                                           |
-| ----------------- | ------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Decision          | Choice                         | Rationale                                                                                                                                                               |
+| ----------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chat architecture | Tool-calling with two tools    | Mistral function calling routes between `vector_search` (semantic) and `sql_query` (aggregation). Up to 3 tool calls per turn. Replaced the original RAG-only approach. |
-| Streaming         | SSE via Vercel AI SDK          | Real-time token display gives responsive UX. SSE is simpler than WebSockets for unidirectional streaming. |
-| Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity. |
-| Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed. |
-| Upload UX         | Fire and forget                | MVP simplicity. No progress steps or background processing.                                         |
-| Auth timing       | Deferred to M7                 | No login friction during development. Single-user local app doesn't need auth early.                |
-| Parser design     | Strategy pattern               | Bank PDF formats vary across institutions. Each bank gets its own parser. Start with one, add more. |
-| Deployment        | Local Docker Compose           | No cloud until product is solid.                                                                    |
-| Database          | PostgreSQL + pgvector          | Single DB for both structured data and vector search. No separate vector DB needed.                 |
+| Streaming         | SSE via Vercel AI SDK          | Real-time token display gives responsive UX. SSE is simpler than WebSockets for unidirectional streaming.                                                               |
+| Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity.                                                                |
+| Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed.                                                    |
+| Upload UX         | Fire and forget                | MVP simplicity. No progress steps or background processing.                                                                                                             |
+| Auth timing       | Deferred to M7                 | No login friction during development. Single-user local app doesn't need auth early.                                                                                    |
+| Parser design     | Strategy pattern               | Bank PDF formats vary across institutions. Each bank gets its own parser. Start with one, add more.                                                                     |
+| Deployment        | Local Docker Compose           | No cloud until product is solid.                                                                                                                                        |
+| Database          | PostgreSQL + pgvector          | Single DB for both structured data and vector search. No separate vector DB needed.                                                                                     |

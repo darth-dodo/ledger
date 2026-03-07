@@ -156,6 +156,7 @@ The RAG pipeline uses a **tool-calling loop** via Vercel AI SDK's `streamText()`
 ### RAG System Prompt
 
 The system prompt is built dynamically with the user's selected currency. It provides:
+
 - Tool descriptions and when to use each one
 - Full `transactions` table schema for SQL generation
 - Example SQL queries (PostgreSQL syntax) for common financial questions
@@ -485,12 +486,12 @@ frontend/
 
 ### Chat (RAG)
 
-| Method | Endpoint                       | Description                                                            |
-| ------ | ------------------------------ | ---------------------------------------------------------------------- |
-| POST   | `/chat`                        | Send message → SSE stream (tool-calling loop, returns X-Session-Id)    |
-| GET    | `/chat/sessions`               | List all chat sessions (ordered by updatedAt DESC)                     |
-| GET    | `/chat/sessions/:id/messages`  | Get messages for a session (ordered by createdAt ASC)                  |
-| DELETE | `/chat/sessions/:id`           | Delete a session and its messages (CASCADE)                            |
+| Method | Endpoint                      | Description                                                         |
+| ------ | ----------------------------- | ------------------------------------------------------------------- |
+| POST   | `/chat`                       | Send message → SSE stream (tool-calling loop, returns X-Session-Id) |
+| GET    | `/chat/sessions`              | List all chat sessions (ordered by updatedAt DESC)                  |
+| GET    | `/chat/sessions/:id/messages` | Get messages for a session (ordered by createdAt ASC)               |
+| DELETE | `/chat/sessions/:id`          | Delete a session and its messages (CASCADE)                         |
 
 ### Health
 
@@ -656,12 +657,12 @@ volumes:
 
 ### Frontend (Angular)
 
-| Package                        | Purpose                          |
-| ------------------------------ | -------------------------------- |
-| `@angular/core`                | Angular framework                |
-| `tailwindcss` + `daisyui`      | Utility-first CSS + components   |
-| `marked`                       | Markdown rendering in chat       |
-| `@tailwindcss/typography`      | Prose styling for markdown       |
+| Package                   | Purpose                        |
+| ------------------------- | ------------------------------ |
+| `@angular/core`           | Angular framework              |
+| `tailwindcss` + `daisyui` | Utility-first CSS + components |
+| `marked`                  | Markdown rendering in chat     |
+| `@tailwindcss/typography` | Prose styling for markdown     |
 
 ---
 
@@ -669,10 +670,10 @@ volumes:
 
 ### Test Strategy
 
-| Layer    | Runner | Tests | Coverage |
-|----------|--------|-------|----------|
-| Backend  | Vitest | 246   | 96.46% statements, 91.01% branches, 100% functions |
-| Frontend | Vitest (via Angular) | 56 | 95.02% statements, 92.38% branches, 87.5% functions |
+| Layer    | Runner               | Tests | Coverage                                            |
+| -------- | -------------------- | ----- | --------------------------------------------------- |
+| Backend  | Vitest               | 246   | 96.46% statements, 91.01% branches, 100% functions  |
+| Frontend | Vitest (via Angular) | 56    | 95.02% statements, 92.38% branches, 87.5% functions |
 
 **Total: 302 tests, all passing.**
 

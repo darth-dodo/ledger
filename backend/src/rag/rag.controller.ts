@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Delete, Param, Body, Inject, Res, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  Body,
+  Inject,
+  Res,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import type { ServerResponse } from 'http';
 import { RagService } from './rag.service';
 

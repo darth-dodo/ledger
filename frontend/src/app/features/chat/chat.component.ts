@@ -1,12 +1,7 @@
 import { Component, inject, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  ChatService,
-  ChatSession,
-  ChatMessage,
-  Source,
-} from '../../core/services/chat.service';
+import { ChatService, ChatSession, Source } from '../../core/services/chat.service';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 import { SettingsService } from '../../core/services/settings.service';
 
@@ -46,8 +41,17 @@ interface DisplayMessage {
                 (click)="deleteSession(session.id, $event)"
                 aria-label="Delete session"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </button>
             </div>
@@ -70,15 +74,30 @@ interface DisplayMessage {
 
           @if (!messagesLoading && messages.length === 0) {
             <div class="flex flex-col items-center justify-center h-full text-base-content/40">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-12 w-12 mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
               </svg>
               <p class="text-sm">Ask questions about your financial data</p>
             </div>
           }
 
           @for (msg of messages; track $index) {
-            <div class="chat" [class.chat-end]="msg.role === 'user'" [class.chat-start]="msg.role === 'assistant'">
+            <div
+              class="chat"
+              [class.chat-end]="msg.role === 'user'"
+              [class.chat-start]="msg.role === 'assistant'"
+            >
               <div class="chat-header text-xs text-base-content/40 mb-1">
                 {{ msg.role === 'user' ? 'You' : 'Ledger AI' }}
               </div>
@@ -92,7 +111,12 @@ interface DisplayMessage {
                   [class.prose-invert]="msg.role === 'user'"
                   [innerHTML]="msg.content | markdown"
                 ></div>
-                @if (msg.role === 'assistant' && isStreaming && $index === messages.length - 1 && !msg.content) {
+                @if (
+                  msg.role === 'assistant' &&
+                  isStreaming &&
+                  $index === messages.length - 1 &&
+                  !msg.content
+                ) {
                   <span class="loading loading-dots loading-sm"></span>
                 }
               </div>
@@ -104,7 +128,8 @@ interface DisplayMessage {
                 <div class="collapse collapse-arrow bg-base-200/50 rounded-lg">
                   <input type="checkbox" />
                   <div class="collapse-title text-xs font-medium py-2 min-h-0">
-                    {{ msg.sources.length }} source{{ msg.sources.length !== 1 ? 's' : '' }} referenced
+                    {{ msg.sources.length }} source{{ msg.sources.length !== 1 ? 's' : '' }}
+                    referenced
                   </div>
                   <div class="collapse-content px-3 pb-3">
                     <div class="space-y-2">
@@ -119,7 +144,9 @@ interface DisplayMessage {
                                 </span>
                               }
                             </div>
-                            <p class="text-xs text-base-content/70 line-clamp-3">{{ source.content }}</p>
+                            <p class="text-xs text-base-content/70 line-clamp-3">
+                              {{ source.content }}
+                            </p>
                           </div>
                         </div>
                       }
@@ -305,29 +332,31 @@ export class ChatComponent implements AfterViewChecked {
     this.isStreaming = true;
     const assistantIdx = this.messages.length - 1;
 
-    this.chatService.sendMessage(this.activeSessionId, text, this.settingsService.currency).subscribe({
-      next: (token) => {
-        if (token.startsWith('__SESSION_ID__:')) {
-          this.activeSessionId = token.slice('__SESSION_ID__:'.length);
-          return;
-        }
-        const updated = [...this.messages];
-        updated[assistantIdx] = {
-          ...updated[assistantIdx],
-          content: updated[assistantIdx].content + token,
-        };
-        this.messages = updated;
-        this.shouldScrollToBottom = true;
-      },
-      error: (err) => {
-        this.isStreaming = false;
-        this.errorMessage = err.message ?? 'Failed to send message.';
-      },
-      complete: () => {
-        this.isStreaming = false;
-        this.loadSessions();
-      },
-    });
+    this.chatService
+      .sendMessage(this.activeSessionId, text, this.settingsService.currency)
+      .subscribe({
+        next: (token) => {
+          if (token.startsWith('__SESSION_ID__:')) {
+            this.activeSessionId = token.slice('__SESSION_ID__:'.length);
+            return;
+          }
+          const updated = [...this.messages];
+          updated[assistantIdx] = {
+            ...updated[assistantIdx],
+            content: updated[assistantIdx].content + token,
+          };
+          this.messages = updated;
+          this.shouldScrollToBottom = true;
+        },
+        error: (err) => {
+          this.isStreaming = false;
+          this.errorMessage = err.message ?? 'Failed to send message.';
+        },
+        complete: () => {
+          this.isStreaming = false;
+          this.loadSessions();
+        },
+      });
   }
 
   onEnterKey(event: Event): void {

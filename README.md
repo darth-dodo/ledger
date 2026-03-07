@@ -140,9 +140,9 @@ cd backend && pnpm migration:revert    # Revert last migration
 ### Coverage
 
 | Module   | Statements | Branches | Functions | Lines  |
-|----------|-----------|----------|-----------|--------|
-| Backend  | 96.46%    | 91.01%   | 100%      | 96.46% |
-| Frontend | 95.02%    | 92.38%   | 87.5%     | 96.71% |
+| -------- | ---------- | -------- | --------- | ------ |
+| Backend  | 96.46%     | 91.01%   | 100%      | 96.46% |
+| Frontend | 95.02%     | 92.38%   | 87.5%     | 96.71% |
 
 Coverage is enforced in CI and thresholds are set at 85% for the backend (`backend/vitest.config.ts`).
 

@@ -181,12 +181,12 @@ backend/src/rag/
 
 **`RagController`** — API endpoints:
 
-| Method | Endpoint                          | Description                      |
-| ------ | --------------------------------- | -------------------------------- |
-| POST   | `/chat`                           | Send message, receive SSE stream |
-| GET    | `/chat/sessions`                  | List all chat sessions           |
-| GET    | `/chat/sessions/:id/messages`     | Get messages for a session       |
-| DELETE | `/chat/sessions/:id`              | Delete session + messages         |
+| Method | Endpoint                      | Description                      |
+| ------ | ----------------------------- | -------------------------------- |
+| POST   | `/chat`                       | Send message, receive SSE stream |
+| GET    | `/chat/sessions`              | List all chat sessions           |
+| GET    | `/chat/sessions/:id/messages` | Get messages for a session       |
+| DELETE | `/chat/sessions/:id`          | Delete session + messages        |
 
 **`RagService`** — orchestration:
 
@@ -326,7 +326,17 @@ function validateSqlSafety(query: string): void {
     throw new BadRequestException('Multi-statement queries are not allowed');
   }
 
-  const forbidden = ['insert', 'update', 'delete', 'drop', 'alter', 'create', 'truncate', 'grant', 'revoke'];
+  const forbidden = [
+    'insert',
+    'update',
+    'delete',
+    'drop',
+    'alter',
+    'create',
+    'truncate',
+    'grant',
+    'revoke',
+  ];
   for (const keyword of forbidden) {
     if (normalized.includes(keyword)) {
       throw new BadRequestException(`Forbidden SQL keyword: ${keyword}`);
@@ -350,11 +360,11 @@ function validateSqlSafety(query: string): void {
 
 ## New Dependencies
 
-| Package           | Purpose                                    |
-| ----------------- | ------------------------------------------ |
-| `ai`              | Vercel AI SDK core — `streamText`, `tool`  |
-| `@ai-sdk/mistral` | Mistral provider for Vercel AI SDK         |
-| `zod`             | Schema validation for tool parameters      |
+| Package           | Purpose                                   |
+| ----------------- | ----------------------------------------- |
+| `ai`              | Vercel AI SDK core — `streamText`, `tool` |
+| `@ai-sdk/mistral` | Mistral provider for Vercel AI SDK        |
+| `zod`             | Schema validation for tool parameters     |
 
 `zod` may already be a transitive dependency. `ai` and `@ai-sdk/mistral` are the only new additions.
 
@@ -362,14 +372,14 @@ function validateSqlSafety(query: string): void {
 
 ## Linear Issues
 
-| Issue | Scope                              | Dependencies |
-| ----- | ---------------------------------- | ------------ |
-| AI-66 | Database migration (chat tables)   | None         |
-| AI-67 | Vercel AI SDK integration          | AI-66        |
-| AI-68 | RAG tools (vector_search + sql_query) | AI-67     |
-| AI-69 | RagModule controller + service     | AI-68        |
-| AI-70 | Angular chat UI                    | AI-69        |
-| AI-71 | Tests                              | AI-69, AI-70 |
+| Issue | Scope                                 | Dependencies |
+| ----- | ------------------------------------- | ------------ |
+| AI-66 | Database migration (chat tables)      | None         |
+| AI-67 | Vercel AI SDK integration             | AI-66        |
+| AI-68 | RAG tools (vector_search + sql_query) | AI-67        |
+| AI-69 | RagModule controller + service        | AI-68        |
+| AI-70 | Angular chat UI                       | AI-69        |
+| AI-71 | Tests                                 | AI-69, AI-70 |
 
 Suggested order: AI-66 -> AI-67 -> AI-68 -> AI-69 -> AI-70 -> AI-71. AI-70 can start in parallel with AI-69 using a mock SSE endpoint.
 

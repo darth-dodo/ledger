@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ChatService } from './chat.service';
 
 describe('ChatService', () => {
@@ -24,9 +21,7 @@ describe('ChatService', () => {
 
   describe('getSessions', () => {
     it('should make GET request to /chat/sessions', () => {
-      const mockSessions = [
-        { id: '1', title: 'Session 1', createdAt: '', updatedAt: '' },
-      ];
+      const mockSessions = [{ id: '1', title: 'Session 1', createdAt: '', updatedAt: '' }];
 
       service.getSessions().subscribe((sessions) => {
         expect(sessions).toEqual(mockSessions);
@@ -70,9 +65,7 @@ describe('ChatService', () => {
 
       service.deleteSession(sessionId).subscribe();
 
-      const req = httpTesting.expectOne(
-        `http://localhost:3000/chat/sessions/${sessionId}`,
-      );
+      const req = httpTesting.expectOne(`http://localhost:3000/chat/sessions/${sessionId}`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -91,9 +84,16 @@ describe('ChatService', () => {
 
     it('should call fetch with correct URL, method, headers, and body', () => {
       const mockFetch = vi.fn().mockResolvedValue(
-        new Response(new ReadableStream({ start(ctrl) { ctrl.close(); } }), {
-          status: 200,
-        }),
+        new Response(
+          new ReadableStream({
+            start(ctrl) {
+              ctrl.close();
+            },
+          }),
+          {
+            status: 200,
+          },
+        ),
       );
       globalThis.fetch = mockFetch;
 
@@ -115,9 +115,16 @@ describe('ChatService', () => {
 
     it('should include null sessionId when creating a new session', () => {
       const mockFetch = vi.fn().mockResolvedValue(
-        new Response(new ReadableStream({ start(ctrl) { ctrl.close(); } }), {
-          status: 200,
-        }),
+        new Response(
+          new ReadableStream({
+            start(ctrl) {
+              ctrl.close();
+            },
+          }),
+          {
+            status: 200,
+          },
+        ),
       );
       globalThis.fetch = mockFetch;
 

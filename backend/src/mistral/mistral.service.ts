@@ -98,7 +98,6 @@ export class MistralService {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   chatStream(params: {
     system: string;
     messages: ModelMessage[];
