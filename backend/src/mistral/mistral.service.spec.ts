@@ -1,10 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Mock the @mistralai/mistralai module
+// Hoisted mock variables (available inside vi.mock factories)
 // ---------------------------------------------------------------------------
 
-const mockChatComplete = vi.fn();
+const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral } = vi.hoisted(() => ({
+  mockChatComplete: vi.fn(),
+  mockStreamText: vi.fn(),
+  mockStepCountIs: vi.fn(),
+  mockCreateMistral: vi.fn(),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock the @mistralai/mistralai module
+// ---------------------------------------------------------------------------
 
 vi.mock('@mistralai/mistralai', () => ({
   Mistral: vi.fn().mockImplementation(() => ({
@@ -12,6 +21,22 @@ vi.mock('@mistralai/mistralai', () => ({
       complete: mockChatComplete,
     },
   })),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock @ai-sdk/mistral and ai modules
+// ---------------------------------------------------------------------------
+
+vi.mock('@ai-sdk/mistral', () => ({
+  createMistral: (...args: unknown[]) => {
+    mockCreateMistral(...args);
+    return () => 'mock-model';
+  },
+}));
+
+vi.mock('ai', () => ({
+  streamText: mockStreamText,
+  stepCountIs: mockStepCountIs,
 }));
 
 import { MistralService } from './mistral.service.js';
@@ -221,6 +246,81 @@ describe('MistralService', () => {
       const result = await service.categorize(descriptions);
 
       expect(result).toEqual(allCategories);
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // chatStream
+  // ---------------------------------------------------------------
+  describe('chatStream', () => {
+    it('throws error when API key not configured', () => {
+      delete process.env.MISTRAL_API_KEY;
+      const service = new MistralService();
+
+      expect(() =>
+        service.chatStream({
+          system: 'You are a helper',
+          messages: [{ role: 'user', content: 'hello' }] as unknown[],
+        }),
+      ).toThrow('Mistral API key not configured');
+    });
+
+    it('calls streamText with correct params', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStepCountIs.mockReturnValue('stop-condition');
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+      const tools = { myTool: {} } as unknown as Record<string, unknown>;
+      const messages = [{ role: 'user', content: 'hello' }] as unknown[];
+
+      const result = service.chatStream({
+        system: 'You are a helper',
+        messages,
+        tools,
+        maxSteps: 5,
+      });
+
+      expect(mockStreamText).toHaveBeenCalledWith({
+        model: 'mock-model',
+        system: 'You are a helper',
+        messages,
+        tools,
+        stopWhen: 'stop-condition',
+      });
+      expect(mockStepCountIs).toHaveBeenCalledWith(5);
+      expect(result).toBe('stream-result');
+    });
+
+    it('uses default maxSteps of 3 when not specified', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStepCountIs.mockReturnValue('stop-default');
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+
+      service.chatStream({
+        system: 'system prompt',
+        messages: [] as unknown[],
+      });
+
+      expect(mockStepCountIs).toHaveBeenCalledWith(3);
+    });
+
+    it('passes custom maxSteps when provided', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStepCountIs.mockReturnValue('stop-10');
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+
+      service.chatStream({
+        system: 'system prompt',
+        messages: [] as unknown[],
+        maxSteps: 10,
+      });
+
+      expect(mockStepCountIs).toHaveBeenCalledWith(10);
     });
   });
 });

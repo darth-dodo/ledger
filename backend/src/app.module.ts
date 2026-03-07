@@ -6,9 +6,12 @@ import { UploadModule } from './upload/upload.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { MistralModule } from './mistral/mistral.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
+import { RagModule } from './rag/rag.module';
 import { Statement } from './upload/entities/statement.entity';
 import { Transaction } from './transactions/entities/transaction.entity';
 import { Embedding } from './embeddings/entities/embedding.entity';
+import { ChatSession } from './rag/entities/chat-session.entity';
+import { ChatMessage } from './rag/entities/chat-message.entity';
 import { migrations } from './db/migrations';
 
 const hasDatabase = process.env.DATABASE_URL && process.env.DATABASE_URL !== 'fake';
@@ -22,7 +25,7 @@ const hasDatabase = process.env.DATABASE_URL && process.env.DATABASE_URL !== 'fa
           TypeOrmModule.forRoot({
             type: 'postgres',
             url: process.env.DATABASE_URL,
-            entities: [Statement, Transaction, Embedding],
+            entities: [Statement, Transaction, Embedding, ChatSession, ChatMessage],
             migrations,
             migrationsRun: true,
             synchronize: false,
@@ -31,6 +34,7 @@ const hasDatabase = process.env.DATABASE_URL && process.env.DATABASE_URL !== 'fa
           UploadModule,
           TransactionsModule,
           EmbeddingsModule,
+          RagModule,
         ]
       : []),
   ],

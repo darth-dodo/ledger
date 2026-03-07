@@ -43,3 +43,24 @@ Default to using Node.js with pnpm.
 - `CsvParser` — parses via `csv-parse`, heuristic column detection
 - Parsers registered in `upload.module.ts` via `PARSERS` multi-provider token
 - See `docs/adrs/adr-002-parser-strategy.md` for design decisions
+
+## M5 Modules (RAG Chat)
+
+### RAG module (`backend/src/rag/`)
+
+- `POST /chat` — SSE streaming chat endpoint. Body: `{ sessionId?, message, currency? }`. Creates session if none provided. Streams response via Vercel AI SDK `pipeUIMessageStreamToResponse()`.
+- `GET /chat/sessions` — list chat sessions
+- `GET /chat/sessions/:id/messages` — get messages for a session
+- `DELETE /chat/sessions/:id` — delete a session and its messages
+- Tools: `vector_search` (semantic similarity via pgvector embeddings) and `sql_query` (read-only SELECT against transactions table with safety validation)
+- Uses Vercel AI SDK v6 (`ai` + `@ai-sdk/mistral`) for streaming + tool-calling loops
+- System prompt includes user's preferred currency for amount formatting
+
+### Settings (`frontend/src/app/features/settings/`)
+
+- `SettingsService` — persists currency preference in localStorage
+- Currency sent with each chat request, threaded into LLM system prompt
+
+### Mistral service additions
+
+- `chatStream()` method added alongside existing `categorize()` — uses `streamText()` with `stopWhen: stepCountIs(n)` for multi-step tool calling

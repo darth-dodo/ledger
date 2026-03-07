@@ -5,8 +5,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-178%20passing-brightgreen" alt="Tests">
-  <img src="https://img.shields.io/badge/coverage-73%25-yellow" alt="Coverage">
+  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/backend_coverage-96%25-brightgreen" alt="Backend Coverage">
+  <img src="https://img.shields.io/badge/frontend_coverage-95%25-brightgreen" alt="Frontend Coverage">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
@@ -30,7 +31,7 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 1. **Upload** -- Drag and drop any bank statement (PDF or CSV)
 2. **Parse** -- Transactions are automatically extracted and categorized by AI
 3. **Embed** -- Statement content is chunked and vectorized for semantic search
-4. **Ask** -- Chat with your financial data in natural language _(coming soon)_
+4. **Ask** -- Chat with your financial data in natural language
 5. **Visualize** -- See spending patterns on interactive dashboards _(coming soon)_
 
 ## Features
@@ -41,7 +42,7 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 | Transaction Parsing | :white_check_mark: | Extensible parser strategy (PDF + CSV heuristics)    |
 | AI Categorization   | :white_check_mark: | Mistral-powered batch categorization of transactions |
 | Vector Embeddings   | :white_check_mark: | pgvector storage with cosine similarity search       |
-| RAG Chat            | :construction:     | Natural language Q&A over your financial data        |
+| RAG Chat            | :white_check_mark: | Natural language Q&A over your financial data        |
 | Dashboard           | :construction:     | Visual analytics and spending breakdowns             |
 | Auth & Polish       | :construction:     | User accounts and production hardening               |
 
@@ -118,19 +119,32 @@ cd frontend && pnpm dev
 ## Development
 
 ```bash
-# Run backend tests (178 tests)
-cd backend && pnpm test
+# Run all tests (302 tests)
+make test
 
 # Run with coverage
-cd backend && pnpm test:coverage
+make test-coverage                     # Backend + frontend coverage
+
+# Individual test suites
+cd backend && pnpm test                # 246 backend tests
+cd frontend && pnpm test               # 56 frontend tests (with coverage)
 
 # Type check
 cd backend && pnpm build
 
 # Database migrations
-cd backend && pnpm migrate          # Run pending migrations
-cd backend && pnpm migration:revert # Revert last migration
+cd backend && pnpm migrate             # Run pending migrations
+cd backend && pnpm migration:revert    # Revert last migration
 ```
+
+### Coverage
+
+| Module   | Statements | Branches | Functions | Lines  |
+| -------- | ---------- | -------- | --------- | ------ |
+| Backend  | 96.46%     | 91.01%   | 100%      | 96.46% |
+| Frontend | 95.02%     | 92.38%   | 87.5%     | 96.71% |
+
+Coverage is enforced in CI and thresholds are set at 85% for the backend (`backend/vitest.config.ts`).
 
 ## Tech Stack
 
@@ -140,7 +154,7 @@ cd backend && pnpm migration:revert # Revert last migration
 | Backend  | NestJS 11, TypeORM                  | REST API with dependency injection       |
 | Database | PostgreSQL + pgvector               | Relational data + vector embeddings      |
 | AI       | Mistral AI                          | Transaction categorization + embeddings  |
-| Testing  | Vitest, Karma/Jasmine               | Unit + integration tests                 |
+| Testing  | Vitest                              | Unit + integration tests (302 total)     |
 | Runtime  | tsx, pnpm                           | TypeScript execution, package management |
 
 ## Project Structure

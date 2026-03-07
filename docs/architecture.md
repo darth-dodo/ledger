@@ -11,6 +11,7 @@ graph TB
         DASH[Dashboard]
         CHAT[Chat Interface]
         TX[Transactions View]
+        SET[Settings]
     end
 
     subgraph Backend ["NestJS Backend :3000"]
@@ -32,6 +33,7 @@ graph TB
         ST[(statements)]
         TT[(transactions)]
         EM[(embeddings)]
+        CSS[(chat_sessions)]
         CM[(chat_messages)]
     end
 
@@ -53,6 +55,7 @@ graph TB
     US --> ST
     US --> TT
     ES --> EM
+    RS --> CSS
     RS --> CM
     AS --> TT
 
@@ -105,49 +108,76 @@ sequenceDiagram
     participant User
     participant Angular
     participant NestJS
-    participant Mistral as Mistral AI
+    participant Mistral as Mistral AI (Vercel AI SDK)
     participant pgvector as PostgreSQL + pgvector
 
     User->>Angular: Types question
-    Angular->>NestJS: POST /chat { message }
+    Angular->>NestJS: POST /chat { sessionId?, message, currency }
 
     rect rgb(255, 243, 205)
-        Note over NestJS,Mistral: 1. Embed the query
-        NestJS->>Mistral: Embed user question
-        Mistral-->>NestJS: Query vector (1024-dim)
-    end
-
-    rect rgb(212, 237, 218)
-        Note over NestJS,pgvector: 2. Vector similarity search
-        NestJS->>pgvector: Cosine search (top 5 chunks)
-        pgvector-->>NestJS: Relevant transaction chunks
+        Note over NestJS: 1. Session + message persistence
+        NestJS->>pgvector: Create/load ChatSession
+        NestJS->>pgvector: Save user ChatMessage
+        NestJS->>pgvector: Load conversation history (last 10)
     end
 
     rect rgb(248, 215, 218)
-        Note over NestJS,Mistral: 3. Generate response
-        NestJS->>NestJS: Build prompt (system + context + query)
-        NestJS->>Mistral: Chat completion
-        Mistral-->>NestJS: AI response
+        Note over NestJS,Mistral: 2. Streaming tool-calling loop
+        NestJS->>Mistral: streamText() with tools + history (SSE)
+        loop Up to 3 tool-calling steps
+            Mistral-->>NestJS: Tool call (vector_search or sql_query)
+            alt vector_search
+                NestJS->>Mistral: Embed query → 1024-dim vector
+                Mistral-->>NestJS: Query vector
+                NestJS->>pgvector: Cosine search (top 5 chunks)
+                pgvector-->>NestJS: Relevant chunks
+            else sql_query
+                NestJS->>NestJS: Validate SQL (SELECT-only, transactions table)
+                NestJS->>pgvector: Execute read-only query (LIMIT 100)
+                pgvector-->>NestJS: Query results
+            end
+            NestJS->>Mistral: Tool result
+        end
+        Mistral-->>NestJS: Final text response (streamed)
     end
 
-    NestJS->>pgvector: Store chat message + sources
-    NestJS-->>Angular: { response, sources[] }
-    Angular-->>User: Display answer + source cards
+    NestJS-->>Angular: SSE stream (UI message stream format)
+    Angular-->>User: Render markdown + streaming tokens
+
+    rect rgb(212, 237, 218)
+        Note over NestJS,pgvector: 3. Background persistence
+        NestJS->>pgvector: Save assistant ChatMessage
+        NestJS->>pgvector: Auto-title session (first message)
+    end
 ```
 
-### RAG Prompt Template
+The RAG pipeline uses a **tool-calling loop** via Vercel AI SDK's `streamText()` with `stopWhen: stepCountIs(3)`. The LLM autonomously decides which tools to invoke based on the question -- `vector_search` for contextual lookups, `sql_query` for calculations and aggregations. Responses stream to the frontend as SSE in the AI SDK v6 UI message stream format.
+
+### RAG System Prompt
+
+The system prompt is built dynamically with the user's selected currency. It provides:
+
+- Tool descriptions and when to use each one
+- Full `transactions` table schema for SQL generation
+- Example SQL queries (PostgreSQL syntax) for common financial questions
+- Currency formatting instructions
 
 ```
 SYSTEM:
-You are a financial assistant analyzing the user's bank statements.
-Answer questions using ONLY the provided context. If the context
-doesn't contain the answer, say so. Always cite specific transactions.
+You are a helpful financial assistant analyzing the user's bank statements
+and transactions.
 
-CONTEXT:
-{retrieved chunks from pgvector search}
+You have access to two tools:
+- vector_search: Search through bank statement text chunks using semantic
+  similarity. Best for contextual questions.
+- sql_query: Query the PostgreSQL transactions database directly with SQL.
+  Best for calculations and aggregations.
 
-USER:
-{user's question}
+The transactions table schema (PostgreSQL):
+  id, statement_id, date, description, amount, category, type
+
+The user's preferred currency is {currency}. Format all monetary amounts
+using {currency}.
 ```
 
 ---
@@ -186,16 +216,25 @@ erDiagram
         timestamptz created_at
     }
 
+    chat_sessions {
+        uuid id PK
+        varchar title "nullable, auto-generated"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     chat_messages {
         uuid id PK
+        uuid session_id FK
         varchar role "user | assistant"
         text content
-        jsonb sources "chunk IDs used"
-        timestamp created_at
+        jsonb sources "nullable, chunk references"
+        timestamptz created_at
     }
 
     statements ||--o{ transactions : "has many"
     statements ||--o{ embeddings : "has many"
+    chat_sessions ||--o{ chat_messages : "has many (CASCADE delete)"
 ```
 
 ### Key Indexes
@@ -210,6 +249,9 @@ CREATE INDEX ON embeddings
 CREATE INDEX ON transactions (date);
 CREATE INDEX ON transactions (category);
 CREATE INDEX ON transactions (statement_id);
+
+-- Chat message lookup by session
+CREATE INDEX ON chat_messages (session_id);
 ```
 
 ---
@@ -238,9 +280,13 @@ graph TD
             EE[Embedding Entity]
         end
 
-        subgraph RagModule ["RagModule 🚧 M5"]
+        subgraph RagModule ["RagModule ✅ M5"]
             RC2[RagController]
             RS2[RagService]
+            CSE[ChatSession Entity]
+            CME[ChatMessage Entity]
+            VST[vector_search Tool]
+            SQT[sql_query Tool]
         end
 
         subgraph AnalyticsModule ["AnalyticsModule 🚧 M6"]
@@ -308,8 +354,18 @@ backend/
 │   │   ├── migrate.ts
 │   │   └── migrations/
 │   │       ├── index.ts
-│   │       └── 1709700000000-InitialSchema.ts
-│   ├── rag/                       # 🚧 M5 (planned)
+│   │       ├── 1709700000000-InitialSchema.ts
+│   │       └── 1709700000001-AddChatTables.ts
+│   ├── rag/                       # ✅ M5
+│   │   ├── rag.module.ts
+│   │   ├── rag.controller.ts      #   POST /chat (SSE), GET sessions, DELETE session
+│   │   ├── rag.service.ts         #   Session mgmt, message persistence, tool-calling loop
+│   │   ├── entities/
+│   │   │   ├── chat-session.entity.ts
+│   │   │   └── chat-message.entity.ts
+│   │   └── tools/
+│   │       ├── vector-search.tool.ts  # Semantic search via embeddings
+│   │       └── sql-query.tool.ts      # Read-only SELECT with safety validation
 │   ├── analytics/                 # 🚧 M6 (planned)
 │   └── common/                    # 🚧 M7 (planned)
 ├── nest-cli.json
@@ -339,9 +395,14 @@ graph TD
         end
 
         subgraph ChatPage ["/chat"]
+            SB[Session Sidebar]
+            MA[Message Area]
             MI[MessageInput]
-            MB[MessageBubble]
-            SC[SourceCard]
+            MD[MarkdownPipe]
+        end
+
+        subgraph SettingsPage ["/settings"]
+            CS[CurrencySelector]
         end
 
         subgraph DashboardPage ["/dashboard"]
@@ -356,6 +417,7 @@ graph TD
     style UploadPage fill:#e8f4f8
     style TransactionsPage fill:#d4edda
     style ChatPage fill:#f8d7da
+    style SettingsPage fill:#fce4ec
     style DashboardPage fill:#e2d9f3
 ```
 
@@ -371,14 +433,21 @@ frontend/
 │   │   ├── core/
 │   │   │   └── services/
 │   │   │       ├── api.service.ts          # ✅ M2: HTTP client wrapper
-│   │   │       └── transactions.service.ts # ✅ M3: Transaction HTTP client
+│   │   │       ├── transactions.service.ts # ✅ M3: Transaction HTTP client
+│   │   │       ├── chat.service.ts         # ✅ M5: SSE streaming + session CRUD
+│   │   │       └── settings.service.ts     # ✅ M5: Currency localStorage persistence
 │   │   ├── shared/
-│   │   │   └── components/
-│   │   │       └── file-dropzone/          # ✅ M2: Drag-and-drop
+│   │   │   ├── components/
+│   │   │   │   └── file-dropzone/          # ✅ M2: Drag-and-drop
+│   │   │   └── pipes/
+│   │   │       └── markdown.pipe.ts        # ✅ M5: Markdown rendering (marked)
 │   │   └── features/
 │   │       ├── upload/                     # ✅ M2: Upload page
 │   │       ├── transactions/               # ✅ M3: Transactions page
-│   │       ├── chat/                       # 🚧 M5 (planned)
+│   │       ├── chat/                       # ✅ M5: RAG chat interface
+│   │       │   └── chat.component.ts       #   Session sidebar + SSE streaming
+│   │       ├── settings/                   # ✅ M5: User preferences
+│   │       │   └── settings.component.ts   #   Currency selector
 │   │       └── dashboard/                  # 🚧 M6 (planned)
 │   └── styles.scss
 ├── angular.json
@@ -415,12 +484,14 @@ frontend/
 | GET    | `/analytics/monthly`    | Month-over-month breakdown                 |
 | GET    | `/analytics/daily`      | Daily spending data (for heatmap)          |
 
-### Chat
+### Chat (RAG)
 
-| Method | Endpoint        | Description                         |
-| ------ | --------------- | ----------------------------------- |
-| POST   | `/chat`         | Send message → RAG-powered response |
-| GET    | `/chat/history` | Past chat messages                  |
+| Method | Endpoint                      | Description                                                         |
+| ------ | ----------------------------- | ------------------------------------------------------------------- |
+| POST   | `/chat`                       | Send message → SSE stream (tool-calling loop, returns X-Session-Id) |
+| GET    | `/chat/sessions`              | List all chat sessions (ordered by updatedAt DESC)                  |
+| GET    | `/chat/sessions/:id/messages` | Get messages for a session (ordered by createdAt ASC)               |
+| DELETE | `/chat/sessions/:id`          | Delete a session and its messages (CASCADE)                         |
 
 ### Health
 
@@ -432,9 +503,9 @@ frontend/
 
 ## 8. Mistral AI Integration
 
-### Two API calls used:
+### Three API capabilities:
 
-**1. Embeddings** — text → 1024-dim vector
+**1. Embeddings** — text → 1024-dim vector (via `@mistralai/mistralai` SDK)
 
 ```typescript
 // mistral.service.ts
@@ -447,20 +518,43 @@ async embed(texts: string[]): Promise<number[][]> {
 }
 ```
 
-**2. Chat Completion** — context + question → answer
+**2. Chat Categorization** — batch transaction classification (via `@mistralai/mistralai` SDK)
 
 ```typescript
-async chat(systemPrompt: string, userMessage: string): Promise<string> {
+async categorize(descriptions: string[]): Promise<(string | null)[]> {
   const response = await this.client.chat.complete({
     model: 'mistral-large-latest',
     messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage },
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: JSON.stringify(descriptions) },
     ],
+    responseFormat: { type: 'json_object' },
   });
-  return response.choices[0].message.content;
+  // Parse and validate against VALID_CATEGORIES set
 }
 ```
+
+**3. Streaming Chat with Tools** — tool-calling loop (via Vercel AI SDK `@ai-sdk/mistral`)
+
+```typescript
+// mistral.service.ts — uses createMistral() from @ai-sdk/mistral
+chatStream(params: {
+  system: string;
+  messages: ModelMessage[];
+  tools?: ToolSet;
+  maxSteps?: number;
+}): ReturnType<typeof streamText> {
+  return streamText({
+    model: this.aiModel,          // createMistral({ apiKey })('mistral-large-latest')
+    system: params.system,
+    messages: params.messages,
+    tools: params.tools,
+    stopWhen: stepCountIs(params.maxSteps ?? 3),
+  });
+}
+```
+
+The `MistralService` maintains two clients: the native `@mistralai/mistralai` SDK for embeddings and categorization, and a Vercel AI SDK model instance (`@ai-sdk/mistral`) for streaming chat with tool-calling support. Both gracefully degrade when `MISTRAL_API_KEY` is not set.
 
 ---
 
@@ -548,15 +642,18 @@ volumes:
 
 ### Backend (NestJS)
 
-| Package                       | Purpose              |
-| ----------------------------- | -------------------- |
-| `@nestjs/core`                | NestJS framework     |
-| `@nestjs/typeorm` + `typeorm` | ORM + database       |
-| `pg`                          | PostgreSQL driver    |
-| `@mistralai/mistralai`        | Mistral AI SDK       |
-| `pdf-parse`                   | PDF text extraction  |
-| `csv-parse`                   | CSV parsing          |
-| `multer`                      | File upload handling |
+| Package                       | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `@nestjs/core`                | NestJS framework                         |
+| `@nestjs/typeorm` + `typeorm` | ORM + database                           |
+| `pg`                          | PostgreSQL driver                        |
+| `@mistralai/mistralai`        | Mistral AI SDK (embeddings, categorize)  |
+| `ai`                          | Vercel AI SDK (streamText, tool-calling) |
+| `@ai-sdk/mistral`             | Vercel AI SDK Mistral provider           |
+| `zod`                         | Schema validation (tool input schemas)   |
+| `pdf-parse`                   | PDF text extraction                      |
+| `csv-parse`                   | CSV parsing                              |
+| `multer`                      | File upload handling                     |
 
 ### Frontend (Angular)
 
@@ -564,3 +661,68 @@ volumes:
 | ------------------------- | ------------------------------ |
 | `@angular/core`           | Angular framework              |
 | `tailwindcss` + `daisyui` | Utility-first CSS + components |
+| `marked`                  | Markdown rendering in chat     |
+| `@tailwindcss/typography` | Prose styling for markdown     |
+
+---
+
+## 13. Testing & Coverage
+
+### Test Strategy
+
+| Layer    | Runner               | Tests | Coverage                                            |
+| -------- | -------------------- | ----- | --------------------------------------------------- |
+| Backend  | Vitest               | 246   | 96.46% statements, 91.01% branches, 100% functions  |
+| Frontend | Vitest (via Angular) | 56    | 95.02% statements, 92.38% branches, 87.5% functions |
+
+**Total: 302 tests, all passing.**
+
+### Backend Test Organization
+
+```
+backend/src/
+├── *.spec.ts                    # Co-located with source files
+├── upload/
+│   ├── upload.service.spec.ts
+│   ├── upload.controller.spec.ts
+│   ├── upload.integration.spec.ts
+│   └── parsers/
+│       ├── pdf.parser.spec.ts
+│       └── csv.parser.spec.ts
+├── rag/
+│   ├── rag.service.spec.ts
+│   ├── rag.controller.spec.ts
+│   └── tools/
+│       ├── sql-query.tool.spec.ts
+│       └── vector-search.tool.spec.ts
+├── transactions/
+│   ├── transactions.service.spec.ts
+│   └── transactions.controller.spec.ts
+├── embeddings/
+│   └── embeddings.service.spec.ts
+└── mistral/
+    └── mistral.service.spec.ts
+```
+
+### Frontend Test Organization
+
+```
+frontend/src/app/
+├── app.component.spec.ts
+├── core/services/
+│   ├── api.service.spec.ts
+│   ├── chat.service.spec.ts        # SSE streaming, legacy format parsing
+│   ├── settings.service.spec.ts
+│   └── transactions.service.spec.ts
+└── shared/
+    ├── components/file-dropzone/
+    │   └── file-dropzone.component.spec.ts
+    └── pipes/
+        └── markdown.pipe.spec.ts
+```
+
+### Coverage Enforcement
+
+- **Backend**: Thresholds set at 85% (statements, branches, functions, lines) in `backend/vitest.config.ts`
+- **Frontend**: Coverage enabled by default via `angular.json` test options using `@vitest/coverage-v8`
+- **CI**: Both backend and frontend coverage reports are generated in the GitHub Actions pipeline and displayed in the job summary
