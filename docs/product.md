@@ -12,7 +12,7 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 
 ## Current Status
 
-**M5 (RAG Chat) is complete.** The full upload-to-chat pipeline is functional: users can upload bank statements, view parsed transactions, and ask natural language questions about their finances. The chat system uses Mistral function calling with two tools (`vector_search` for semantic retrieval over statement chunks, `sql_query` for read-only aggregation queries against the transactions table), SSE streaming for real-time response display, and Markdown rendering. A settings page lets users select their currency, which persists in localStorage and formats monetary values in chat responses. Next milestone is M6 (Full Dashboard) for visual analytics.
+**M5 (RAG Chat) is complete.** The full upload-to-chat pipeline is functional: users can upload bank statements, view parsed transactions, and ask natural language questions about their finances. The chat system uses Mistral function calling with two tools (`vector_search` for semantic retrieval over statement chunks, `sql_query` for read-only aggregation queries against the transactions table), SSE streaming for real-time response display, and Markdown rendering. A settings page lets users select their currency, which persists in localStorage and formats monetary values in chat responses. Test coverage is at 96% (backend) and 95% (frontend) with 302 tests across both. Next milestone is M6 (Full Dashboard) for visual analytics.
 
 ---
 
@@ -203,7 +203,8 @@ gantt
 | AI              | Mistral AI                         | Embeddings (mistral-embed) + Chat (mistral-large-latest)      |
 | AI SDK          | Vercel AI SDK (`ai` + `@ai-sdk/mistral`) | Streaming chat completions, tool-calling loop, SSE transport |
 | File Parsing    | pdf-parse, csv-parse               | Extract text from bank statements                             |
-| Markdown        | ngx-markdown                       | Render AI chat responses as formatted Markdown                |
+| Markdown        | marked                             | Render AI chat responses as formatted Markdown (via MarkdownPipe) |
+| Testing         | Vitest + @vitest/coverage-v8       | Unit/integration tests with V8 coverage (302 tests, 95%+ coverage) |
 | Charts          | Chart.js / ngx-charts (planned M6) | Dashboard visualizations                                      |
 | Package Manager | pnpm                               | Fast installs, strict dependency resolution                   |
 | Deployment      | Docker Compose (local)             | PostgreSQL + pgvector container                               |

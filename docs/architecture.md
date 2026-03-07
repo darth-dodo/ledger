@@ -662,3 +662,66 @@ volumes:
 | `tailwindcss` + `daisyui`      | Utility-first CSS + components   |
 | `marked`                       | Markdown rendering in chat       |
 | `@tailwindcss/typography`      | Prose styling for markdown       |
+
+---
+
+## 13. Testing & Coverage
+
+### Test Strategy
+
+| Layer    | Runner | Tests | Coverage |
+|----------|--------|-------|----------|
+| Backend  | Vitest | 246   | 96.46% statements, 91.01% branches, 100% functions |
+| Frontend | Vitest (via Angular) | 56 | 95.02% statements, 92.38% branches, 87.5% functions |
+
+**Total: 302 tests, all passing.**
+
+### Backend Test Organization
+
+```
+backend/src/
+├── *.spec.ts                    # Co-located with source files
+├── upload/
+│   ├── upload.service.spec.ts
+│   ├── upload.controller.spec.ts
+│   ├── upload.integration.spec.ts
+│   └── parsers/
+│       ├── pdf.parser.spec.ts
+│       └── csv.parser.spec.ts
+├── rag/
+│   ├── rag.service.spec.ts
+│   ├── rag.controller.spec.ts
+│   └── tools/
+│       ├── sql-query.tool.spec.ts
+│       └── vector-search.tool.spec.ts
+├── transactions/
+│   ├── transactions.service.spec.ts
+│   └── transactions.controller.spec.ts
+├── embeddings/
+│   └── embeddings.service.spec.ts
+└── mistral/
+    └── mistral.service.spec.ts
+```
+
+### Frontend Test Organization
+
+```
+frontend/src/app/
+├── app.component.spec.ts
+├── core/services/
+│   ├── api.service.spec.ts
+│   ├── chat.service.spec.ts        # SSE streaming, legacy format parsing
+│   ├── settings.service.spec.ts
+│   └── transactions.service.spec.ts
+└── shared/
+    ├── components/file-dropzone/
+    │   └── file-dropzone.component.spec.ts
+    └── pipes/
+        └── markdown.pipe.spec.ts
+```
+
+### Coverage Enforcement
+
+- **Backend**: Thresholds set at 85% (statements, branches, functions, lines) in `backend/vitest.config.ts`
+- **Frontend**: Coverage enabled by default via `angular.json` test options using `@vitest/coverage-v8`
+- **CI**: Both backend and frontend coverage reports are generated in the GitHub Actions pipeline and displayed in the job summary
