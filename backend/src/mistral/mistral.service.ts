@@ -49,6 +49,22 @@ export class MistralService {
       return descriptions.map(() => null);
     }
 
+    // Batch large lists to avoid response mismatches
+    const BATCH_SIZE = 20;
+    if (descriptions.length > BATCH_SIZE) {
+      const results: (string | null)[] = [];
+      for (let i = 0; i < descriptions.length; i += BATCH_SIZE) {
+        const batch = descriptions.slice(i, i + BATCH_SIZE);
+        const batchResults = await this.categorizeBatch(batch);
+        results.push(...batchResults);
+      }
+      return results;
+    }
+
+    return this.categorizeBatch(descriptions);
+  }
+
+  private async categorizeBatch(descriptions: string[]): Promise<(string | null)[]> {
     try {
       const response = await this.client.chat.complete({
         model: 'mistral-large-latest',
@@ -70,21 +86,40 @@ export class MistralService {
 
       const parsed: unknown = JSON.parse(raw);
 
-      // The response may be a bare array or an object wrapping one
-      const categories: unknown[] = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray((parsed as Record<string, unknown>).categories)
-          ? ((parsed as Record<string, unknown>).categories as unknown[])
-          : [];
+      // The response may be:
+      // 1. A bare array of strings: ["groceries", "dining"]
+      // 2. An object wrapping an array: { categories: ["groceries", "dining"] }
+      // 3. An array of objects: [{ category: "groceries" }, ...]
+      let categories: unknown[];
+      if (Array.isArray(parsed)) {
+        categories = parsed;
+      } else if (typeof parsed === 'object' && parsed !== null) {
+        // Find the first array property in the response object
+        const values = Object.values(parsed as Record<string, unknown>);
+        const arr = values.find((v) => Array.isArray(v));
+        categories = Array.isArray(arr) ? arr : [];
+      } else {
+        categories = [];
+      }
 
-      if (categories.length !== descriptions.length) {
+      // Normalize: if items are objects with a "category" property, extract it
+      const normalized = categories.map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          const obj = item as Record<string, unknown>;
+          return typeof obj.category === 'string' ? obj.category : null;
+        }
+        return null;
+      });
+
+      if (normalized.length !== descriptions.length) {
         this.logger.warn(
-          `Category count mismatch: expected ${descriptions.length}, got ${categories.length}`,
+          `Category count mismatch: expected ${descriptions.length}, got ${normalized.length}`,
         );
         return descriptions.map(() => null);
       }
 
-      return categories.map((cat) => {
+      return normalized.map((cat) => {
         if (typeof cat === 'string' && VALID_CATEGORIES.has(cat.toLowerCase())) {
           return cat.toLowerCase();
         }

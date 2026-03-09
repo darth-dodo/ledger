@@ -127,6 +127,18 @@ describe('MistralService', () => {
       expect(result).toEqual(['entertainment', 'shopping', 'health']);
     });
 
+    it('parses response as array of objects with category property', async () => {
+      mockChatComplete.mockResolvedValue(
+        makeMistralResponse(
+          '[{"transaction":"WALMART","category":"groceries"},{"transaction":"UBER","category":"transport"}]',
+        ),
+      );
+
+      const result = await service.categorize(['WALMART', 'UBER']);
+
+      expect(result).toEqual(['groceries', 'transport']);
+    });
+
     it('returns nulls when response count mismatches input count', async () => {
       mockChatComplete.mockResolvedValue(makeMistralResponse('["groceries","dining"]'));
 

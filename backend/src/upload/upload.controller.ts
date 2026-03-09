@@ -76,6 +76,12 @@ export class UploadController {
     await this.uploadService.remove(id, getUploadDir());
   }
 
+  @Delete('purge')
+  async purge(): Promise<{ message: string }> {
+    await this.uploadService.purgeAll(getUploadDir());
+    return { message: 'All data purged successfully' };
+  }
+
   private validateFile(file: Express.Multer.File): void {
     const ext = path.extname(file.originalname).toLowerCase();
 

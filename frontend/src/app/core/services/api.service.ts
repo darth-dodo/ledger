@@ -39,4 +39,8 @@ export class ApiService {
   deleteStatement(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/statements/${id}`);
   }
+
+  purgeAll(): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/purge`);
+  }
 }

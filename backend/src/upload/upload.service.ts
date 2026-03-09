@@ -120,6 +120,22 @@ export class UploadService {
     await this.statementRepo.remove(statement);
   }
 
+  async purgeAll(uploadDir: string): Promise<void> {
+    // Delete all files from disk
+    const statements = await this.statementRepo.find();
+    for (const statement of statements) {
+      const filePath = path.join(uploadDir, statement.filePath);
+      try {
+        await fs.unlink(filePath);
+      } catch {
+        // File may already be deleted
+      }
+    }
+
+    // Clear all tables in dependency order
+    await this.statementRepo.query('TRUNCATE transactions, embeddings, chat_messages, chat_sessions, statements CASCADE');
+  }
+
   private extractFileType(filename: string): string {
     const ext = path.extname(filename).toLowerCase().slice(1);
     return ext === 'pdf' ? 'pdf' : 'csv';

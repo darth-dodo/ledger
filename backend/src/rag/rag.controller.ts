@@ -30,10 +30,15 @@ export class RagController {
       body.currency ?? 'USD',
     );
 
-    // Set session ID header before piping (pipeUIMessageStreamToResponse sets its own SSE headers)
-    res.setHeader('X-Session-Id', sessionId);
+    // Set SSE headers and send session ID as first event before piping the AI stream
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.write(`data: ${JSON.stringify({ type: 'session-id', sessionId })}\n\n`);
 
-    // Pipe as UI message stream (sends SSE with JSON chunks the frontend can parse)
+    // Pipe the AI stream (appends its own SSE events)
     streamResult.pipeUIMessageStreamToResponse(res);
   }
 

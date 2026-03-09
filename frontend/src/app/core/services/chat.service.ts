@@ -71,32 +71,17 @@ export class ChatService {
 
             for (const line of lines) {
               if (line.startsWith('data: ')) {
-                // AI SDK v6 UI message stream: SSE with JSON chunks
                 const raw = line.slice(6).trim();
                 if (!raw || raw === '[DONE]') continue;
                 try {
                   const chunk = JSON.parse(raw);
-                  if (chunk.type === 'text-delta' && typeof chunk.delta === 'string') {
+                  if (chunk.type === 'session-id' && typeof chunk.sessionId === 'string') {
+                    subscriber.next(`__SESSION_ID__:${chunk.sessionId}`);
+                  } else if (chunk.type === 'text-delta' && typeof chunk.delta === 'string') {
                     subscriber.next(chunk.delta);
                   }
-                  // other chunk types (text-start, text-end, tool-*) are ignored for now
                 } catch {
-                  // Non-JSON SSE data — emit as-is
                   subscriber.next(raw);
-                }
-              } else if (line.startsWith('0:')) {
-                // Legacy Vercel AI SDK data stream format: 0:"token"
-                const token = JSON.parse(line.slice(2));
-                subscriber.next(token);
-              } else if (line.startsWith('d:')) {
-                // Legacy Vercel AI SDK finish message
-                try {
-                  const data = JSON.parse(line.slice(2));
-                  if (data.sessionId) {
-                    subscriber.next(`__SESSION_ID__:${data.sessionId}`);
-                  }
-                } catch {
-                  // ignore parse errors on finish message
                 }
               }
             }
