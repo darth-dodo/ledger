@@ -263,8 +263,9 @@ M0 (Scaffold)
              └──→ M3 (Parse & Persist)
                    └──→ M4 (Chunk & Embed)
                          └──→ M5 (RAG Chat)
-                               └──→ M6 (Analytics)
-                                     └──→ M7 (Auth & Polish)
+                               └──→ M6 (Groq ZDR + Ollama)
+                                     └──→ M7 (Analytics)
+                                           └──→ M8 (Auth & Polish)
 ```
 
 ### Ledger Milestone → Coordination Pattern Mapping
@@ -277,8 +278,9 @@ M0 (Scaffold)
 | M3: Parse & Persist | Sequential   | Architect → Developer → QA                 | Parser strategy needs design, careful testing |
 | M4: Chunk & Embed   | Sequential   | Architect → Developer + AI overlay         | Embedding quality is critical path            |
 | M5: RAG Chat        | Hierarchical | Architect leads, Developer + AI overlay    | Complex multi-system integration              |
-| M6: Analytics       | Parallel     | Developer (backend) + Developer (frontend) | Independent API and dashboard work            |
-| M7: Auth & Polish   | Parallel     | Developer + QA + Writer                    | Multiple independent hardening tasks          |
+| M6: Groq ZDR        | Sequential   | Developer + AI overlay                     | Provider migration with careful testing       |
+| M7: Analytics       | Parallel     | Developer (backend) + Developer (frontend) | Independent API and dashboard work            |
+| M8: Auth & Polish   | Parallel     | Developer + QA + Writer                    | Multiple independent hardening tasks          |
 
 ---
 

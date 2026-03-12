@@ -289,7 +289,7 @@ graph TD
             SQT[sql_query Tool]
         end
 
-        subgraph AnalyticsModule ["AnalyticsModule 🚧 M6"]
+        subgraph AnalyticsModule ["AnalyticsModule 🚧 M7"]
             AC2[AnalyticsController]
             AS2[AnalyticsService]
         end
@@ -366,8 +366,8 @@ backend/
 │   │   └── tools/
 │   │       ├── vector-search.tool.ts  # Semantic search via embeddings
 │   │       └── sql-query.tool.ts      # Read-only SELECT with safety validation
-│   ├── analytics/                 # 🚧 M6 (planned)
-│   └── common/                    # 🚧 M7 (planned)
+│   ├── analytics/                 # 🚧 M7 (planned)
+│   └── common/                    # 🚧 M8 (planned)
 ├── nest-cli.json
 ├── tsconfig.json
 └── package.json
@@ -448,7 +448,7 @@ frontend/
 │   │       │   └── chat.component.ts       #   Session sidebar + SSE streaming
 │   │       ├── settings/                   # ✅ M5: User preferences
 │   │       │   └── settings.component.ts   #   Currency selector
-│   │       └── dashboard/                  # 🚧 M6 (planned)
+│   │       └── dashboard/                  # 🚧 M7 (planned)
 │   └── styles.scss
 ├── angular.json
 ├── tsconfig.json

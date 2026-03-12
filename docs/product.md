@@ -37,7 +37,7 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 | Markdown Rendering | Chat responses rendered as Markdown with proper formatting                | P0       | Done   |
 | Settings           | Currency selector persisted in localStorage, formats amounts in chat      | P1       | Done   |
 
-### Analytics (M6)
+### Analytics (M7)
 
 | Feature             | Description                                  | Priority |
 | ------------------- | -------------------------------------------- | -------- |
@@ -48,7 +48,7 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 | Recurring Detection | Identify subscriptions and recurring charges | P1       |
 | Category Drill-Down | Click a category to see its transactions     | P1       |
 
-### Polish (M7)
+### Polish (M8)
 
 | Feature          | Description                              | Priority |
 | ---------------- | ---------------------------------------- | -------- |
@@ -165,8 +165,9 @@ flowchart TD
 | M3        | Parse & Persist   | Complete | PDF/CSV parsers (strategy pattern), transactions table, Mistral categories   |
 | M4        | Chunk & Embed     | Complete | Text chunking (~500 tokens), Mistral embeddings, pgvector storage            |
 | M5        | RAG Chat          | Complete | Session-based chat, SSE streaming, vector_search + sql_query tools, settings |
-| M6        | Full Dashboard    | Planned  | Spending summary, category breakdown, monthly trends, daily heatmap          |
-| M7        | Auth & Polish     | Planned  | JWT auth, category editing, error handling                                   |
+| M6        | Groq ZDR + Ollama | Planned  | Migrate to Groq (ZDR) for chat, Ollama for local embeddings                 |
+| M7        | Full Dashboard    | Planned  | Spending summary, category breakdown, monthly trends, daily heatmap          |
+| M8        | Auth & Polish     | Planned  | JWT auth, category editing, error handling                                   |
 
 ```mermaid
 gantt
@@ -185,10 +186,13 @@ gantt
 
     section Features
         M5 - RAG Chat                 :done, m5, after m4, 3d
-        M6 - Full Dashboard           :m6, after m5, 3d
+        M6 - Groq ZDR + Ollama        :m6, after m5, 2d
+
+    section Dashboard
+        M7 - Full Dashboard           :m7, after m6, 3d
 
     section Polish
-        M7 - Auth & Polish            :m7, after m6, 2d
+        M8 - Auth & Polish            :m8, after m7, 2d
 ```
 
 ---
@@ -205,7 +209,7 @@ gantt
 | File Parsing    | pdf-parse, csv-parse                     | Extract text from bank statements                                  |
 | Markdown        | marked                                   | Render AI chat responses as formatted Markdown (via MarkdownPipe)  |
 | Testing         | Vitest + @vitest/coverage-v8             | Unit/integration tests with V8 coverage (302 tests, 95%+ coverage) |
-| Charts          | Chart.js / ngx-charts (planned M6)       | Dashboard visualizations                                           |
+| Charts          | Chart.js / ngx-charts (planned M7)       | Dashboard visualizations                                           |
 | Package Manager | pnpm                                     | Fast installs, strict dependency resolution                        |
 | Deployment      | Docker Compose (local)                   | PostgreSQL + pgvector container                                    |
 
@@ -220,7 +224,7 @@ gantt
 | Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity.                                                                |
 | Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed.                                                    |
 | Upload UX         | Fire and forget                | MVP simplicity. No progress steps or background processing.                                                                                                             |
-| Auth timing       | Deferred to M7                 | No login friction during development. Single-user local app doesn't need auth early.                                                                                    |
+| Auth timing       | Deferred to M8                 | No login friction during development. Single-user local app doesn't need auth early.                                                                                    |
 | Parser design     | Strategy pattern               | Bank PDF formats vary across institutions. Each bank gets its own parser. Start with one, add more.                                                                     |
 | Deployment        | Local Docker Compose           | No cloud until product is solid.                                                                                                                                        |
 | Database          | PostgreSQL + pgvector          | Single DB for both structured data and vector search. No separate vector DB needed.                                                                                     |

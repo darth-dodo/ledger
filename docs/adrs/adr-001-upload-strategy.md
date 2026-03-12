@@ -140,7 +140,7 @@ Follows the same pattern as the health module but adds a service layer (health w
 **Negative**:
 
 - Local filesystem storage doesn't scale to multi-user or cloud deployment (acceptable for MVP)
-- No virus scanning (deferred to M7)
+- No virus scanning (deferred to M8)
 - No duplicate file detection (acceptable for personal use)
 
 **Risks**:

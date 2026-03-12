@@ -27,8 +27,9 @@
 | M3  | Parse & Persist   | ✅     | Sequential   | Architect → Developer → QA     | 3d       | M2         |
 | M4  | Chunk & Embed     | ✅     | Sequential   | Architect → Developer + AI     | 2d       | M3         |
 | M5  | RAG Chat          | ⏳     | Hierarchical | Architect leads, Dev + AI      | 3d       | M4         |
-| M6  | Full Dashboard    | ⏳     | Parallel     | Dev (backend) + Dev (frontend) | 3d       | M5         |
-| M7  | Auth & Polish     | ⏳     | Parallel     | Dev + QA + Writer              | 2d       | M6         |
+| M6  | Groq ZDR + Ollama | ⏳     | Sequential   | Developer + AI                 | 2d       | M5         |
+| M7  | Full Dashboard    | ⏳     | Parallel     | Dev (backend) + Dev (frontend) | 3d       | M6         |
+| M8  | Auth & Polish     | ⏳     | Parallel     | Dev + QA + Writer              | 2d       | M7         |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⏳ Pending | 🚫 Blocked
 
@@ -43,8 +44,9 @@ graph LR
     M2 --> M3[M3: Parse & Persist]
     M3 --> M4[M4: Chunk & Embed]
     M4 --> M5[M5: RAG Chat]
-    M5 --> M6[M6: Full Dashboard]
-    M6 --> M7[M7: Auth & Polish]
+    M5 --> M6[M6: Groq ZDR + Ollama]
+    M6 --> M7[M7: Full Dashboard]
+    M7 --> M8[M8: Auth & Polish]
 
     style M0 fill:#d4edda,stroke:#28a745
     style M1 fill:#d4edda,stroke:#28a745
@@ -54,6 +56,7 @@ graph LR
     style M5 fill:#f5f5f5,stroke:#999
     style M6 fill:#f5f5f5,stroke:#999
     style M7 fill:#f5f5f5,stroke:#999
+    style M8 fill:#f5f5f5,stroke:#999
 ```
 
 ---
@@ -204,7 +207,7 @@ graph LR
 
 ---
 
-### M6 — Full Dashboard ⏳
+### M7 — Full Dashboard ⏳
 
 **Track A — Backend API**:
 
@@ -233,7 +236,7 @@ graph LR
 
 ---
 
-### M7 — Auth & Polish ⏳
+### M8 — Auth & Polish ⏳
 
 **Track A — Authentication**:
 
@@ -274,6 +277,7 @@ graph LR
 | M5        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 | M6        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 | M7        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
+| M8        | ⏳     | ⏳    | ⏳   | ⏳       | ⏳    | ⏳   | ⏳   | ⏳          |
 
 **Legend**: ✅ Passed | ❌ Failed | ⚠️ Warning | ⏳ Pending | ➖ N/A
 

@@ -106,5 +106,5 @@ ADR-001: File Upload Strategy (`docs/adrs/adr-001-upload-strategy.md`). Document
 ## Risks
 
 - Local filesystem storage does not scale to multi-user deployments (acceptable for MVP).
-- No virus scanning on uploaded files (deferred to M7).
+- No virus scanning on uploaded files (deferred to M8).
 - No duplicate file detection.

@@ -38,8 +38,9 @@
 | M3: Parse & Persist | Sequential   | Architect → Developer(+data) → QA        |
 | M4: Chunk & Embed   | Sequential   | Architect → Developer(+AI)               |
 | M5: RAG Chat        | Hierarchical | Architect leads, Developer(+AI)          |
-| M6: Dashboard       | Parallel     | Developer(backend) + Developer(frontend) |
-| M7: Auth & Polish   | Parallel     | Developer + QA + Writer                  |
+| M6: Groq ZDR        | Sequential   | Developer(+AI)                           |
+| M7: Dashboard       | Parallel     | Developer(backend) + Developer(frontend) |
+| M8: Auth & Polish   | Parallel     | Developer + QA + Writer                  |
 
 ---
 
