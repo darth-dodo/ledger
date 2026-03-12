@@ -102,7 +102,7 @@ export class RagService {
     });
     await this.messageRepo.save(userMessage);
 
-    // 3. Load conversation history (last 10 messages)
+    // 3. Load conversation history (last 20 messages)
     const history = await this.messageRepo.find({
       where: { sessionId: session.id },
       order: { createdAt: 'ASC' },
