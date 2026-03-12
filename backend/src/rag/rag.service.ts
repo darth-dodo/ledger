@@ -2,19 +2,36 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import type { ModelMessage } from 'ai';
+import { hasToolCall, stepCountIs } from 'ai';
 import { ChatSession } from './entities/chat-session.entity';
 import { ChatMessage } from './entities/chat-message.entity';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { MistralService } from '../mistral/mistral.service';
 import { createVectorSearchTool } from './tools/vector-search.tool';
 import { createSqlQueryTool } from './tools/sql-query.tool';
+import { createThinkTool } from './tools/think.tool';
+import { createDoneTool } from './tools/done.tool';
+import { createUpdateCategoryTool } from './tools/update-category.tool';
+import { createChartDataTool } from './tools/chart-data.tool';
 
 function buildSystemPrompt(currency: string): string {
-  return `You are a helpful financial assistant analyzing the user's bank statements and transactions.
+  return `You are an agentic financial assistant analyzing the user's bank statements and transactions.
 
-You have access to two tools:
-- vector_search: Search through bank statement text chunks using semantic similarity. Best for contextual questions like "what was that charge from last week?" or "tell me about my Amazon purchases."
-- sql_query: Query the PostgreSQL transactions database directly with SQL. Best for calculations and aggregations like "how much did I spend on food?" or "what's my biggest expense this month?"
+You follow a ReAct (Reason-Act-Observe) loop for every question:
+
+1. THINK: Always call the \`think\` tool first to plan your approach
+2. ACT: Call the appropriate tool(s)
+3. OBSERVE: Review the results
+4. REPEAT: If results are unexpected or incomplete, think again and try a different approach
+5. DONE: Call the \`done\` tool when you have a complete answer
+
+Available tools:
+- think: Plan your approach before acting. Always use this first.
+- sql_query: Query the PostgreSQL transactions database. Best for calculations, aggregations, filtering.
+- vector_search: Semantic search over bank statement text. Best for finding specific merchants or contextual questions.
+- update_category: Re-categorize a transaction. Find the transaction ID with sql_query first.
+- chart_data: Generate chart-ready data. Query MUST return "label" and "value" columns.
+- done: Signal you have enough information to answer. Always call this last.
 
 The transactions table schema (PostgreSQL):
   id            UUID PRIMARY KEY
@@ -22,28 +39,20 @@ The transactions table schema (PostgreSQL):
   date          DATE
   description   VARCHAR
   amount        NUMERIC(12,2)
-  category      VARCHAR (e.g. groceries, dining, transport, utilities, entertainment, shopping, health, education, travel, income, transfer, other)
+  category      VARCHAR (groceries, dining, transport, utilities, entertainment, shopping, health, education, travel, income, transfer, other)
   type          VARCHAR ('debit' or 'credit')
 
 IMPORTANT: Use PostgreSQL syntax, NOT SQLite.
 
-Example SQL queries:
-- Total spending this month:
-  SELECT SUM(amount) FROM transactions WHERE type = 'debit' AND date >= date_trunc('month', CURRENT_DATE);
-- Spending by category this month:
-  SELECT category, SUM(amount) AS total FROM transactions WHERE type = 'debit' AND date >= date_trunc('month', CURRENT_DATE) GROUP BY category ORDER BY total DESC;
-- Top 5 largest expenses:
-  SELECT description, amount, date FROM transactions WHERE type = 'debit' ORDER BY amount DESC LIMIT 5;
-- Daily spending for the last 7 days:
-  SELECT date, SUM(amount) AS total FROM transactions WHERE type = 'debit' AND date >= CURRENT_DATE - INTERVAL '7 days' GROUP BY date ORDER BY date;
-- Income vs expenses this month:
-  SELECT type, SUM(amount) AS total FROM transactions WHERE date >= date_trunc('month', CURRENT_DATE) GROUP BY type;
+Self-correction rules:
+- If SQL returns 0 rows, try vector_search or a different ILIKE pattern
+- If vector_search results are vague, extract specific terms and use SQL
+- Always verify amounts and counts make sense before calling done
+- For category updates, always confirm the transaction ID exists first
 
 The user's preferred currency is ${currency}. Format all monetary amounts using ${currency}.
-Choose the appropriate tool based on the question. You may use multiple tools if needed.
-Always cite specific transactions or data in your response.
-If the data doesn't contain the answer, say so honestly.
-Format currency amounts clearly.`;
+Always cite specific data in your response.
+If the data doesn't contain the answer, say so honestly.`;
 }
 
 @Injectable()
@@ -97,7 +106,7 @@ export class RagService {
     const history = await this.messageRepo.find({
       where: { sessionId: session.id },
       order: { createdAt: 'ASC' },
-      take: 10,
+      take: 20,
     });
 
     const messages: ModelMessage[] = history.map((msg) => ({
@@ -107,8 +116,12 @@ export class RagService {
 
     // 4. Build tools with injected dependencies
     const tools = {
+      think: createThinkTool(),
+      done: createDoneTool(),
       vector_search: createVectorSearchTool(this.embeddingsService),
       sql_query: createSqlQueryTool(this.dataSource),
+      update_category: createUpdateCategoryTool(this.dataSource),
+      chart_data: createChartDataTool(this.dataSource),
     };
 
     // 5. Call mistralService.chatStream()
@@ -116,7 +129,13 @@ export class RagService {
       system: buildSystemPrompt(currency),
       messages,
       tools,
-      maxSteps: 3,
+      stopWhen: [hasToolCall('done'), stepCountIs(10)],
+      onStepFinish: ({ toolResults, stepNumber, finishReason }: Record<string, unknown>) => {
+        this.logger.debug(`Step ${stepNumber} finished (${finishReason})`);
+        if (Array.isArray(toolResults) && toolResults.length) {
+          this.logger.debug(`Tool results: ${JSON.stringify(toolResults)}`);
+        }
+      },
     });
 
     // 6. Save assistant response after stream completes (background)

@@ -8,6 +8,7 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
   tool: vi.fn((config) => config),
   stepCountIs: vi.fn((n) => n),
+  hasToolCall: vi.fn((name) => `hasToolCall:${name}`),
 }));
 
 vi.mock('./tools/vector-search.tool', () => ({
@@ -18,9 +19,29 @@ vi.mock('./tools/sql-query.tool', () => ({
   createSqlQueryTool: vi.fn(() => 'mockSqlTool'),
 }));
 
+vi.mock('./tools/think.tool', () => ({
+  createThinkTool: vi.fn(() => 'mockThinkTool'),
+}));
+
+vi.mock('./tools/done.tool', () => ({
+  createDoneTool: vi.fn(() => 'mockDoneTool'),
+}));
+
+vi.mock('./tools/update-category.tool', () => ({
+  createUpdateCategoryTool: vi.fn(() => 'mockUpdateCategoryTool'),
+}));
+
+vi.mock('./tools/chart-data.tool', () => ({
+  createChartDataTool: vi.fn(() => 'mockChartDataTool'),
+}));
+
 import { RagService } from './rag.service';
 import { createVectorSearchTool } from './tools/vector-search.tool';
 import { createSqlQueryTool } from './tools/sql-query.tool';
+import { createThinkTool } from './tools/think.tool';
+import { createDoneTool } from './tools/done.tool';
+import { createUpdateCategoryTool } from './tools/update-category.tool';
+import { createChartDataTool } from './tools/chart-data.tool';
 
 // ---------------------------------------------------------------------------
 // Mock factories
@@ -170,13 +191,13 @@ describe('RagService', () => {
       );
     });
 
-    it('loads conversation history (last 10 messages)', async () => {
+    it('loads conversation history (last 20 messages)', async () => {
       await service.chat(null, 'Hello');
 
       expect(messageRepo.find).toHaveBeenCalledWith({
         where: { sessionId: 'session-1' },
         order: { createdAt: 'ASC' },
-        take: 10,
+        take: 20,
       });
     });
 
@@ -205,21 +226,29 @@ describe('RagService', () => {
   // chat() — tool creation
   // -----------------------------------------------------------------
   describe('chat() — tool creation', () => {
-    it('creates vector_search and sql_query tools', async () => {
+    it('creates all six tools', async () => {
       await service.chat(null, 'Search something');
 
+      expect(createThinkTool).toHaveBeenCalled();
+      expect(createDoneTool).toHaveBeenCalled();
       expect(createVectorSearchTool).toHaveBeenCalledWith(embeddingsService);
       expect(createSqlQueryTool).toHaveBeenCalledWith(dataSource);
+      expect(createUpdateCategoryTool).toHaveBeenCalledWith(dataSource);
+      expect(createChartDataTool).toHaveBeenCalledWith(dataSource);
     });
 
-    it('passes tools to chatStream', async () => {
+    it('passes all tools to chatStream', async () => {
       await service.chat(null, 'Search something');
 
       expect(mistralService.chatStream).toHaveBeenCalledWith(
         expect.objectContaining({
           tools: {
+            think: 'mockThinkTool',
+            done: 'mockDoneTool',
             vector_search: 'mockVectorTool',
             sql_query: 'mockSqlTool',
+            update_category: 'mockUpdateCategoryTool',
+            chart_data: 'mockChartDataTool',
           },
         }),
       );
@@ -230,15 +259,14 @@ describe('RagService', () => {
   // chat() — streaming and response
   // -----------------------------------------------------------------
   describe('chat() — streaming and response', () => {
-    it('calls mistralService.chatStream with correct params', async () => {
+    it('calls mistralService.chatStream with stopWhen conditions', async () => {
       await service.chat(null, 'Hello');
 
       expect(mistralService.chatStream).toHaveBeenCalledWith(
         expect.objectContaining({
-          system: expect.stringContaining('financial assistant'),
-          messages: expect.any(Array),
-          tools: expect.any(Object),
-          maxSteps: 3,
+          system: expect.stringContaining('agentic financial assistant'),
+          stopWhen: ['hasToolCall:done', 10],
+          onStepFinish: expect.any(Function),
         }),
       );
     });
@@ -281,14 +309,15 @@ describe('RagService', () => {
       );
     });
 
-    it('system prompt contains key instructions', async () => {
+    it('system prompt contains ReAct instructions', async () => {
       await service.chat(null, 'Hello');
 
       const call = mistralService.chatStream.mock.calls[0][0];
-      expect(call.system).toContain('vector_search');
-      expect(call.system).toContain('sql_query');
-      expect(call.system).toContain('PostgreSQL');
-      expect(call.system).toContain('transactions');
+      expect(call.system).toContain('think');
+      expect(call.system).toContain('done');
+      expect(call.system).toContain('THINK');
+      expect(call.system).toContain('update_category');
+      expect(call.system).toContain('chart_data');
     });
   });
 
