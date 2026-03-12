@@ -2,21 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Mistral } from '@mistralai/mistralai';
 import { createMistral } from '@ai-sdk/mistral';
 import { streamText, stepCountIs, type ModelMessage, type ToolSet } from 'ai';
-
-const VALID_CATEGORIES = new Set([
-  'groceries',
-  'dining',
-  'transport',
-  'utilities',
-  'entertainment',
-  'shopping',
-  'health',
-  'education',
-  'travel',
-  'income',
-  'transfer',
-  'other',
-]);
+import { VALID_CATEGORIES } from '../shared/categories.js';
 
 const SYSTEM_PROMPT = `You are a bank transaction categorizer. For each transaction description, assign exactly one category from this list:
 groceries, dining, transport, utilities, entertainment, shopping, health, education, travel, income, transfer, other
