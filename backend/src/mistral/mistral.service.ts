@@ -123,7 +123,8 @@ export class MistralService {
     system: string;
     messages: ModelMessage[];
     tools?: ToolSet;
-    maxSteps?: number;
+    stopWhen?: unknown;
+    onStepFinish?: (step: Record<string, unknown>) => void | Promise<void>;
   }): ReturnType<typeof streamText> {
     if (!this.aiModel) {
       throw new Error('Mistral API key not configured');
@@ -134,7 +135,8 @@ export class MistralService {
       system: params.system,
       messages: params.messages,
       tools: params.tools,
-      stopWhen: stepCountIs(params.maxSteps ?? 3),
+      stopWhen: params.stopWhen ?? stepCountIs(3),
+      onStepFinish: params.onStepFinish,
     });
   }
 }

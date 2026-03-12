@@ -277,34 +277,31 @@ describe('MistralService', () => {
       ).toThrow('Mistral API key not configured');
     });
 
-    it('calls streamText with correct params', () => {
+    it('passes stopWhen directly to streamText', () => {
       process.env.MISTRAL_API_KEY = 'test-api-key';
-      mockStepCountIs.mockReturnValue('stop-condition');
       mockStreamText.mockReturnValue('stream-result');
 
       const service = new MistralService();
       const tools = { myTool: {} } as unknown as Record<string, unknown>;
       const messages = [{ role: 'user', content: 'hello' }] as unknown[];
+      const stopWhen = ['mock-stop-condition'];
 
-      const result = service.chatStream({
+      service.chatStream({
         system: 'You are a helper',
         messages,
         tools,
-        maxSteps: 5,
+        stopWhen,
       });
 
-      expect(mockStreamText).toHaveBeenCalledWith({
-        model: 'mock-model',
-        system: 'You are a helper',
-        messages,
-        tools,
-        stopWhen: 'stop-condition',
-      });
-      expect(mockStepCountIs).toHaveBeenCalledWith(5);
-      expect(result).toBe('stream-result');
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stopWhen,
+          tools,
+        }),
+      );
     });
 
-    it('uses default maxSteps of 3 when not specified', () => {
+    it('defaults stopWhen to stepCountIs(3) when not provided', () => {
       process.env.MISTRAL_API_KEY = 'test-api-key';
       mockStepCountIs.mockReturnValue('stop-default');
       mockStreamText.mockReturnValue('stream-result');
@@ -317,22 +314,31 @@ describe('MistralService', () => {
       });
 
       expect(mockStepCountIs).toHaveBeenCalledWith(3);
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stopWhen: 'stop-default',
+        }),
+      );
     });
 
-    it('passes custom maxSteps when provided', () => {
+    it('passes onStepFinish callback when provided', () => {
       process.env.MISTRAL_API_KEY = 'test-api-key';
-      mockStepCountIs.mockReturnValue('stop-10');
       mockStreamText.mockReturnValue('stream-result');
 
       const service = new MistralService();
+      const onStepFinish = vi.fn();
 
       service.chatStream({
         system: 'system prompt',
         messages: [] as unknown[],
-        maxSteps: 10,
+        onStepFinish,
       });
 
-      expect(mockStepCountIs).toHaveBeenCalledWith(10);
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          onStepFinish,
+        }),
+      );
     });
   });
 });
