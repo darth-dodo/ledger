@@ -145,7 +145,19 @@ export class RagService {
 
     void (async () => {
       try {
-        const text = await streamResult.text;
+        // The agent may put its answer in tool calls (done tool summary)
+        // rather than as plain text. Extract from steps if text is empty.
+        let text = await streamResult.text;
+        if (!text) {
+          const steps = await streamResult.steps;
+          for (const step of steps) {
+            for (const result of step.toolResults ?? []) {
+              if (result.toolName === 'done' && typeof result.output?.summary === 'string') {
+                text = result.output.summary;
+              }
+            }
+          }
+        }
 
         const assistantMessage = this.messageRepo.create({
           sessionId: sessionForSave.id,

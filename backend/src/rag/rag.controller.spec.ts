@@ -30,16 +30,34 @@ describe('RagController', () => {
   // ---------------------------------------------------------------
   // chat()
   // ---------------------------------------------------------------
+
+  function mockFullStream(events: Record<string, unknown>[]) {
+    return {
+      async *[Symbol.asyncIterator]() {
+        for (const e of events) yield e;
+      },
+    };
+  }
+
+  function makeMockStreamResult(events: Record<string, unknown>[] = []) {
+    return { fullStream: mockFullStream(events) };
+  }
+
   describe('chat()', () => {
-    it('calls ragService.chat with sessionId, message, and currency; sets SSE headers and pipes stream', async () => {
-      const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
+    it('sets SSE headers, sends session-id, streams text-delta and done summary, then ends', async () => {
+      const events = [
+        { type: 'text-delta', text: 'Hello ' },
+        { type: 'text-delta', text: 'world' },
+        { type: 'tool-result', toolName: 'done', output: { summary: 'Final answer' } },
+      ];
       mockRagService.chat.mockResolvedValue({
-        streamResult: mockStreamResult,
+        streamResult: makeMockStreamResult(events),
         sessionId: 'sess-1',
       });
       const mockRes = {
         writeHead: vi.fn(),
         write: vi.fn(),
+        end: vi.fn(),
       } as unknown as ServerResponse;
 
       await controller.chat(
@@ -53,21 +71,35 @@ describe('RagController', () => {
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
       });
-      expect(mockRes.write).toHaveBeenCalledWith(
+
+      const writes = (mockRes.write as ReturnType<typeof vi.fn>).mock.calls.map(
+        (c: unknown[]) => c[0],
+      );
+      expect(writes[0]).toBe(
         `data: ${JSON.stringify({ type: 'session-id', sessionId: 'sess-1' })}\n\n`,
       );
-      expect(mockStreamResult.pipeUIMessageStreamToResponse).toHaveBeenCalledWith(mockRes);
+      expect(writes[1]).toBe(
+        `data: ${JSON.stringify({ type: 'text-delta', delta: 'Hello ' })}\n\n`,
+      );
+      expect(writes[2]).toBe(
+        `data: ${JSON.stringify({ type: 'text-delta', delta: 'world' })}\n\n`,
+      );
+      expect(writes[3]).toBe(
+        `data: ${JSON.stringify({ type: 'text-delta', delta: 'Final answer' })}\n\n`,
+      );
+      expect(writes[4]).toBe('data: [DONE]\n\n');
+      expect(mockRes.end).toHaveBeenCalled();
     });
 
     it('defaults currency to USD when not provided', async () => {
-      const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
       mockRagService.chat.mockResolvedValue({
-        streamResult: mockStreamResult,
+        streamResult: makeMockStreamResult(),
         sessionId: 'sess-2',
       });
       const mockRes = {
         writeHead: vi.fn(),
         write: vi.fn(),
+        end: vi.fn(),
       } as unknown as ServerResponse;
 
       await controller.chat({ message: 'hello' }, mockRes);
@@ -76,19 +108,47 @@ describe('RagController', () => {
     });
 
     it('defaults sessionId to null when not provided', async () => {
-      const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
       mockRagService.chat.mockResolvedValue({
-        streamResult: mockStreamResult,
+        streamResult: makeMockStreamResult(),
         sessionId: 'sess-3',
       });
       const mockRes = {
         writeHead: vi.fn(),
         write: vi.fn(),
+        end: vi.fn(),
       } as unknown as ServerResponse;
 
       await controller.chat({ message: 'test' }, mockRes);
 
       expect(mockRagService.chat).toHaveBeenCalledWith(null, 'test', 'USD');
+    });
+
+    it('ignores non-done tool-result events', async () => {
+      const events = [
+        { type: 'tool-result', toolName: 'think', output: { thought: 'planning...' } },
+        { type: 'tool-result', toolName: 'sql_query', output: { results: [] } },
+        { type: 'start-step' },
+        { type: 'finish-step' },
+      ];
+      mockRagService.chat.mockResolvedValue({
+        streamResult: makeMockStreamResult(events),
+        sessionId: 'sess-4',
+      });
+      const mockRes = {
+        writeHead: vi.fn(),
+        write: vi.fn(),
+        end: vi.fn(),
+      } as unknown as ServerResponse;
+
+      await controller.chat({ message: 'test' }, mockRes);
+
+      const writes = (mockRes.write as ReturnType<typeof vi.fn>).mock.calls.map(
+        (c: unknown[]) => c[0],
+      );
+      // Only session-id and [DONE], no text-delta
+      expect(writes).toHaveLength(2);
+      expect(writes[0]).toContain('session-id');
+      expect(writes[1]).toBe('data: [DONE]\n\n');
     });
   });
 
