@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Mistral } from '@mistralai/mistralai';
 import { createMistral } from '@ai-sdk/mistral';
-import { streamText, stepCountIs, type ModelMessage, type ToolSet } from 'ai';
+import {
+  streamText,
+  stepCountIs,
+  type ModelMessage,
+  type ToolSet,
+  type StopCondition,
+} from 'ai';
 import { VALID_CATEGORIES } from '../shared/categories.js';
 
 const SYSTEM_PROMPT = `You are a bank transaction categorizer. For each transaction description, assign exactly one category from this list:
@@ -52,7 +58,7 @@ export class MistralService {
 
   private async categorizeBatch(descriptions: string[]): Promise<(string | null)[]> {
     try {
-      const response = await this.client.chat.complete({
+      const response = await this.client!.chat.complete({
         model: 'mistral-large-latest',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -123,7 +129,7 @@ export class MistralService {
     system: string;
     messages: ModelMessage[];
     tools?: ToolSet;
-    stopWhen?: unknown;
+    stopWhen?: StopCondition<ToolSet> | StopCondition<ToolSet>[];
     onStepFinish?: (step: Record<string, unknown>) => void | Promise<void>;
   }): ReturnType<typeof streamText> {
     if (!this.aiModel) {

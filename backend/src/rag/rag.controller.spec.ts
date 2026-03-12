@@ -31,13 +31,16 @@ describe('RagController', () => {
   // chat()
   // ---------------------------------------------------------------
   describe('chat()', () => {
-    it('calls ragService.chat with sessionId, message, and currency; sets X-Session-Id header; pipes stream', async () => {
+    it('calls ragService.chat with sessionId, message, and currency; sets SSE headers and pipes stream', async () => {
       const mockStreamResult = { pipeUIMessageStreamToResponse: vi.fn() };
       mockRagService.chat.mockResolvedValue({
         streamResult: mockStreamResult,
         sessionId: 'sess-1',
       });
-      const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
+      const mockRes = {
+        writeHead: vi.fn(),
+        write: vi.fn(),
+      } as unknown as ServerResponse;
 
       await controller.chat(
         { sessionId: 'sess-existing', message: 'hello', currency: 'EUR' },
@@ -45,7 +48,14 @@ describe('RagController', () => {
       );
 
       expect(mockRagService.chat).toHaveBeenCalledWith('sess-existing', 'hello', 'EUR');
-      expect(mockRes.setHeader).toHaveBeenCalledWith('X-Session-Id', 'sess-1');
+      expect(mockRes.writeHead).toHaveBeenCalledWith(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      });
+      expect(mockRes.write).toHaveBeenCalledWith(
+        `data: ${JSON.stringify({ type: 'session-id', sessionId: 'sess-1' })}\n\n`,
+      );
       expect(mockStreamResult.pipeUIMessageStreamToResponse).toHaveBeenCalledWith(mockRes);
     });
 
@@ -55,7 +65,10 @@ describe('RagController', () => {
         streamResult: mockStreamResult,
         sessionId: 'sess-2',
       });
-      const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
+      const mockRes = {
+        writeHead: vi.fn(),
+        write: vi.fn(),
+      } as unknown as ServerResponse;
 
       await controller.chat({ message: 'hello' }, mockRes);
 
@@ -68,7 +81,10 @@ describe('RagController', () => {
         streamResult: mockStreamResult,
         sessionId: 'sess-3',
       });
-      const mockRes = { setHeader: vi.fn() } as unknown as ServerResponse;
+      const mockRes = {
+        writeHead: vi.fn(),
+        write: vi.fn(),
+      } as unknown as ServerResponse;
 
       await controller.chat({ message: 'test' }, mockRes);
 
