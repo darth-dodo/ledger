@@ -52,7 +52,7 @@ Default to using Node.js with pnpm.
 - `GET /chat/sessions` — list chat sessions
 - `GET /chat/sessions/:id/messages` — get messages for a session
 - `DELETE /chat/sessions/:id` — delete a session and its messages
-- Tools: `vector_search` (semantic similarity via pgvector embeddings) and `sql_query` (read-only SELECT against transactions table with safety validation)
+- Tools: `decompose_query` (breaks the user message into sub-queries with intent tags, called first in every ReAct loop), `vector_search` (semantic similarity via pgvector embeddings), and `sql_query` (read-only SELECT against transactions table with safety validation)
 - Uses Vercel AI SDK v6 (`ai` + `@ai-sdk/mistral`) for streaming + tool-calling loops
 - System prompt includes user's preferred currency for amount formatting
 
@@ -64,3 +64,4 @@ Default to using Node.js with pnpm.
 ### Mistral service additions
 
 - `chatStream()` method added alongside existing `categorize()` — uses `streamText()` with `stopWhen: stepCountIs(n)` for multi-step tool calling
+- `decomposeQuery()` method — uses `generateObject` with a Zod schema to decompose a user message into `SubQuery[]` with intent tags; called by the `decompose_query` tool on every chat message
