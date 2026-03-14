@@ -12,7 +12,7 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 
 ## Current Status
 
-**M5 (RAG Chat) is complete.** The full upload-to-chat pipeline is functional: users can upload bank statements, view parsed transactions, and ask natural language questions about their finances. The chat system uses Mistral function calling with two tools (`vector_search` for semantic retrieval over statement chunks, `sql_query` for read-only aggregation queries against the transactions table), SSE streaming for real-time response display, and Markdown rendering. A settings page lets users select their currency, which persists in localStorage and formats monetary values in chat responses. Test coverage is at 96% (backend) and 95% (frontend) with 302 tests across both. Next milestone is M6 (Full Dashboard) for visual analytics.
+**M5 (RAG Chat) is complete.** The full upload-to-chat pipeline is functional: users can upload bank statements, view parsed transactions, and ask natural language questions about their finances. The chat system uses Mistral function calling with three tools (`decompose_query` for adaptive query decomposition into structured sub-queries, `vector_search` for semantic retrieval over statement chunks, and `sql_query` for read-only aggregation queries against the transactions table), SSE streaming for real-time response display, and Markdown rendering. Compound questions (e.g. "How much did I spend on groceries vs dining, AND find any Uber charges?") are decomposed into tagged sub-queries before the agent acts, improving accuracy and tool selection. A settings page lets users select their currency, which persists in localStorage and formats monetary values in chat responses. Test coverage is at 96% (backend) and 95% (frontend) with 302 tests across both. Next milestone is M6 (Full Dashboard) for visual analytics.
 
 ---
 
@@ -33,7 +33,7 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 | Statement Upload   | Drag-and-drop PDF/CSV upload with fire-and-forget UX                      | P0       | Done   |
 | Multi-Bank Parsing | Extensible parser strategy for various bank formats                       | P0       | Done   |
 | Transaction View   | Filterable, sortable table of parsed transactions                         | P0       | Done   |
-| RAG Chat           | Session-based chat with SSE streaming, tool calling (vector search + SQL) | P0       | Done   |
+| RAG Chat           | Session-based chat with SSE streaming, adaptive query decomposition, tool calling (vector search + SQL) | P0       | Done   |
 | Markdown Rendering | Chat responses rendered as Markdown with proper formatting                | P0       | Done   |
 | Settings           | Currency selector persisted in localStorage, formats amounts in chat      | P1       | Done   |
 
@@ -94,7 +94,10 @@ sequenceDiagram
     FE->>BE: POST /chat/sessions/:id/messages { content }
     Note over FE,BE: SSE stream opens
 
-    loop Tool-calling loop (max 3 steps)
+    BE->>AI: decompose_query (break compound question into sub-queries with intent tags)
+    AI-->>BE: Sub-queries with tags: sql_aggregate | sql_filter | vector_search | hybrid
+
+    loop Tool-calling loop (max 3 steps, guided by intent tags)
         BE->>AI: Chat completion with tool definitions
         AI-->>BE: tool_call: vector_search OR sql_query
 
@@ -144,14 +147,15 @@ flowchart TD
 
 ## 5. Chat Examples
 
-| User Query                                      | Type     | Expected Behavior                         |
-| ----------------------------------------------- | -------- | ----------------------------------------- |
-| "How much did I spend on food in January?"      | Spending | Sum food transactions, cite specific ones |
-| "What's my biggest expense this month?"         | Spending | Find max transaction, provide context     |
-| "Am I spending more on Swiggy than last month?" | Pattern  | Compare across statement periods          |
-| "What subscriptions am I paying for?"           | Pattern  | Identify recurring charges                |
-| "What was that 12,000 charge last week?"        | Anomaly  | Find and explain specific transaction     |
-| "Flag any unusual transactions"                 | Anomaly  | Identify outliers from spending patterns  |
+| User Query                                                                         | Type     | Expected Behavior                                                        |
+| ---------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| "How much did I spend on food in January?"                                         | Spending | Sum food transactions, cite specific ones                                |
+| "What's my biggest expense this month?"                                            | Spending | Find max transaction, provide context                                    |
+| "Am I spending more on Swiggy than last month?"                                    | Pattern  | Compare across statement periods                                         |
+| "What subscriptions am I paying for?"                                              | Pattern  | Identify recurring charges                                               |
+| "What was that 12,000 charge last week?"                                           | Anomaly  | Find and explain specific transaction                                    |
+| "Flag any unusual transactions"                                                    | Anomaly  | Identify outliers from spending patterns                                 |
+| "How much did I spend on groceries vs dining, AND find any Uber charges?"          | Compound | Decomposed into separate sub-queries; each answered with the right tool  |
 
 ---
 
@@ -219,7 +223,7 @@ gantt
 
 | Decision          | Choice                         | Rationale                                                                                                                                                               |
 | ----------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chat architecture | Tool-calling with two tools    | Mistral function calling routes between `vector_search` (semantic) and `sql_query` (aggregation). Up to 3 tool calls per turn. Replaced the original RAG-only approach. |
+| Chat architecture | Tool-calling with three tools  | Every user message is first passed to `decompose_query`, which breaks compound questions into structured sub-queries tagged with intent (`sql_aggregate`, `sql_filter`, `vector_search`, `hybrid`). The agent then uses those tags to guide tool selection between `vector_search` (semantic) and `sql_query` (aggregation). Up to 3 tool calls per turn. Falls back to `hybrid` intent if decomposition fails. |
 | Streaming         | SSE via Vercel AI SDK          | Real-time token display gives responsive UX. SSE is simpler than WebSockets for unidirectional streaming.                                                               |
 | Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity.                                                                |
 | Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed.                                                    |
