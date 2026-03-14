@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-302%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-329%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/backend_coverage-96%25-brightgreen" alt="Backend Coverage">
-  <img src="https://img.shields.io/badge/frontend_coverage-95%25-brightgreen" alt="Frontend Coverage">
+  <img src="https://img.shields.io/badge/frontend_coverage-94%25-brightgreen" alt="Frontend Coverage">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
@@ -16,7 +16,9 @@
   <img src="https://img.shields.io/badge/Angular-19-DD0031?logo=angular&logoColor=white" alt="Angular">
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/Mistral_AI-embeddings-FF7000" alt="Mistral AI">
+  <img src="https://img.shields.io/badge/Mistral_AI-mistral--large-FF7000" alt="Mistral AI">
+  <img src="https://img.shields.io/badge/Vercel_AI_SDK-v6-000000?logo=vercel&logoColor=white" alt="Vercel AI SDK">
+  <img src="https://img.shields.io/badge/ReAct-agent-8B5CF6" alt="ReAct Agent">
   <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
 </p>
 
@@ -36,15 +38,19 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 
 ## Features
 
-| Feature             | Status             | Description                                          |
-| ------------------- | ------------------ | ---------------------------------------------------- |
-| Statement Upload    | :white_check_mark: | Drag-and-drop PDF/CSV with multi-bank support        |
-| Transaction Parsing | :white_check_mark: | Extensible parser strategy (PDF + CSV heuristics)    |
-| AI Categorization   | :white_check_mark: | Mistral-powered batch categorization of transactions |
-| Vector Embeddings   | :white_check_mark: | pgvector storage with cosine similarity search       |
-| RAG Chat            | :white_check_mark: | Natural language Q&A over your financial data        |
-| Dashboard           | :construction:     | Visual analytics and spending breakdowns             |
-| Auth & Polish       | :construction:     | User accounts and production hardening               |
+| Feature                      | Status             | Description                                            |
+| ---------------------------- | ------------------ | ------------------------------------------------------ |
+| Statement Upload             | :white_check_mark: | Drag-and-drop PDF/CSV with multi-bank support          |
+| Transaction Parsing          | :white_check_mark: | Extensible parser strategy (PDF + CSV heuristics)      |
+| AI Categorization            | :white_check_mark: | Mistral-powered batch categorization of transactions   |
+| Vector Embeddings            | :white_check_mark: | pgvector storage with cosine similarity search         |
+| RAG Chat                     | :white_check_mark: | Natural language Q&A over your financial data          |
+| Agentic ReAct Loop           | :white_check_mark: | Multi-step tool-calling agent (think → act → observe)  |
+| Adaptive Query Decomposition | :white_check_mark: | LLM breaks compound questions into typed sub-queries   |
+| Chart Data Tool              | :white_check_mark: | Agent generates chart-ready data (label/value columns) |
+| Category Updates via Chat    | :white_check_mark: | Re-categorize transactions through conversation        |
+| Dashboard                    | :construction:     | Visual analytics and spending breakdowns               |
+| Auth & Polish                | :construction:     | User accounts and production hardening                 |
 
 ## Architecture
 
@@ -55,9 +61,16 @@ graph TB
         TX[Transactions View]
     end
 
+    subgraph Frontend ["Angular Frontend :4200"]
+        UP[Upload Page]
+        TX[Transactions View]
+        CH[Chat Page]
+    end
+
     subgraph Backend ["NestJS Backend :3000"]
         UC[Upload Controller]
         TC[Transactions Controller]
+        RC[RAG Controller]
         HC[Health Controller]
 
         US[Upload Service]
@@ -66,21 +79,27 @@ graph TB
         CS[Chunker Service]
         ES[Embeddings Service]
         TS[Transactions Service]
+        RS[RAG Service]
+        AG["Agent Tools\n(think, decompose_query,\nsql_query, vector_search,\nupdate_category, chart_data, done)"]
     end
 
     subgraph Data ["PostgreSQL + pgvector"]
         ST[(statements)]
         TT[(transactions)]
         EM[(embeddings)]
+        SS[(chat_sessions)]
+        SM[(chat_messages)]
     end
 
     subgraph External ["Mistral AI"]
         CAT[Categorize]
         EMB[Embed]
+        LLM[mistral-large-latest]
     end
 
     UP -->|POST /upload| UC
     TX -->|GET /transactions| TC
+    CH -->|POST /chat SSE| RC
 
     UC --> US --> PS --> MS --> CAT
     US --> CS --> ES --> EMB
@@ -88,6 +107,11 @@ graph TB
     US --> TT
     ES --> EM
     TC --> TS --> TT
+    RC --> RS --> MS --> LLM
+    RS --> AG --> TT
+    RS --> AG --> EM
+    RS --> SS
+    RS --> SM
 
     style Frontend fill:#e8f4f8
     style Backend fill:#fff3cd
@@ -119,15 +143,15 @@ cd frontend && pnpm dev
 ## Development
 
 ```bash
-# Run all tests (302 tests)
+# Run all tests (329 tests)
 make test
 
 # Run with coverage
 make test-coverage                     # Backend + frontend coverage
 
 # Individual test suites
-cd backend && pnpm test                # 246 backend tests
-cd frontend && pnpm test               # 56 frontend tests (with coverage)
+cd backend && pnpm test                # 275 backend tests
+cd frontend && pnpm test               # 54 frontend tests (with coverage)
 
 # Type check
 cd backend && pnpm build
@@ -139,23 +163,23 @@ cd backend && pnpm migration:revert    # Revert last migration
 
 ### Coverage
 
-| Module   | Statements | Branches | Functions | Lines  |
-| -------- | ---------- | -------- | --------- | ------ |
-| Backend  | 96.46%     | 91.01%   | 100%      | 96.46% |
-| Frontend | 95.02%     | 92.38%   | 87.5%     | 96.71% |
+| Module   | Statements | Branches | Functions | Lines |
+| -------- | ---------- | -------- | --------- | ----- |
+| Backend  | 96%        | 91%      | 100%      | 96%   |
+| Frontend | 94%        | 90%      | 85%       | 95%   |
 
 Coverage is enforced in CI and thresholds are set at 85% for the backend (`backend/vitest.config.ts`).
 
 ## Tech Stack
 
-| Layer    | Technology                          | Purpose                                  |
-| -------- | ----------------------------------- | ---------------------------------------- |
-| Frontend | Angular 19, Tailwind CSS 4, daisyUI | SPA with standalone components           |
-| Backend  | NestJS 11, TypeORM                  | REST API with dependency injection       |
-| Database | PostgreSQL + pgvector               | Relational data + vector embeddings      |
-| AI       | Mistral AI                          | Transaction categorization + embeddings  |
-| Testing  | Vitest                              | Unit + integration tests (302 total)     |
-| Runtime  | tsx, pnpm                           | TypeScript execution, package management |
+| Layer    | Technology                          | Purpose                                           |
+| -------- | ----------------------------------- | ------------------------------------------------- |
+| Frontend | Angular 19, Tailwind CSS 4, daisyUI | SPA with standalone components                    |
+| Backend  | NestJS 11, TypeORM                  | REST API with dependency injection                |
+| Database | PostgreSQL + pgvector               | Relational data + vector embeddings               |
+| AI       | Mistral AI + Vercel AI SDK          | Categorization, embeddings, ReAct agent streaming |
+| Testing  | Vitest                              | Unit + integration tests (329 total)              |
+| Runtime  | tsx, pnpm                           | TypeScript execution, package management          |
 
 ## Project Structure
 
@@ -166,7 +190,8 @@ ledger/
 │       ├── upload/         # POST /upload, GET/DELETE /statements
 │       ├── transactions/   # GET /transactions, PATCH /transactions/:id
 │       ├── embeddings/     # Chunking + vector embedding pipeline
-│       ├── mistral/        # Mistral AI client (categorize + embed)
+│       ├── mistral/        # Mistral AI client (categorize + embed + chatStream)
+│       ├── rag/            # Chat sessions, ReAct agent, 7 agent tools
 │       ├── health/         # GET /health
 │       └── db/             # Migrations and data source config
 ├── frontend/               # Angular SPA (port 4200)
@@ -189,4 +214,5 @@ ledger/
 - [ADR-001: Upload Strategy](docs/adrs/adr-001-upload-strategy.md) -- File handling decisions
 - [ADR-002: Parser Strategy](docs/adrs/adr-002-parser-strategy.md) -- Multi-format parsing design
 - [ADR-003: Embedding Strategy](docs/adrs/adr-003-embedding-strategy.md) -- RAG vector storage decisions
+- [Adaptive Query Decomposition Design](docs/plans/2026-03-14-adaptive-query-decomposition-design.md) -- ReAct agent + decomposition design
 - [Changelog](CHANGELOG.md)
