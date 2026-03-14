@@ -13,7 +13,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white" alt="NestJS">
-  <img src="https://img.shields.io/badge/Angular-19-DD0031?logo=angular&logoColor=white" alt="Angular">
+  <img src="https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white" alt="Angular">
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/Mistral_AI-mistral--large-FF7000" alt="Mistral AI">
@@ -56,12 +56,6 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 
 ```mermaid
 graph TB
-    subgraph Frontend ["Angular Frontend :4200"]
-        UP[Upload Page]
-        TX[Transactions View]
-        CH[Chat Page]
-    end
-
     subgraph Frontend ["Angular Frontend :4200"]
         UP[Upload Page]
         TX[Transactions View]
@@ -175,7 +169,7 @@ Coverage is enforced in CI and thresholds are set at 85% for the backend (`backe
 
 | Layer    | Technology                          | Purpose                                           |
 | -------- | ----------------------------------- | ------------------------------------------------- |
-| Frontend | Angular 19, Tailwind CSS 4, daisyUI | SPA with standalone components                    |
+| Frontend | Angular 21, Tailwind CSS 4, daisyUI | SPA with standalone components                    |
 | Backend  | NestJS 11, TypeORM                  | REST API with dependency injection                |
 | Database | PostgreSQL + pgvector               | Relational data + vector embeddings               |
 | AI       | Mistral AI + Vercel AI SDK          | Categorization, embeddings, ReAct agent streaming |
@@ -199,7 +193,7 @@ ledger/
 │   └── src/app/
 │       ├── core/           # Services (ApiService)
 │       ├── shared/         # Reusable components (FileDropzone)
-│       └── features/       # Page components (Upload)
+│       └── features/       # Page components (Upload, Chat, Settings)
 ├── docs/
 │   ├── product.md          # Product spec
 │   ├── architecture.md     # System design
