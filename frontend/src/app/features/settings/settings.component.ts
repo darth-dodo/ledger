@@ -43,8 +43,8 @@ import { ApiService } from '../../core/services/api.service';
         <div class="card-body">
           <h3 class="card-title text-base text-error">Danger Zone</h3>
           <p class="text-sm text-base-content/60 mb-3">
-            Permanently delete all statements, transactions, chat sessions, and embeddings.
-            This action cannot be undone.
+            Permanently delete all statements, transactions, chat sessions, and embeddings. This
+            action cannot be undone.
           </p>
 
           @if (!confirmPurge) {
@@ -57,11 +57,7 @@ import { ApiService } from '../../core/services/api.service';
             </button>
           } @else {
             <div class="flex items-center gap-2">
-              <button
-                class="btn btn-error btn-sm"
-                [disabled]="purging"
-                (click)="purge()"
-              >
+              <button class="btn btn-error btn-sm" [disabled]="purging" (click)="purge()">
                 @if (purging) {
                   <span class="loading loading-spinner loading-sm"></span>
                 } @else {
@@ -79,7 +75,11 @@ import { ApiService } from '../../core/services/api.service';
           }
 
           @if (purgeMessage) {
-            <div class="text-sm mt-2" [class.text-success]="purgeSuccess" [class.text-error]="!purgeSuccess">
+            <div
+              class="text-sm mt-2"
+              [class.text-success]="purgeSuccess"
+              [class.text-error]="!purgeSuccess"
+            >
               {{ purgeMessage }}
             </div>
           }

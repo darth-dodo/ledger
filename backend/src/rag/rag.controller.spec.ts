@@ -81,9 +81,7 @@ describe('RagController', () => {
       expect(writes[1]).toBe(
         `data: ${JSON.stringify({ type: 'text-delta', delta: 'Hello ' })}\n\n`,
       );
-      expect(writes[2]).toBe(
-        `data: ${JSON.stringify({ type: 'text-delta', delta: 'world' })}\n\n`,
-      );
+      expect(writes[2]).toBe(`data: ${JSON.stringify({ type: 'text-delta', delta: 'world' })}\n\n`);
       expect(writes[3]).toBe(
         `data: ${JSON.stringify({ type: 'text-delta', delta: 'Final answer' })}\n\n`,
       );

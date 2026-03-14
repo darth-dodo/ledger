@@ -28,14 +28,14 @@ Ledger is a personal finance tool that lets you upload bank statements, automati
 
 ### MVP (M0–M5) -- Complete
 
-| Feature            | Description                                                               | Priority | Status |
-| ------------------ | ------------------------------------------------------------------------- | -------- | ------ |
-| Statement Upload   | Drag-and-drop PDF/CSV upload with fire-and-forget UX                      | P0       | Done   |
-| Multi-Bank Parsing | Extensible parser strategy for various bank formats                       | P0       | Done   |
-| Transaction View   | Filterable, sortable table of parsed transactions                         | P0       | Done   |
+| Feature            | Description                                                                                             | Priority | Status |
+| ------------------ | ------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| Statement Upload   | Drag-and-drop PDF/CSV upload with fire-and-forget UX                                                    | P0       | Done   |
+| Multi-Bank Parsing | Extensible parser strategy for various bank formats                                                     | P0       | Done   |
+| Transaction View   | Filterable, sortable table of parsed transactions                                                       | P0       | Done   |
 | RAG Chat           | Session-based chat with SSE streaming, adaptive query decomposition, tool calling (vector search + SQL) | P0       | Done   |
-| Markdown Rendering | Chat responses rendered as Markdown with proper formatting                | P0       | Done   |
-| Settings           | Currency selector persisted in localStorage, formats amounts in chat      | P1       | Done   |
+| Markdown Rendering | Chat responses rendered as Markdown with proper formatting                                              | P0       | Done   |
+| Settings           | Currency selector persisted in localStorage, formats amounts in chat                                    | P1       | Done   |
 
 ### Analytics (M7)
 
@@ -147,15 +147,15 @@ flowchart TD
 
 ## 5. Chat Examples
 
-| User Query                                                                         | Type     | Expected Behavior                                                        |
-| ---------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
-| "How much did I spend on food in January?"                                         | Spending | Sum food transactions, cite specific ones                                |
-| "What's my biggest expense this month?"                                            | Spending | Find max transaction, provide context                                    |
-| "Am I spending more on Swiggy than last month?"                                    | Pattern  | Compare across statement periods                                         |
-| "What subscriptions am I paying for?"                                              | Pattern  | Identify recurring charges                                               |
-| "What was that 12,000 charge last week?"                                           | Anomaly  | Find and explain specific transaction                                    |
-| "Flag any unusual transactions"                                                    | Anomaly  | Identify outliers from spending patterns                                 |
-| "How much did I spend on groceries vs dining, AND find any Uber charges?"          | Compound | Decomposed into separate sub-queries; each answered with the right tool  |
+| User Query                                                                | Type     | Expected Behavior                                                       |
+| ------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------- |
+| "How much did I spend on food in January?"                                | Spending | Sum food transactions, cite specific ones                               |
+| "What's my biggest expense this month?"                                   | Spending | Find max transaction, provide context                                   |
+| "Am I spending more on Swiggy than last month?"                           | Pattern  | Compare across statement periods                                        |
+| "What subscriptions am I paying for?"                                     | Pattern  | Identify recurring charges                                              |
+| "What was that 12,000 charge last week?"                                  | Anomaly  | Find and explain specific transaction                                   |
+| "Flag any unusual transactions"                                           | Anomaly  | Identify outliers from spending patterns                                |
+| "How much did I spend on groceries vs dining, AND find any Uber charges?" | Compound | Decomposed into separate sub-queries; each answered with the right tool |
 
 ---
 
@@ -169,7 +169,7 @@ flowchart TD
 | M3        | Parse & Persist   | Complete | PDF/CSV parsers (strategy pattern), transactions table, Mistral categories   |
 | M4        | Chunk & Embed     | Complete | Text chunking (~500 tokens), Mistral embeddings, pgvector storage            |
 | M5        | RAG Chat          | Complete | Session-based chat, SSE streaming, vector_search + sql_query tools, settings |
-| M6        | Groq ZDR + Ollama | Planned  | Migrate to Groq (ZDR) for chat, Ollama for local embeddings                 |
+| M6        | Groq ZDR + Ollama | Planned  | Migrate to Groq (ZDR) for chat, Ollama for local embeddings                  |
 | M7        | Full Dashboard    | Planned  | Spending summary, category breakdown, monthly trends, daily heatmap          |
 | M8        | Auth & Polish     | Planned  | JWT auth, category editing, error handling                                   |
 
@@ -221,14 +221,14 @@ gantt
 
 ## 8. Constraints & Decisions
 
-| Decision          | Choice                         | Rationale                                                                                                                                                               |
-| ----------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decision          | Choice                         | Rationale                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chat architecture | Tool-calling with three tools  | Every user message is first passed to `decompose_query`, which breaks compound questions into structured sub-queries tagged with intent (`sql_aggregate`, `sql_filter`, `vector_search`, `hybrid`). The agent then uses those tags to guide tool selection between `vector_search` (semantic) and `sql_query` (aggregation). Up to 3 tool calls per turn. Falls back to `hybrid` intent if decomposition fails. |
-| Streaming         | SSE via Vercel AI SDK          | Real-time token display gives responsive UX. SSE is simpler than WebSockets for unidirectional streaming.                                                               |
-| Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity.                                                                |
-| Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed.                                                    |
-| Upload UX         | Fire and forget                | MVP simplicity. No progress steps or background processing.                                                                                                             |
-| Auth timing       | Deferred to M8                 | No login friction during development. Single-user local app doesn't need auth early.                                                                                    |
-| Parser design     | Strategy pattern               | Bank PDF formats vary across institutions. Each bank gets its own parser. Start with one, add more.                                                                     |
-| Deployment        | Local Docker Compose           | No cloud until product is solid.                                                                                                                                        |
-| Database          | PostgreSQL + pgvector          | Single DB for both structured data and vector search. No separate vector DB needed.                                                                                     |
+| Streaming         | SSE via Vercel AI SDK          | Real-time token display gives responsive UX. SSE is simpler than WebSockets for unidirectional streaming.                                                                                                                                                                                                                                                                                                       |
+| Chat sessions     | Persistent session history     | Each chat session stores messages in PostgreSQL. Enables multi-turn context and conversation continuity.                                                                                                                                                                                                                                                                                                        |
+| Currency settings | localStorage + chat formatting | User picks currency once in settings; amounts in chat responses are formatted accordingly. No backend change needed.                                                                                                                                                                                                                                                                                            |
+| Upload UX         | Fire and forget                | MVP simplicity. No progress steps or background processing.                                                                                                                                                                                                                                                                                                                                                     |
+| Auth timing       | Deferred to M8                 | No login friction during development. Single-user local app doesn't need auth early.                                                                                                                                                                                                                                                                                                                            |
+| Parser design     | Strategy pattern               | Bank PDF formats vary across institutions. Each bank gets its own parser. Start with one, add more.                                                                                                                                                                                                                                                                                                             |
+| Deployment        | Local Docker Compose           | No cloud until product is solid.                                                                                                                                                                                                                                                                                                                                                                                |
+| Database          | PostgreSQL + pgvector          | Single DB for both structured data and vector search. No separate vector DB needed.                                                                                                                                                                                                                                                                                                                             |

@@ -160,15 +160,15 @@ The RAG pipeline uses a **ReAct agent loop** (7 tools) via Vercel AI SDK's `stre
 
 ### ReAct Agent Tools (7 total)
 
-| Tool | Purpose |
-|------|---------|
+| Tool              | Purpose                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------- |
 | `decompose_query` | Break the user question into `SubQuery[]` with intent tags; called first on every turn |
-| `think` | Internal reasoning step (no side effects) |
-| `vector_search` | Semantic similarity search over statement text chunks (pgvector) |
-| `sql_query` | Read-only SELECT against the transactions table |
-| `update_category` | Update the category of a transaction |
-| `chart_data` | Return structured data for rendering a chart |
-| `done` | Signal end of reasoning loop and emit final answer |
+| `think`           | Internal reasoning step (no side effects)                                              |
+| `vector_search`   | Semantic similarity search over statement text chunks (pgvector)                       |
+| `sql_query`       | Read-only SELECT against the transactions table                                        |
+| `update_category` | Update the category of a transaction                                                   |
+| `chart_data`      | Return structured data for rendering a chart                                           |
+| `done`            | Signal end of reasoning loop and emit final answer                                     |
 
 Intent tags returned by `decompose_query` guide tool selection: `sql_aggregate` and `sql_filter` → `sql_query`; `vector_search` → `vector_search`; `hybrid` → both.
 

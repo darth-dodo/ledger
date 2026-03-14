@@ -103,7 +103,12 @@ export class PdfParser implements ParserInterface {
         // Stop if we hit another date line (belongs to previous transaction)
         if (this.findDate(prevLine)) break;
         // Skip page markers and headers
-        if (/^(ref:|--\s*\d|Description|IBAN|Swift|EUR\s+(on|statement)|Generated|Account\s+Holder)/i.test(prevLine)) break;
+        if (
+          /^(ref:|--\s*\d|Description|IBAN|Swift|EUR\s+(on|statement)|Generated|Account\s+Holder)/i.test(
+            prevLine,
+          )
+        )
+          break;
 
         description = prevLine;
         break;
@@ -115,7 +120,9 @@ export class PdfParser implements ParserInterface {
       let cleanDesc = description;
       const issuedByMatch = description.match(/issued by\s+(.+)/i);
       const paidToMatch = description.match(/^(?:Paid|Sent money) to\s+(.+)/i);
-      const receivedFromMatch = description.match(/^Received money from\s+(.+?)(?:\s+with reference\s+(.+))?$/i);
+      const receivedFromMatch = description.match(
+        /^Received money from\s+(.+?)(?:\s+with reference\s+(.+))?$/i,
+      );
       const movedMatch = description.match(/^Moved\s+[\d,.]+\s+\w+\s+(to|from)\s+(.+)/i);
 
       if (receivedFromMatch) {

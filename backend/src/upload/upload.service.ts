@@ -133,7 +133,9 @@ export class UploadService {
     }
 
     // Clear all tables in dependency order
-    await this.statementRepo.query('TRUNCATE transactions, embeddings, chat_messages, chat_sessions, statements CASCADE');
+    await this.statementRepo.query(
+      'TRUNCATE transactions, embeddings, chat_messages, chat_sessions, statements CASCADE',
+    );
   }
 
   private extractFileType(filename: string): string {

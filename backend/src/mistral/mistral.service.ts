@@ -148,7 +148,11 @@ export class MistralService {
     });
   }
 
-  async decomposeQuery(message: string): Promise<Array<{ query: string; intent: 'sql_aggregate' | 'sql_filter' | 'vector_search' | 'hybrid' }>> {
+  async decomposeQuery(
+    message: string,
+  ): Promise<
+    Array<{ query: string; intent: 'sql_aggregate' | 'sql_filter' | 'vector_search' | 'hybrid' }>
+  > {
     if (!this.aiModel) {
       return [{ query: message, intent: 'hybrid' }];
     }

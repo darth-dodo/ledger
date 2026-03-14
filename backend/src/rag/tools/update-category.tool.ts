@@ -31,10 +31,9 @@ export function createUpdateCategoryTool(dataSource: DataSource) {
       }
 
       try {
-        const rows = await dataSource.query(
-          'SELECT id, category FROM transactions WHERE id = $1',
-          [transactionId],
-        );
+        const rows = await dataSource.query('SELECT id, category FROM transactions WHERE id = $1', [
+          transactionId,
+        ]);
 
         if (rows.length === 0) {
           return { success: false, error: `Transaction ${transactionId} not found` };

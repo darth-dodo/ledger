@@ -12,9 +12,7 @@ export function createChartDataTool(dataSource: DataSource) {
       title: z.string().describe('Chart title for display'),
       sql: z
         .string()
-        .describe(
-          'SELECT query returning "label" and "value" columns from the transactions table',
-        ),
+        .describe('SELECT query returning "label" and "value" columns from the transactions table'),
     }),
     execute: async ({ type, title, sql }: { type: string; title: string; sql: string }) => {
       const error = validateSql(sql);

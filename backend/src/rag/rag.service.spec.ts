@@ -264,7 +264,7 @@ describe('RagService', () => {
     it('passes decompose_query tool to chatStream', async () => {
       await service.chat(null, 'How much did I spend?', 'EUR');
 
-      const callArgs = mistralService.chatStream.mock.calls[0]![0]!
+      const callArgs = mistralService.chatStream.mock.calls[0]![0]!;
       expect(callArgs.tools).toHaveProperty('decompose_query', 'mockDecomposeQueryTool');
       expect(createDecomposeQueryTool).toHaveBeenCalledWith(mistralService);
     });

@@ -299,10 +299,7 @@ describe('PdfParser', () => {
 
     it('prefers single-line format when it produces results', async () => {
       mockGetText.mockResolvedValue({
-        text: [
-          '2025-06-15 Coffee Shop -4.50',
-          '2025-06-16 Salary 3000.00',
-        ].join('\n'),
+        text: ['2025-06-15 Coffee Shop -4.50', '2025-06-16 Salary 3000.00'].join('\n'),
       });
 
       const result = await parser.parse(Buffer.from('fake-pdf'));

@@ -72,6 +72,7 @@ Lets the agent re-categorize transactions when users ask ("mark that Uber charge
 ```
 
 Validation:
+
 - Category must be from allowed list (groceries, dining, transport, etc.)
 - Transaction must exist
 - Returns old + new category for confirmation in response

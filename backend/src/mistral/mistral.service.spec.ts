@@ -4,13 +4,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Hoisted mock variables (available inside vi.mock factories)
 // ---------------------------------------------------------------------------
 
-const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral, mockGenerateObject } = vi.hoisted(() => ({
-  mockChatComplete: vi.fn(),
-  mockStreamText: vi.fn(),
-  mockStepCountIs: vi.fn(),
-  mockCreateMistral: vi.fn(),
-  mockGenerateObject: vi.fn(),
-}));
+const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral, mockGenerateObject } =
+  vi.hoisted(() => ({
+    mockChatComplete: vi.fn(),
+    mockStreamText: vi.fn(),
+    mockStepCountIs: vi.fn(),
+    mockCreateMistral: vi.fn(),
+    mockGenerateObject: vi.fn(),
+  }));
 
 // ---------------------------------------------------------------------------
 // Mock the @mistralai/mistralai module

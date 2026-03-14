@@ -15,6 +15,7 @@
 ## Task 1: Create `think` tool (TDD)
 
 **Files:**
+
 - Create: `backend/src/rag/tools/think.tool.ts`
 - Test: `backend/src/rag/tools/think.tool.spec.ts`
 
@@ -88,6 +89,7 @@ git commit -m "feat(rag): add think tool for structured agent reasoning"
 ## Task 2: Create `done` tool (TDD)
 
 **Files:**
+
 - Create: `backend/src/rag/tools/done.tool.ts`
 - Test: `backend/src/rag/tools/done.tool.spec.ts`
 
@@ -161,6 +163,7 @@ git commit -m "feat(rag): add done tool for agent completion signaling"
 ## Task 3: Create `update_category` tool (TDD)
 
 **Files:**
+
 - Create: `backend/src/rag/tools/update-category.tool.ts`
 - Test: `backend/src/rag/tools/update-category.tool.spec.ts`
 
@@ -169,6 +172,7 @@ git commit -m "feat(rag): add done tool for agent completion signaling"
 **Step 1: Extract VALID_CATEGORIES to shared constants**
 
 Create `backend/src/shared/categories.ts`:
+
 ```typescript
 export const VALID_CATEGORIES = new Set([
   'groceries',
@@ -187,9 +191,11 @@ export const VALID_CATEGORIES = new Set([
 ```
 
 Update `backend/src/mistral/mistral.service.ts` to import from shared:
+
 ```typescript
 import { VALID_CATEGORIES } from '../shared/categories.js';
 ```
+
 (Remove the local `VALID_CATEGORIES` declaration.)
 
 **Step 2: Write the failing test**
@@ -309,10 +315,9 @@ export function createUpdateCategoryTool(dataSource: DataSource) {
       }
 
       try {
-        const rows = await dataSource.query(
-          'SELECT id, category FROM transactions WHERE id = $1',
-          [transactionId],
-        );
+        const rows = await dataSource.query('SELECT id, category FROM transactions WHERE id = $1', [
+          transactionId,
+        ]);
 
         if (rows.length === 0) {
           return { success: false, error: `Transaction ${transactionId} not found` };
@@ -364,6 +369,7 @@ git commit -m "feat(rag): add update_category tool and extract shared categories
 ## Task 4: Create `chart_data` tool (TDD)
 
 **Files:**
+
 - Create: `backend/src/rag/tools/chart-data.tool.ts`
 - Test: `backend/src/rag/tools/chart-data.tool.spec.ts`
 
@@ -470,6 +476,7 @@ Expected: FAIL
 Note: Reuse the `validateSql` function from `sql-query.tool.ts`. Extract it to a shared util first.
 
 Create `backend/src/rag/tools/validate-sql.ts`:
+
 ```typescript
 const FORBIDDEN_KEYWORDS = /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|GRANT|REVOKE)\b/i;
 const ALLOWED_TABLE = /\btransactions\b/i;
@@ -529,9 +536,7 @@ export function createChartDataTool(dataSource: DataSource) {
       title: z.string().describe('Chart title for display'),
       sql: z
         .string()
-        .describe(
-          'SELECT query returning "label" and "value" columns from the transactions table',
-        ),
+        .describe('SELECT query returning "label" and "value" columns from the transactions table'),
     }),
     execute: async ({ type, title, sql }: { type: string; title: string; sql: string }) => {
       const error = validateSql(sql);
@@ -582,6 +587,7 @@ git commit -m "feat(rag): add chart_data tool and extract shared SQL validation"
 ## Task 5: Update `mistral.service.ts` chatStream signature (TDD)
 
 **Files:**
+
 - Modify: `backend/src/mistral/mistral.service.ts:136-153`
 - Test: `backend/src/mistral/mistral.service.spec.ts`
 
@@ -722,6 +728,7 @@ git commit -m "feat(mistral): accept stopWhen and onStepFinish in chatStream"
 ## Task 6: Wire ReAct agent in `rag.service.ts` (TDD)
 
 **Files:**
+
 - Modify: `backend/src/rag/rag.service.ts`
 - Test: `backend/src/rag/rag.service.spec.ts`
 
@@ -852,6 +859,7 @@ Expected: FAIL — service still builds only 2 tools, uses `maxSteps`
 **Step 3: Update the rag.service.ts implementation**
 
 Replace the full file — key changes:
+
 - Import new tool factories and `hasToolCall` from `ai`
 - Rewrite `buildSystemPrompt` for ReAct
 - Build all 6 tools
@@ -915,38 +923,38 @@ If the data doesn't contain the answer, say so honestly.`;
 In the `chat` method, update tool building and chatStream call:
 
 ```typescript
-    // 3. Load conversation history (last 20 messages)
-    const history = await this.messageRepo.find({
-      where: { sessionId: session.id },
-      order: { createdAt: 'ASC' },
-      take: 20,
-    });
+// 3. Load conversation history (last 20 messages)
+const history = await this.messageRepo.find({
+  where: { sessionId: session.id },
+  order: { createdAt: 'ASC' },
+  take: 20,
+});
 
-    // ...
+// ...
 
-    // 4. Build tools with injected dependencies
-    const tools = {
-      think: createThinkTool(),
-      done: createDoneTool(),
-      vector_search: createVectorSearchTool(this.embeddingsService),
-      sql_query: createSqlQueryTool(this.dataSource),
-      update_category: createUpdateCategoryTool(this.dataSource),
-      chart_data: createChartDataTool(this.dataSource),
-    };
+// 4. Build tools with injected dependencies
+const tools = {
+  think: createThinkTool(),
+  done: createDoneTool(),
+  vector_search: createVectorSearchTool(this.embeddingsService),
+  sql_query: createSqlQueryTool(this.dataSource),
+  update_category: createUpdateCategoryTool(this.dataSource),
+  chart_data: createChartDataTool(this.dataSource),
+};
 
-    // 5. Call mistralService.chatStream() with ReAct loop control
-    const streamResult = this.mistralService.chatStream({
-      system: buildSystemPrompt(currency),
-      messages,
-      tools,
-      stopWhen: [hasToolCall('done'), stepCountIs(10)],
-      onStepFinish: ({ toolResults, stepNumber, finishReason }) => {
-        this.logger.debug(`Step ${stepNumber} finished (${finishReason})`);
-        if (toolResults?.length) {
-          this.logger.debug(`Tool results: ${JSON.stringify(toolResults)}`);
-        }
-      },
-    });
+// 5. Call mistralService.chatStream() with ReAct loop control
+const streamResult = this.mistralService.chatStream({
+  system: buildSystemPrompt(currency),
+  messages,
+  tools,
+  stopWhen: [hasToolCall('done'), stepCountIs(10)],
+  onStepFinish: ({ toolResults, stepNumber, finishReason }) => {
+    this.logger.debug(`Step ${stepNumber} finished (${finishReason})`);
+    if (toolResults?.length) {
+      this.logger.debug(`Tool results: ${JSON.stringify(toolResults)}`);
+    }
+  },
+});
 ```
 
 **Step 4: Run tests to verify they pass**
@@ -997,6 +1005,7 @@ git commit -m "chore: fix lint issues from ReAct agent implementation"
 ## Summary of all files changed
 
 **New files (6):**
+
 - `backend/src/shared/categories.ts`
 - `backend/src/rag/tools/think.tool.ts` + spec
 - `backend/src/rag/tools/done.tool.ts` + spec
@@ -1005,6 +1014,7 @@ git commit -m "chore: fix lint issues from ReAct agent implementation"
 - `backend/src/rag/tools/validate-sql.ts`
 
 **Modified files (4):**
+
 - `backend/src/mistral/mistral.service.ts` — import shared categories, update chatStream signature
 - `backend/src/mistral/mistral.service.spec.ts` — update chatStream tests
 - `backend/src/rag/rag.service.ts` — ReAct system prompt, 6 tools, stopWhen, onStepFinish
