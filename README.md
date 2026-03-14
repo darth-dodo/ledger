@@ -59,11 +59,6 @@ graph TB
     subgraph Frontend ["Angular Frontend :4200"]
         UP[Upload Page]
         TX[Transactions View]
-    end
-
-    subgraph Frontend ["Angular Frontend :4200"]
-        UP[Upload Page]
-        TX[Transactions View]
         CH[Chat Page]
     end
 
