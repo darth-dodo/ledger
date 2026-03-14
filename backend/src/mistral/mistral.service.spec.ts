@@ -1,10 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Mock the @mistralai/mistralai module
+// Hoisted mock variables (available inside vi.mock factories)
 // ---------------------------------------------------------------------------
 
-const mockChatComplete = vi.fn();
+const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral, mockGenerateObject } =
+  vi.hoisted(() => ({
+    mockChatComplete: vi.fn(),
+    mockStreamText: vi.fn(),
+    mockStepCountIs: vi.fn(),
+    mockCreateMistral: vi.fn(),
+    mockGenerateObject: vi.fn(),
+  }));
+
+// ---------------------------------------------------------------------------
+// Mock the @mistralai/mistralai module
+// ---------------------------------------------------------------------------
 
 vi.mock('@mistralai/mistralai', () => ({
   Mistral: vi.fn().mockImplementation(() => ({
@@ -12,6 +23,23 @@ vi.mock('@mistralai/mistralai', () => ({
       complete: mockChatComplete,
     },
   })),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock @ai-sdk/mistral and ai modules
+// ---------------------------------------------------------------------------
+
+vi.mock('@ai-sdk/mistral', () => ({
+  createMistral: (...args: unknown[]) => {
+    mockCreateMistral(...args);
+    return () => 'mock-model';
+  },
+}));
+
+vi.mock('ai', () => ({
+  streamText: mockStreamText,
+  stepCountIs: mockStepCountIs,
+  generateObject: mockGenerateObject,
 }));
 
 import { MistralService } from './mistral.service.js';
@@ -100,6 +128,18 @@ describe('MistralService', () => {
       const result = await service.categorize(['NETFLIX', 'AMAZON', 'PHARMACY']);
 
       expect(result).toEqual(['entertainment', 'shopping', 'health']);
+    });
+
+    it('parses response as array of objects with category property', async () => {
+      mockChatComplete.mockResolvedValue(
+        makeMistralResponse(
+          '[{"transaction":"WALMART","category":"groceries"},{"transaction":"UBER","category":"transport"}]',
+        ),
+      );
+
+      const result = await service.categorize(['WALMART', 'UBER']);
+
+      expect(result).toEqual(['groceries', 'transport']);
     });
 
     it('returns nulls when response count mismatches input count', async () => {
@@ -222,5 +262,150 @@ describe('MistralService', () => {
 
       expect(result).toEqual(allCategories);
     });
+  });
+
+  // ---------------------------------------------------------------
+  // chatStream
+  // ---------------------------------------------------------------
+  describe('chatStream', () => {
+    it('throws error when API key not configured', () => {
+      delete process.env.MISTRAL_API_KEY;
+      const service = new MistralService();
+
+      expect(() =>
+        service.chatStream({
+          system: 'You are a helper',
+          messages: [{ role: 'user', content: 'hello' }] as unknown[],
+        }),
+      ).toThrow('Mistral API key not configured');
+    });
+
+    it('passes stopWhen directly to streamText', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+      const tools = { myTool: {} } as unknown as Record<string, unknown>;
+      const messages = [{ role: 'user', content: 'hello' }] as unknown[];
+      const stopWhen = ['mock-stop-condition'];
+
+      service.chatStream({
+        system: 'You are a helper',
+        messages,
+        tools,
+        stopWhen,
+      });
+
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stopWhen,
+          tools,
+        }),
+      );
+    });
+
+    it('defaults stopWhen to stepCountIs(3) when not provided', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStepCountIs.mockReturnValue('stop-default');
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+
+      service.chatStream({
+        system: 'system prompt',
+        messages: [] as unknown[],
+      });
+
+      expect(mockStepCountIs).toHaveBeenCalledWith(3);
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stopWhen: 'stop-default',
+        }),
+      );
+    });
+
+    it('passes onStepFinish callback when provided', () => {
+      process.env.MISTRAL_API_KEY = 'test-api-key';
+      mockStreamText.mockReturnValue('stream-result');
+
+      const service = new MistralService();
+      const onStepFinish = vi.fn();
+
+      service.chatStream({
+        system: 'system prompt',
+        messages: [] as unknown[],
+        onStepFinish,
+      });
+
+      expect(mockStreamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          onStepFinish,
+        }),
+      );
+    });
+  });
+});
+
+describe('decomposeQuery', () => {
+  let service: MistralService;
+
+  beforeEach(() => {
+    process.env.MISTRAL_API_KEY = 'test-key';
+    service = new MistralService();
+    mockGenerateObject.mockReset();
+  });
+
+  afterEach(() => {
+    delete process.env.MISTRAL_API_KEY;
+  });
+
+  it('returns a single sub-query for a simple message', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        subQueries: [{ query: 'total spend last month', intent: 'sql_aggregate' }],
+      },
+    });
+
+    const result = await service.decomposeQuery('How much did I spend last month?');
+
+    expect(result).toEqual([{ query: 'total spend last month', intent: 'sql_aggregate' }]);
+  });
+
+  it('returns multiple sub-queries for a compound message', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        subQueries: [
+          { query: 'total groceries last month', intent: 'sql_aggregate' },
+          { query: 'total dining last month', intent: 'sql_aggregate' },
+          { query: 'Uber charges', intent: 'vector_search' },
+        ],
+      },
+    });
+
+    const result = await service.decomposeQuery(
+      'How much on groceries vs dining, and find Uber charges?',
+    );
+
+    expect(result).toHaveLength(3);
+    expect(result[2].intent).toBe('vector_search');
+  });
+
+  it('falls back to hybrid intent when generateObject throws', async () => {
+    mockGenerateObject.mockRejectedValue(new Error('API error'));
+
+    const message = 'What are my biggest expenses?';
+    const result = await service.decomposeQuery(message);
+
+    expect(result).toEqual([{ query: message, intent: 'hybrid' }]);
+  });
+
+  it('returns hybrid fallback when API key is not set', async () => {
+    delete process.env.MISTRAL_API_KEY;
+    const noKeyService = new MistralService();
+
+    const message = 'Show me my transactions';
+    const result = await noKeyService.decomposeQuery(message);
+
+    expect(result).toEqual([{ query: message, intent: 'hybrid' }]);
   });
 });

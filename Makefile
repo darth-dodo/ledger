@@ -67,11 +67,12 @@ test: test-backend test-frontend ## Run all tests
 test-backend: ## Run backend tests (vitest)
 	cd backend && pnpm test
 
-test-frontend: ## Run frontend tests (karma/jasmine)
+test-frontend: ## Run frontend tests with coverage (vitest)
 	cd frontend && pnpm test
 
-test-coverage: ## Run backend tests with coverage
+test-coverage: ## Run all tests with coverage reports
 	cd backend && pnpm test:coverage
+	cd frontend && pnpm test
 
 # ── Build ────────────────────────────────────────────
 

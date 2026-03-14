@@ -1,0 +1,16 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatSession } from './entities/chat-session.entity';
+import { ChatMessage } from './entities/chat-message.entity';
+import { EmbeddingsModule } from '../embeddings/embeddings.module';
+import { MistralModule } from '../mistral/mistral.module';
+import { RagService } from './rag.service';
+import { RagController } from './rag.controller';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([ChatSession, ChatMessage]), EmbeddingsModule, MistralModule],
+  controllers: [RagController],
+  providers: [RagService],
+  exports: [RagService],
+})
+export class RagModule {}

@@ -20,74 +20,191 @@ export class PdfParser implements ParserInterface {
   }
 
   private extractTransactions(text: string): ParsedTransaction[] {
+    // Try single-line extraction first, fall back to multi-line if nothing found
+    const singleLine = this.extractSingleLine(text);
+    if (singleLine.length > 0) return singleLine;
+
+    return this.extractMultiLine(text);
+  }
+
+  /**
+   * Original single-line strategy: each line has date + description + amount.
+   * Works for formats like: "2025-06-15 Coffee Shop -4.50"
+   */
+  private extractSingleLine(text: string): ParsedTransaction[] {
     const transactions: ParsedTransaction[] = [];
     const lines = text
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean);
 
-    // Date patterns:
-    // DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD MMM YYYY
-    const datePatterns = [
-      /(\d{2}\/\d{2}\/\d{4})/, // DD/MM/YYYY
-      /(\d{2}-\d{2}-\d{4})/, // DD-MM-YYYY
-      /(\d{4}-\d{2}-\d{2})/, // YYYY-MM-DD
-      /(\d{2}\s+[A-Za-z]{3}\s+\d{4})/, // DD MMM YYYY
-    ];
-
-    // Amount pattern: optional negative/minus, digits with optional commas, decimal
-    const amountPattern = /(-?\s*[\d,]+\.\d{2})/;
-
     for (const line of lines) {
-      let dateStr: string | null = null;
-      let dateMatch: RegExpMatchArray | null = null;
+      const result = this.parseSingleLine(line);
+      if (result) transactions.push(result);
+    }
 
-      for (const pattern of datePatterns) {
-        dateMatch = line.match(pattern);
-        if (dateMatch) {
-          dateStr = dateMatch[1]?.trim() ?? null;
-          break;
+    return transactions;
+  }
+
+  /**
+   * Multi-line strategy for bank statements where transactions span multiple lines:
+   * Line N:   "Card transaction of 24.45 EUR issued by Coffee Shop"  (description)
+   * Line N+1: "28 February 2025 Card ending in 9999 ..."             (date + metadata)
+   * Line N+2: "-24.45 101.54"                                        (amount + balance)
+   *
+   * The amount may be on the date line itself or on the next line.
+   */
+  private extractMultiLine(text: string): ParsedTransaction[] {
+    const transactions: ParsedTransaction[] = [];
+    const lines = text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!;
+
+      // Look for a line that starts with a date
+      const dateInfo = this.findDate(line);
+      if (!dateInfo) continue;
+
+      // Find amounts — either on this line or the next line
+      let amountMatches = [...line.matchAll(/(-?\s*[\d,]+\.\d{2})/g)];
+      let amountLineIdx = i;
+
+      // If no amount on the date line, check the next line
+      if (amountMatches.length === 0 && i + 1 < lines.length) {
+        const nextLine = lines[i + 1]!;
+        amountMatches = [...nextLine.matchAll(/(-?\s*[\d,]+\.\d{2})/g)];
+        if (amountMatches.length > 0) {
+          amountLineIdx = i + 1;
         }
       }
 
-      if (!dateStr || !dateMatch) continue;
-
-      // Find the amount (search from the end of the line for the last match)
-      const amountMatches = [...line.matchAll(new RegExp(amountPattern, 'g'))];
       if (amountMatches.length === 0) continue;
 
-      const lastAmountMatch = amountMatches[amountMatches.length - 1]!;
-      const captured = lastAmountMatch[1];
+      // Use the FIRST amount (the transaction amount), not the last (running balance)
+      const captured = amountMatches[0]![1];
       if (!captured) continue;
 
       const rawAmount = captured.replace(/\s/g, '').replace(/,/g, '');
       const numericAmount = parseFloat(rawAmount);
-
       if (isNaN(numericAmount)) continue;
 
-      // Extract description: text between date and amount
-      const dateEnd = (dateMatch.index ?? 0) + dateMatch[0].length;
-      const amountStart = lastAmountMatch.index ?? dateEnd;
+      const parsedDate = this.parseDate(dateInfo.dateStr);
+      if (!parsedDate) continue;
 
-      let description = line.substring(dateEnd, amountStart).trim();
-      // Clean up separators and extra whitespace
-      description = description
-        .replace(/^[\s|,\-:]+/, '')
-        .replace(/[\s|,\-:]+$/, '')
-        .trim();
+      // The description is on the line(s) before the date line
+      let description = '';
+      for (let j = i - 1; j >= 0; j--) {
+        const prevLine = lines[j]!;
+        // Stop if we hit a line that's just amounts (belongs to previous transaction)
+        if (/^-?[\d,.\s]+$/.test(prevLine)) break;
+        // Stop if we hit another date line (belongs to previous transaction)
+        if (this.findDate(prevLine)) break;
+        // Skip page markers and headers
+        if (
+          /^(ref:|--\s*\d|Description|IBAN|Swift|EUR\s+(on|statement)|Generated|Account\s+Holder)/i.test(
+            prevLine,
+          )
+        )
+          break;
+
+        description = prevLine;
+        break;
+      }
 
       if (!description) continue;
 
-      const parsedDate = this.parseDate(dateStr);
-      if (!parsedDate) continue;
+      // Clean up multi-line descriptions to extract merchant/payee
+      let cleanDesc = description;
+      const issuedByMatch = description.match(/issued by\s+(.+)/i);
+      const paidToMatch = description.match(/^(?:Paid|Sent money) to\s+(.+)/i);
+      const receivedFromMatch = description.match(
+        /^Received money from\s+(.+?)(?:\s+with reference\s+(.+))?$/i,
+      );
+      const movedMatch = description.match(/^Moved\s+[\d,.]+\s+\w+\s+(to|from)\s+(.+)/i);
+
+      if (receivedFromMatch) {
+        cleanDesc = receivedFromMatch[2]
+          ? `${receivedFromMatch[1]} - ${receivedFromMatch[2]}`
+          : receivedFromMatch[1]!;
+      } else if (paidToMatch) {
+        cleanDesc = paidToMatch[1]!;
+      } else if (issuedByMatch) {
+        cleanDesc = issuedByMatch[1]!;
+      } else if (movedMatch) {
+        cleanDesc = `${movedMatch[2]} (${movedMatch[1]})`;
+      }
+
+      cleanDesc = cleanDesc.trim();
+      if (!cleanDesc) continue;
 
       const type: 'debit' | 'credit' = numericAmount < 0 ? 'debit' : 'credit';
       const amount = Math.abs(numericAmount);
 
-      transactions.push({ date: parsedDate, description, amount, type });
+      transactions.push({ date: parsedDate, description: cleanDesc, amount, type });
+
+      // Skip past the amount line to avoid re-processing
+      i = amountLineIdx;
     }
 
     return transactions;
+  }
+
+  private parseSingleLine(line: string): ParsedTransaction | null {
+    const dateInfo = this.findDate(line);
+    if (!dateInfo) return null;
+
+    const amountMatches = [...line.matchAll(/(-?\s*[\d,]+\.\d{2})/g)];
+    if (amountMatches.length === 0) return null;
+
+    const lastAmountMatch = amountMatches[amountMatches.length - 1]!;
+    const captured = lastAmountMatch[1];
+    if (!captured) return null;
+
+    const rawAmount = captured.replace(/\s/g, '').replace(/,/g, '');
+    const numericAmount = parseFloat(rawAmount);
+    if (isNaN(numericAmount)) return null;
+
+    const dateEnd = (dateInfo.match.index ?? 0) + dateInfo.match[0].length;
+    const amountStart = lastAmountMatch.index ?? dateEnd;
+
+    let description = line.substring(dateEnd, amountStart).trim();
+    description = description
+      .replace(/^[\s|,\-:]+/, '')
+      .replace(/[\s|,\-:]+$/, '')
+      .trim();
+
+    if (!description) return null;
+
+    const parsedDate = this.parseDate(dateInfo.dateStr);
+    if (!parsedDate) return null;
+
+    const type: 'debit' | 'credit' = numericAmount < 0 ? 'debit' : 'credit';
+    const amount = Math.abs(numericAmount);
+
+    return { date: parsedDate, description, amount, type };
+  }
+
+  private findDate(line: string): { dateStr: string; match: RegExpMatchArray } | null {
+    const datePatterns = [
+      /(\d{2}\/\d{2}\/\d{4})/,
+      /(\d{2}-\d{2}-\d{4})/,
+      /(\d{4}-\d{2}-\d{2})/,
+      /(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/,
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = line.match(pattern);
+      if (match) {
+        const dateStr = match[1]?.trim() ?? null;
+        if (dateStr && this.parseDate(dateStr)) {
+          return { dateStr, match };
+        }
+      }
+    }
+    return null;
   }
 
   private parseDate(dateStr: string): Date | null {
@@ -111,8 +228,8 @@ export class PdfParser implements ParserInterface {
       return isNaN(d.getTime()) ? null : d;
     }
 
-    // DD MMM YYYY
-    if (/^\d{2}\s+[A-Za-z]{3}\s+\d{4}$/.test(dateStr)) {
+    // DD MMM YYYY or DD Month YYYY (e.g. "15 Jan 2025" or "28 February 2026")
+    if (/^\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}$/.test(dateStr)) {
       const d = new Date(dateStr);
       return isNaN(d.getTime()) ? null : d;
     }

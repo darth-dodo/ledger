@@ -82,6 +82,11 @@ lerna-debug.log*
 .claude/settings.json
 
 # ========================
+# MCP Working Directories
+# ========================
+.playwright-mcp/
+
+# ========================
 # Miscellaneous
 # ========================
 .eslintcache

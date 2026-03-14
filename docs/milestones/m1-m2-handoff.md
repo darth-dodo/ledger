@@ -63,7 +63,7 @@
 **Future Considerations** (Priority: Low):
 
 - File storage strategy may need to change when moving to production (local vs S3)
-- Consider virus scanning for uploaded files in M7 (Auth & Polish)
+- Consider virus scanning for uploaded files in M8 (Auth & Polish)
 
 ---
 
