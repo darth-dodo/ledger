@@ -35,6 +35,10 @@ vi.mock('./tools/chart-data.tool', () => ({
   createChartDataTool: vi.fn(() => 'mockChartDataTool'),
 }));
 
+vi.mock('./tools/decompose-query.tool', () => ({
+  createDecomposeQueryTool: vi.fn(() => 'mockDecomposeQueryTool'),
+}));
+
 import { RagService } from './rag.service';
 import { createVectorSearchTool } from './tools/vector-search.tool';
 import { createSqlQueryTool } from './tools/sql-query.tool';
@@ -42,6 +46,7 @@ import { createThinkTool } from './tools/think.tool';
 import { createDoneTool } from './tools/done.tool';
 import { createUpdateCategoryTool } from './tools/update-category.tool';
 import { createChartDataTool } from './tools/chart-data.tool';
+import { createDecomposeQueryTool } from './tools/decompose-query.tool';
 
 // ---------------------------------------------------------------------------
 // Mock factories
@@ -226,7 +231,7 @@ describe('RagService', () => {
   // chat() — tool creation
   // -----------------------------------------------------------------
   describe('chat() — tool creation', () => {
-    it('creates all six tools', async () => {
+    it('creates all seven tools', async () => {
       await service.chat(null, 'Search something');
 
       expect(createThinkTool).toHaveBeenCalled();
@@ -235,6 +240,7 @@ describe('RagService', () => {
       expect(createSqlQueryTool).toHaveBeenCalledWith(dataSource);
       expect(createUpdateCategoryTool).toHaveBeenCalledWith(dataSource);
       expect(createChartDataTool).toHaveBeenCalledWith(dataSource);
+      expect(createDecomposeQueryTool).toHaveBeenCalledWith(mistralService);
     });
 
     it('passes all tools to chatStream', async () => {
@@ -249,9 +255,18 @@ describe('RagService', () => {
             sql_query: 'mockSqlTool',
             update_category: 'mockUpdateCategoryTool',
             chart_data: 'mockChartDataTool',
+            decompose_query: 'mockDecomposeQueryTool',
           },
         }),
       );
+    });
+
+    it('passes decompose_query tool to chatStream', async () => {
+      await service.chat(null, 'How much did I spend?', 'EUR');
+
+      const callArgs = mistralService.chatStream.mock.calls[0]![0]!
+      expect(callArgs.tools).toHaveProperty('decompose_query', 'mockDecomposeQueryTool');
+      expect(createDecomposeQueryTool).toHaveBeenCalledWith(mistralService);
     });
   });
 
