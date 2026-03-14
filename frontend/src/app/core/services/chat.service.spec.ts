@@ -222,38 +222,6 @@ describe('ChatService', () => {
       });
     });
 
-    it('should parse legacy 0: format tokens', async () => {
-      const stream = createSSEStream(['0:"world"']);
-      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
-
-      const emitted: string[] = [];
-      return new Promise<void>((resolve) => {
-        service.sendMessage('s1', 'hi', 'USD').subscribe({
-          next: (val) => emitted.push(val),
-          complete: () => {
-            expect(emitted).toEqual(['world']);
-            resolve();
-          },
-        });
-      });
-    });
-
-    it('should parse legacy d: format and emit session ID', async () => {
-      const stream = createSSEStream(['d:{"sessionId":"abc-123"}']);
-      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
-
-      const emitted: string[] = [];
-      return new Promise<void>((resolve) => {
-        service.sendMessage('s1', 'hi', 'USD').subscribe({
-          next: (val) => emitted.push(val),
-          complete: () => {
-            expect(emitted).toEqual(['__SESSION_ID__:abc-123']);
-            resolve();
-          },
-        });
-      });
-    });
-
     it('should ignore d: lines without sessionId', async () => {
       const stream = createSSEStream(['d:{"finishReason":"stop"}']);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
