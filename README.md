@@ -62,6 +62,12 @@ graph TB
         CH[Chat Page]
     end
 
+    subgraph Frontend ["Angular Frontend :4200"]
+        UP[Upload Page]
+        TX[Transactions View]
+        CH[Chat Page]
+    end
+
     subgraph Backend ["NestJS Backend :3000"]
         UC[Upload Controller]
         TC[Transactions Controller]
