@@ -4,11 +4,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Hoisted mock variables (available inside vi.mock factories)
 // ---------------------------------------------------------------------------
 
-const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral } = vi.hoisted(() => ({
+const { mockChatComplete, mockStreamText, mockStepCountIs, mockCreateMistral, mockGenerateObject } = vi.hoisted(() => ({
   mockChatComplete: vi.fn(),
   mockStreamText: vi.fn(),
   mockStepCountIs: vi.fn(),
   mockCreateMistral: vi.fn(),
+  mockGenerateObject: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ vi.mock('@ai-sdk/mistral', () => ({
 vi.mock('ai', () => ({
   streamText: mockStreamText,
   stepCountIs: mockStepCountIs,
+  generateObject: mockGenerateObject,
 }));
 
 import { MistralService } from './mistral.service.js';
@@ -340,5 +342,69 @@ describe('MistralService', () => {
         }),
       );
     });
+  });
+});
+
+describe('decomposeQuery', () => {
+  let service: MistralService;
+
+  beforeEach(() => {
+    process.env.MISTRAL_API_KEY = 'test-key';
+    service = new MistralService();
+    mockGenerateObject.mockReset();
+  });
+
+  afterEach(() => {
+    delete process.env.MISTRAL_API_KEY;
+  });
+
+  it('returns a single sub-query for a simple message', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        subQueries: [{ query: 'total spend last month', intent: 'sql_aggregate' }],
+      },
+    });
+
+    const result = await service.decomposeQuery('How much did I spend last month?');
+
+    expect(result).toEqual([{ query: 'total spend last month', intent: 'sql_aggregate' }]);
+  });
+
+  it('returns multiple sub-queries for a compound message', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        subQueries: [
+          { query: 'total groceries last month', intent: 'sql_aggregate' },
+          { query: 'total dining last month', intent: 'sql_aggregate' },
+          { query: 'Uber charges', intent: 'vector_search' },
+        ],
+      },
+    });
+
+    const result = await service.decomposeQuery(
+      'How much on groceries vs dining, and find Uber charges?',
+    );
+
+    expect(result).toHaveLength(3);
+    expect(result[2].intent).toBe('vector_search');
+  });
+
+  it('falls back to hybrid intent when generateObject throws', async () => {
+    mockGenerateObject.mockRejectedValue(new Error('API error'));
+
+    const message = 'What are my biggest expenses?';
+    const result = await service.decomposeQuery(message);
+
+    expect(result).toEqual([{ query: message, intent: 'hybrid' }]);
+  });
+
+  it('returns hybrid fallback when API key is not set', async () => {
+    delete process.env.MISTRAL_API_KEY;
+    const noKeyService = new MistralService();
+
+    const message = 'Show me my transactions';
+    const result = await noKeyService.decomposeQuery(message);
+
+    expect(result).toEqual([{ query: message, intent: 'hybrid' }]);
   });
 });
