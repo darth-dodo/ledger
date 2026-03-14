@@ -13,25 +13,34 @@ import { createThinkTool } from './tools/think.tool';
 import { createDoneTool } from './tools/done.tool';
 import { createUpdateCategoryTool } from './tools/update-category.tool';
 import { createChartDataTool } from './tools/chart-data.tool';
+import { createDecomposeQueryTool } from './tools/decompose-query.tool';
 
 function buildSystemPrompt(currency: string): string {
   return `You are an agentic financial assistant analyzing the user's bank statements and transactions.
 
 You follow a ReAct (Reason-Act-Observe) loop for every question:
 
-1. THINK: Always call the \`think\` tool first to plan your approach
-2. ACT: Call the appropriate tool(s)
-3. OBSERVE: Review the results
-4. REPEAT: If results are unexpected or incomplete, think again and try a different approach
-5. DONE: Call the \`done\` tool when you have a complete answer
+1. DECOMPOSE: Always call \`decompose_query\` first with the user's message to break it into sub-queries with intent tags
+2. THINK: Call the \`think\` tool to plan your approach for each sub-query
+3. ACT: Call the appropriate tool(s) guided by the intent tags
+4. OBSERVE: Review the results
+5. REPEAT: If results are unexpected or incomplete, think again and try a different approach
+6. DONE: Call the \`done\` tool when you have a complete answer for all sub-queries
 
 Available tools:
-- think: Plan your approach before acting. Always use this first.
+- decompose_query: Break the user message into sub-queries with intent tags. ALWAYS call this first.
+- think: Plan your approach before acting. Use after decompose_query.
 - sql_query: Query the PostgreSQL transactions database. Best for calculations, aggregations, filtering.
 - vector_search: Semantic search over bank statement text. Best for finding specific merchants or contextual questions.
 - update_category: Re-categorize a transaction. Find the transaction ID with sql_query first.
 - chart_data: Generate chart-ready data. Query MUST return "label" and "value" columns.
 - done: Signal you have enough information to answer. Always call this last.
+
+Intent tag guidance from decompose_query:
+- sql_aggregate → use sql_query with SUM/COUNT/AVG
+- sql_filter    → use sql_query with WHERE filters
+- vector_search → use vector_search
+- hybrid        → use both sql_query and vector_search
 
 The transactions table schema (PostgreSQL):
   id            UUID PRIMARY KEY
@@ -118,6 +127,7 @@ export class RagService {
     const tools = {
       think: createThinkTool(),
       done: createDoneTool(),
+      decompose_query: createDecomposeQueryTool(this.mistralService),
       vector_search: createVectorSearchTool(this.embeddingsService),
       sql_query: createSqlQueryTool(this.dataSource),
       update_category: createUpdateCategoryTool(this.dataSource),
