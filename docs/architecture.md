@@ -124,7 +124,12 @@ sequenceDiagram
     rect rgb(248, 215, 218)
         Note over NestJS,Mistral: 2. Streaming tool-calling loop
         NestJS->>Mistral: streamText() with tools + history (SSE)
-        loop Up to 3 tool-calling steps
+        Note over NestJS,Mistral: Step 0 — DECOMPOSE
+        Mistral-->>NestJS: Tool call (decompose_query)
+        NestJS->>Mistral: generateObject() → SubQuery[] with intents
+        Mistral-->>NestJS: SubQuery[] (sql_aggregate | sql_filter | vector_search | hybrid)
+        NestJS->>Mistral: Tool result (sub-queries)
+        loop Up to remaining tool-calling steps
             Mistral-->>NestJS: Tool call (vector_search or sql_query)
             alt vector_search
                 NestJS->>Mistral: Embed query → 1024-dim vector
@@ -151,12 +156,27 @@ sequenceDiagram
     end
 ```
 
-The RAG pipeline uses a **tool-calling loop** via Vercel AI SDK's `streamText()` with `stopWhen: stepCountIs(3)`. The LLM autonomously decides which tools to invoke based on the question -- `vector_search` for contextual lookups, `sql_query` for calculations and aggregations. Responses stream to the frontend as SSE in the AI SDK v6 UI message stream format.
+The RAG pipeline uses a **ReAct agent loop** (7 tools) via Vercel AI SDK's `streamText()` with `stopWhen: stepCountIs(3)`. The agent follows a DECOMPOSE → THINK → ACT → OBSERVE → REPEAT → DONE cycle. On every new user message the agent first calls `decompose_query` to break the question into typed sub-queries, then selects `vector_search`, `sql_query`, or both based on the returned intent tags. Responses stream to the frontend as SSE in the AI SDK v6 UI message stream format.
+
+### ReAct Agent Tools (7 total)
+
+| Tool | Purpose |
+|------|---------|
+| `decompose_query` | Break the user question into `SubQuery[]` with intent tags; called first on every turn |
+| `think` | Internal reasoning step (no side effects) |
+| `vector_search` | Semantic similarity search over statement text chunks (pgvector) |
+| `sql_query` | Read-only SELECT against the transactions table |
+| `update_category` | Update the category of a transaction |
+| `chart_data` | Return structured data for rendering a chart |
+| `done` | Signal end of reasoning loop and emit final answer |
+
+Intent tags returned by `decompose_query` guide tool selection: `sql_aggregate` and `sql_filter` → `sql_query`; `vector_search` → `vector_search`; `hybrid` → both.
 
 ### RAG System Prompt
 
 The system prompt is built dynamically with the user's selected currency. It provides:
 
+- ReAct loop instructions: DECOMPOSE (call `decompose_query` first), THINK, ACT, OBSERVE, REPEAT, DONE
 - Tool descriptions and when to use each one
 - Full `transactions` table schema for SQL generation
 - Example SQL queries (PostgreSQL syntax) for common financial questions
@@ -167,11 +187,21 @@ SYSTEM:
 You are a helpful financial assistant analyzing the user's bank statements
 and transactions.
 
-You have access to two tools:
-- vector_search: Search through bank statement text chunks using semantic
-  similarity. Best for contextual questions.
-- sql_query: Query the PostgreSQL transactions database directly with SQL.
-  Best for calculations and aggregations.
+Follow this loop for every message:
+1. DECOMPOSE — call decompose_query to break the question into sub-queries
+2. THINK     — call think to reason about which tools to use
+3. ACT       — call the appropriate tool(s) based on sub-query intents
+4. OBSERVE   — inspect results, repeat ACT if needed
+5. DONE      — call done with the final answer
+
+You have access to 7 tools:
+- decompose_query: Break the question into typed sub-queries (always call first)
+- think: Internal reasoning step
+- vector_search: Semantic search over statement text chunks
+- sql_query: Read-only SQL against the transactions table
+- update_category: Update a transaction's category
+- chart_data: Return structured data for a chart
+- done: Signal the end of the loop
 
 The transactions table schema (PostgreSQL):
   id, statement_id, date, description, amount, category, type
@@ -285,6 +315,7 @@ graph TD
             RS2[RagService]
             CSE[ChatSession Entity]
             CME[ChatMessage Entity]
+            DQT[decompose_query Tool]
             VST[vector_search Tool]
             SQT[sql_query Tool]
         end
@@ -364,8 +395,9 @@ backend/
 │   │   │   ├── chat-session.entity.ts
 │   │   │   └── chat-message.entity.ts
 │   │   └── tools/
-│   │       ├── vector-search.tool.ts  # Semantic search via embeddings
-│   │       └── sql-query.tool.ts      # Read-only SELECT with safety validation
+│   │       ├── decompose-query.tool.ts # Query decomposition into typed SubQuery[]
+│   │       ├── vector-search.tool.ts   # Semantic search via embeddings
+│   │       └── sql-query.tool.ts       # Read-only SELECT with safety validation
 │   ├── analytics/                 # 🚧 M7 (planned)
 │   └── common/                    # 🚧 M8 (planned)
 ├── nest-cli.json
@@ -503,7 +535,7 @@ frontend/
 
 ## 8. Mistral AI Integration
 
-### Three API capabilities:
+### Four API capabilities:
 
 **1. Embeddings** — text → 1024-dim vector (via `@mistralai/mistralai` SDK)
 
@@ -534,7 +566,26 @@ async categorize(descriptions: string[]): Promise<(string | null)[]> {
 }
 ```
 
-**3. Streaming Chat with Tools** — tool-calling loop (via Vercel AI SDK `@ai-sdk/mistral`)
+**3. Query Decomposition** — structured sub-query generation (via Vercel AI SDK `generateObject`)
+
+```typescript
+// mistral.service.ts — uses generateObject() (non-streaming)
+async decomposeQuery(message: string): Promise<SubQuery[]> {
+  const { object } = await generateObject({
+    model: this.aiModel,
+    schema: z.object({
+      subQueries: z.array(z.object({
+        query: z.string(),
+        intent: z.enum(['sql_aggregate', 'sql_filter', 'vector_search', 'hybrid']),
+      })),
+    }),
+    prompt: `Decompose this financial question into sub-queries: ${message}`,
+  });
+  return object.subQueries;
+}
+```
+
+**4. Streaming Chat with Tools** — ReAct agent loop (via Vercel AI SDK `@ai-sdk/mistral`)
 
 ```typescript
 // mistral.service.ts — uses createMistral() from @ai-sdk/mistral
@@ -554,7 +605,7 @@ chatStream(params: {
 }
 ```
 
-The `MistralService` maintains two clients: the native `@mistralai/mistralai` SDK for embeddings and categorization, and a Vercel AI SDK model instance (`@ai-sdk/mistral`) for streaming chat with tool-calling support. Both gracefully degrade when `MISTRAL_API_KEY` is not set.
+The `MistralService` maintains two clients: the native `@mistralai/mistralai` SDK for embeddings and categorization, and a Vercel AI SDK model instance (`@ai-sdk/mistral`) for streaming chat with tool-calling support and for the non-streaming `generateObject` call used by `decomposeQuery()`. Both clients gracefully degrade when `MISTRAL_API_KEY` is not set.
 
 ---
 
