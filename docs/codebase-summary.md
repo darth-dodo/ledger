@@ -19,6 +19,227 @@ tables · 12 API endpoints
 
 ---
 
+## System Overview
+
+```mermaid
+graph TB
+    subgraph Frontend ["Angular Frontend :4200"]
+        UP[Upload Page]
+        TX[Transactions View]
+        CH[Chat Page]
+        ST[Settings]
+    end
+
+    subgraph Backend ["NestJS Backend :3000"]
+        UC[Upload Controller]
+        TC[Transactions Controller]
+        RC[RAG Controller]
+
+        US[Upload Service]
+        PS["Parsers\n(PDF + CSV)"]
+        MS[Mistral Service]
+        CS[Chunker Service]
+        ES[Embeddings Service]
+        TS[Transactions Service]
+        RS[RAG Service]
+        AG["Agent Tools\n(decompose_query · think · sql_query\nvector_search · update_category\nchart_data · done)"]
+    end
+
+    subgraph DB ["PostgreSQL + pgvector"]
+        S[(statements)]
+        T[(transactions)]
+        E[(embeddings)]
+        CS2[(chat_sessions)]
+        CM[(chat_messages)]
+    end
+
+    subgraph AI ["Mistral AI"]
+        CAT[Categorize]
+        EMB[Embed]
+        LLM[mistral-large-latest]
+    end
+
+    UP -->|POST /upload| UC
+    TX -->|GET /transactions| TC
+    CH -->|POST /chat SSE| RC
+
+    UC --> US --> PS --> MS --> CAT
+    US --> CS --> ES --> EMB
+    US --> S & T
+    ES --> E
+    TC --> TS --> T
+    RC --> RS --> MS --> LLM
+    RS --> AG
+    AG --> T & E
+    RS --> CS2 & CM
+
+    style Frontend fill:#e8f4f8
+    style Backend fill:#fff3cd
+    style DB fill:#d4edda
+    style AI fill:#f8d7da
+```
+
+---
+
+## Upload Pipeline
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UC as UploadController
+    participant US as UploadService
+    participant P as Parser (PDF/CSV)
+    participant MS as MistralService
+    participant ES as EmbeddingsService
+    participant DB as PostgreSQL
+
+    U->>UC: POST /upload (file)
+    UC->>US: handleUpload(file)
+    US->>DB: INSERT statement (metadata + raw_text)
+    US->>P: canParse() → parse(buffer)
+    P-->>US: Transaction[]
+    US->>MS: categorize(descriptions[])
+    MS-->>US: category[] (batched, max 20)
+    US->>DB: INSERT transactions (with categories)
+    US->>ES: embedStatement(statementId, rawText)
+    ES->>ES: chunk(rawText) → chunks[]
+    ES->>MS: embed(chunks[])
+    MS-->>ES: vector(1024)[]
+    ES->>DB: INSERT embeddings (pgvector)
+    US-->>UC: UploadResponseDto
+    UC-->>U: 201 { id, filename, ... }
+```
+
+---
+
+## ReAct Agent Loop
+
+```mermaid
+flowchart TD
+    A([User message]) --> B[Load last 20 messages\nfrom chat_sessions]
+    B --> C[Build tools map\n7 factory functions]
+    C --> D[mistral.chatStream\nstreamText with stopWhen]
+
+    D --> E{Agent step}
+
+    E --> F[decompose_query\nBreak into sub-queries\nwith intent tags]
+    F --> G[think\nPlan approach]
+
+    G --> H{Intent tag?}
+
+    H -->|sql_aggregate\nsql_filter| I[sql_query\nSELECT from transactions]
+    H -->|vector_search| J[vector_search\nCosine similarity\nover embeddings]
+    H -->|hybrid| I & J
+    H -->|update| K[update_category\nPATCH transaction]
+    H -->|chart| L[chart_data\nReturn label+value pairs]
+
+    I & J & K & L --> M{Results\ncomplete?}
+
+    M -->|No, retry| G
+    M -->|Yes| N[done\nSignal completion\nwith summary]
+
+    N --> O[Stream text-delta\nchunks via SSE]
+    O --> P([Save to chat_messages\nasync in background])
+
+    style F fill:#dbeafe
+    style G fill:#dbeafe
+    style N fill:#dcfce7
+    style I fill:#fef9c3
+    style J fill:#fef9c3
+    style K fill:#fef9c3
+    style L fill:#fef9c3
+```
+
+---
+
+## SSE Streaming Flow
+
+```mermaid
+sequenceDiagram
+    participant CL as Angular ChatService
+    participant RC as RagController
+    participant RS as RagService
+    participant MS as MistralService
+    participant LLM as Mistral API
+
+    CL->>RC: POST /chat { sessionId, message, currency }
+    RC->>RC: Set headers\nContent-Type: text/event-stream
+    RC->>RS: chat(sessionId, message, currency)
+    RS->>MS: chatStream({ system, messages, tools })
+    MS->>LLM: streamText() — ReAct loop begins
+
+    loop Agent steps (max 10)
+        LLM-->>MS: tool call
+        MS-->>RS: tool result via fullStream
+        RS-->>RC: chunk (text-delta or tool-result)
+        RC-->>CL: data: {"type":"text-delta","delta":"..."}
+    end
+
+    RC-->>CL: data: {"type":"session-id","sessionId":"..."}
+    RC-->>CL: data: [DONE]
+
+    Note over RS: Save assistant message async<br/>(fire-and-forget void IIFE)
+```
+
+---
+
+## Database Schema
+
+```mermaid
+erDiagram
+    statements {
+        uuid id PK
+        varchar filename
+        varchar file_type
+        varchar file_path
+        int file_size
+        text raw_text
+        timestamptz uploaded_at
+    }
+
+    transactions {
+        uuid id PK
+        uuid statement_id FK
+        date date
+        varchar description
+        decimal amount
+        varchar type
+        varchar category
+    }
+
+    embeddings {
+        uuid id PK
+        uuid statement_id FK
+        int chunk_index
+        text content
+        int token_count
+        vector embedding
+        timestamptz created_at
+    }
+
+    chat_sessions {
+        uuid id PK
+        varchar title
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    chat_messages {
+        uuid id PK
+        uuid session_id FK
+        varchar role
+        text content
+        jsonb sources
+        timestamptz created_at
+    }
+
+    statements ||--o{ transactions : "has"
+    statements ||--o{ embeddings : "chunked into"
+    chat_sessions ||--o{ chat_messages : "contains"
+```
+
+---
+
 ## Repository Layout
 
 ```
@@ -137,7 +358,6 @@ dependencies, returning a Vercel AI SDK `tool()` with a Zod `inputSchema`.
 | `chart_data`      | `createChartDataTool(dataSource)`           | Returns `{ label, value }[]` for charts         |
 | `done`            | `createDoneTool()`                          | Signals agent completion with summary text      |
 
-**Agent loop**: `decompose_query → think → [act] → observe → repeat`
 **Stop conditions**: `hasToolCall('done')` or `stepCountIs(10)`
 
 ---
@@ -152,39 +372,6 @@ TypeORM migrations only. No runtime module.
 | `1709700000001-AddChatTables` | `chat_sessions`, `chat_messages`           |
 
 Run via `pnpm migrate` (backend).
-
----
-
-## Database Schema
-
-### `statements`
-
-`id` (UUID PK) · `filename` · `file_type` (pdf/csv) · `file_path` ·
-`file_size` · `raw_text` (TEXT) · `uploaded_at`
-
-### `transactions`
-
-`id` (UUID PK) · `statement_id` (FK CASCADE) · `date` · `description` ·
-`amount` (DECIMAL 12,2) · `type` (debit/credit) · `category`
-Categories: `groceries | dining | transport | utilities | entertainment | shopping | health | education | travel | income | transfer | other`
-Indexed on: `statement_id`, `date`, `category`
-
-### `embeddings`
-
-`id` (UUID PK) · `statement_id` (FK CASCADE) · `chunk_index` · `content` ·
-`token_count` · `embedding` (`vector(1024)`) · `created_at`
-Indexed on: `statement_id`, IVFFlat `vector_cosine_ops`
-
-### `chat_sessions`
-
-`id` (UUID PK) · `title` (VARCHAR NULL, auto-set from first message) ·
-`created_at` · `updated_at`
-
-### `chat_messages`
-
-`id` (UUID PK) · `session_id` (FK CASCADE) · `role` (user/assistant) ·
-`content` · `sources` (JSONB NULL) · `created_at`
-Indexed on: `session_id`
 
 ---
 
