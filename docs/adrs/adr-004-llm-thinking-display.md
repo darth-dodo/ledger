@@ -28,6 +28,7 @@ Key constraints:
 **Choice**: Add two new SSE event types (`tool-call`, `tool-result`) to the existing stream by forwarding events from `fullStream`.
 
 **Alternatives considered**:
+
 - **Structured markdown in text-delta**: Embed thinking as `<!-- think: ... -->` markers in the text stream. Rejected because markers can split across chunks, parsing is fragile, and it mixes content with metadata.
 - **Separate WebSocket channel**: Open a secondary connection for thinking telemetry. Rejected as significant infrastructure overhead for a simple feature.
 
@@ -77,16 +78,19 @@ type ChatEvent =
 ## Consequences
 
 ### Positive
+
 - Users see real-time progress during the 5-15 second ReAct loop
 - Raw SQL queries are visible, building trust with power users
 - LLM reasoning is transparent, aiding debugging of incorrect answers
 - Zero new dependencies or infrastructure — pure event forwarding
 
 ### Negative
+
 - SSE payload size increases (tool args and results are now transmitted)
 - Frontend test coverage for new `ChatEvent` parsing paths needs improvement (lines 91, 94-105 in chat.service.ts)
 - `ThinkingStep.content` is typed as `Record<string, unknown>` — field access relies on runtime key lookups matching tool schemas (e.g., `sql` not `query` for sql_query tool)
 
 ### Risks
+
 - If tool input/output schemas change, the frontend display logic silently degrades (shows "0 rows" or empty SQL blocks instead of crashing)
 - The accordion `[checked]` binding is one-way from `isThinking` — once the user manually toggles it, their preference is respected until the next message

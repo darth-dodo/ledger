@@ -1,7 +1,13 @@
 import { Component, inject, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatSession, ChatEvent, Source, ThinkingStep } from '../../core/services/chat.service';
+import {
+  ChatService,
+  ChatSession,
+  ChatEvent,
+  Source,
+  ThinkingStep,
+} from '../../core/services/chat.service';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 import { SettingsService } from '../../core/services/settings.service';
 
@@ -104,10 +110,14 @@ interface DisplayMessage {
                     @if (msg.isThinking) {
                       <span class="inline-flex items-center gap-1">
                         <span class="loading loading-dots loading-xs"></span>
-                        Thinking... ({{ msg.thinkingSteps.length }} step{{ msg.thinkingSteps.length !== 1 ? 's' : '' }})
+                        Thinking... ({{ msg.thinkingSteps.length }} step{{
+                          msg.thinkingSteps.length !== 1 ? 's' : ''
+                        }})
                       </span>
                     } @else {
-                      Thought process ({{ msg.thinkingSteps.length }} step{{ msg.thinkingSteps.length !== 1 ? 's' : '' }})
+                      Thought process ({{ msg.thinkingSteps.length }} step{{
+                        msg.thinkingSteps.length !== 1 ? 's' : ''
+                      }})
                     }
                   </div>
                   <div class="collapse-content px-3 pb-3">
@@ -119,12 +129,16 @@ interface DisplayMessage {
                               <span>&#x1f9e0;</span>
                               <span class="italic">{{ step.content['thought'] }}</span>
                             </span>
-                          } @else if (step.toolName === 'decompose_query' && step.type === 'tool-call') {
+                          } @else if (
+                            step.toolName === 'decompose_query' && step.type === 'tool-call'
+                          ) {
                             <span class="inline-flex items-center gap-1">
                               <span>&#x1f50d;</span>
                               <span>Decomposing query...</span>
                             </span>
-                          } @else if (step.toolName === 'decompose_query' && step.type === 'tool-result') {
+                          } @else if (
+                            step.toolName === 'decompose_query' && step.type === 'tool-result'
+                          ) {
                             <div class="ml-5">
                               @if (getSubQueries(step.content); as subQueries) {
                                 <ul class="list-disc list-inside space-y-0.5">
@@ -140,19 +154,28 @@ interface DisplayMessage {
                                 <span>&#x1f5c4;&#xfe0f;</span>
                                 <span>Running SQL</span>
                               </span>
-                              <pre class="font-mono text-xs bg-base-200 p-2 rounded mt-1 overflow-x-auto">{{ step.content['sql'] }}</pre>
+                              <pre
+                                class="font-mono text-xs bg-base-200 p-2 rounded mt-1 overflow-x-auto"
+                                >{{ step.content['sql'] }}</pre
+                              >
                             </div>
-                          } @else if (step.toolName === 'sql_query' && step.type === 'tool-result') {
+                          } @else if (
+                            step.toolName === 'sql_query' && step.type === 'tool-result'
+                          ) {
                             <span class="inline-flex items-center gap-1 ml-5">
                               <span>&#x1f5c4;&#xfe0f;</span>
                               <span>Returned {{ getRowCount(step.content) }} rows</span>
                             </span>
-                          } @else if (step.toolName === 'vector_search' && step.type === 'tool-call') {
+                          } @else if (
+                            step.toolName === 'vector_search' && step.type === 'tool-call'
+                          ) {
                             <span class="inline-flex items-center gap-1">
                               <span>&#x1f50d;</span>
                               <span>Searching: {{ step.content['query'] }}</span>
                             </span>
-                          } @else if (step.toolName === 'vector_search' && step.type === 'tool-result') {
+                          } @else if (
+                            step.toolName === 'vector_search' && step.type === 'tool-result'
+                          ) {
                             <span class="inline-flex items-center gap-1 ml-5">
                               <span>&#x1f50d;</span>
                               <span>Found {{ getMatchCount(step.content) }} matches</span>
@@ -162,7 +185,9 @@ interface DisplayMessage {
                               <span>&#x1f4ca;</span>
                               <span>Generating chart data...</span>
                             </span>
-                          } @else if (step.toolName === 'update_category' && step.type === 'tool-call') {
+                          } @else if (
+                            step.toolName === 'update_category' && step.type === 'tool-call'
+                          ) {
                             <span class="inline-flex items-center gap-1">
                               <span>&#x1f3f7;&#xfe0f;</span>
                               <span>Updating category...</span>
@@ -411,11 +436,17 @@ export class ChatComponent implements AfterViewChecked {
     this.errorMessage = '';
 
     // Add user message
-    this.messages = [...this.messages, { role: 'user', content: text, sources: null, thinkingSteps: [], isThinking: false }];
+    this.messages = [
+      ...this.messages,
+      { role: 'user', content: text, sources: null, thinkingSteps: [], isThinking: false },
+    ];
     this.shouldScrollToBottom = true;
 
     // Add empty assistant placeholder
-    this.messages = [...this.messages, { role: 'assistant', content: '', sources: null, thinkingSteps: [], isThinking: false }];
+    this.messages = [
+      ...this.messages,
+      { role: 'assistant', content: '', sources: null, thinkingSteps: [], isThinking: false },
+    ];
 
     this.isStreaming = true;
     const assistantIdx = this.messages.length - 1;

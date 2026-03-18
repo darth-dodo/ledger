@@ -124,7 +124,11 @@ describe('RagController', () => {
     it('forwards tool-call events with args from event.input', async () => {
       const events = [
         { type: 'tool-call', toolName: 'think', input: { thought: 'planning...' } },
-        { type: 'tool-call', toolName: 'sql_query', input: { sql: 'SELECT COUNT(*) FROM transactions' } },
+        {
+          type: 'tool-call',
+          toolName: 'sql_query',
+          input: { sql: 'SELECT COUNT(*) FROM transactions' },
+        },
         { type: 'tool-call', toolName: 'vector_search', input: { query: 'groceries' } },
       ];
       mockRagService.chat.mockResolvedValue({
@@ -146,17 +150,27 @@ describe('RagController', () => {
       expect(writes).toHaveLength(5);
       // Verify args are forwarded from event.input
       const thinkCall = JSON.parse(writes[1].replace('data: ', '').trim());
-      expect(thinkCall).toEqual({ type: 'tool-call', toolName: 'think', args: { thought: 'planning...' } });
+      expect(thinkCall).toEqual({
+        type: 'tool-call',
+        toolName: 'think',
+        args: { thought: 'planning...' },
+      });
       const sqlCall = JSON.parse(writes[2].replace('data: ', '').trim());
-      expect(sqlCall).toEqual({ type: 'tool-call', toolName: 'sql_query', args: { sql: 'SELECT COUNT(*) FROM transactions' } });
+      expect(sqlCall).toEqual({
+        type: 'tool-call',
+        toolName: 'sql_query',
+        args: { sql: 'SELECT COUNT(*) FROM transactions' },
+      });
       const vecCall = JSON.parse(writes[3].replace('data: ', '').trim());
-      expect(vecCall).toEqual({ type: 'tool-call', toolName: 'vector_search', args: { query: 'groceries' } });
+      expect(vecCall).toEqual({
+        type: 'tool-call',
+        toolName: 'vector_search',
+        args: { query: 'groceries' },
+      });
     });
 
     it('skips done tool-call events', async () => {
-      const events = [
-        { type: 'tool-call', toolName: 'done', input: { summary: 'Final answer' } },
-      ];
+      const events = [{ type: 'tool-call', toolName: 'done', input: { summary: 'Final answer' } }];
       mockRagService.chat.mockResolvedValue({
         streamResult: makeMockStreamResult(events),
         sessionId: 'sess-5',
@@ -182,9 +196,21 @@ describe('RagController', () => {
       const events = [
         { type: 'tool-result', toolName: 'think', output: { thought: 'planning...' } },
         { type: 'tool-result', toolName: 'done', output: { summary: 'answer' } },
-        { type: 'tool-result', toolName: 'sql_query', output: { results: [{ count: 40 }], rowCount: 1 } },
-        { type: 'tool-result', toolName: 'vector_search', output: { results: [{ content: 'match' }] } },
-        { type: 'tool-result', toolName: 'decompose_query', output: { subQueries: [{ query: 'test', intent: 'sql_aggregate' }] } },
+        {
+          type: 'tool-result',
+          toolName: 'sql_query',
+          output: { results: [{ count: 40 }], rowCount: 1 },
+        },
+        {
+          type: 'tool-result',
+          toolName: 'vector_search',
+          output: { results: [{ content: 'match' }] },
+        },
+        {
+          type: 'tool-result',
+          toolName: 'decompose_query',
+          output: { subQueries: [{ query: 'test', intent: 'sql_aggregate' }] },
+        },
       ];
       mockRagService.chat.mockResolvedValue({
         streamResult: makeMockStreamResult(events),
@@ -226,12 +252,32 @@ describe('RagController', () => {
 
     it('streams a full ReAct loop in correct order', async () => {
       const events = [
-        { type: 'tool-call', toolName: 'decompose_query', input: { message: 'how many transactions' } },
-        { type: 'tool-result', toolName: 'decompose_query', output: { subQueries: [{ query: 'count', intent: 'sql_aggregate' }] } },
+        {
+          type: 'tool-call',
+          toolName: 'decompose_query',
+          input: { message: 'how many transactions' },
+        },
+        {
+          type: 'tool-result',
+          toolName: 'decompose_query',
+          output: { subQueries: [{ query: 'count', intent: 'sql_aggregate' }] },
+        },
         { type: 'tool-call', toolName: 'think', input: { thought: 'I should count transactions' } },
-        { type: 'tool-result', toolName: 'think', output: { thought: 'I should count transactions' } },
-        { type: 'tool-call', toolName: 'sql_query', input: { sql: 'SELECT COUNT(*) FROM transactions' } },
-        { type: 'tool-result', toolName: 'sql_query', output: { results: [{ count: 40 }], rowCount: 1 } },
+        {
+          type: 'tool-result',
+          toolName: 'think',
+          output: { thought: 'I should count transactions' },
+        },
+        {
+          type: 'tool-call',
+          toolName: 'sql_query',
+          input: { sql: 'SELECT COUNT(*) FROM transactions' },
+        },
+        {
+          type: 'tool-result',
+          toolName: 'sql_query',
+          output: { results: [{ count: 40 }], rowCount: 1 },
+        },
         { type: 'text-delta', text: 'You have ' },
         { type: 'text-delta', text: '40 transactions.' },
         { type: 'tool-call', toolName: 'done', input: { summary: 'You have 40 transactions.' } },
@@ -255,18 +301,34 @@ describe('RagController', () => {
       const parsed = writes.map((w: string) => {
         const raw = w.replace('data: ', '').trim();
         if (raw === '[DONE]') return { type: '[DONE]' };
-        try { return JSON.parse(raw); } catch { return raw; }
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return raw;
+        }
       });
 
       // session-id, decompose_query call, decompose_query result, think call,
       // sql_query call, sql_query result, 2x text-delta, done result as text-delta, [DONE]
       // (think result skipped, done call skipped)
       expect(parsed[0].type).toBe('session-id');
-      expect(parsed[1]).toEqual({ type: 'tool-call', toolName: 'decompose_query', args: { message: 'how many transactions' } });
+      expect(parsed[1]).toEqual({
+        type: 'tool-call',
+        toolName: 'decompose_query',
+        args: { message: 'how many transactions' },
+      });
       expect(parsed[2].type).toBe('tool-result');
       expect(parsed[2].toolName).toBe('decompose_query');
-      expect(parsed[3]).toEqual({ type: 'tool-call', toolName: 'think', args: { thought: 'I should count transactions' } });
-      expect(parsed[4]).toEqual({ type: 'tool-call', toolName: 'sql_query', args: { sql: 'SELECT COUNT(*) FROM transactions' } });
+      expect(parsed[3]).toEqual({
+        type: 'tool-call',
+        toolName: 'think',
+        args: { thought: 'I should count transactions' },
+      });
+      expect(parsed[4]).toEqual({
+        type: 'tool-call',
+        toolName: 'sql_query',
+        args: { sql: 'SELECT COUNT(*) FROM transactions' },
+      });
       expect(parsed[5].type).toBe('tool-result');
       expect(parsed[5].toolName).toBe('sql_query');
       expect(parsed[6]).toEqual({ type: 'text-delta', delta: 'You have ' });

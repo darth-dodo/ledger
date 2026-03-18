@@ -293,9 +293,7 @@ describe('ChatService', () => {
     });
 
     it('should emit session-id ChatEvent for session-id chunks', async () => {
-      const stream = createSSEStream([
-        'data: {"type":"session-id","sessionId":"sess-abc"}',
-      ]);
+      const stream = createSSEStream(['data: {"type":"session-id","sessionId":"sess-abc"}']);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
       const emitted: ChatEvent[] = [];

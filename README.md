@@ -58,8 +58,8 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 
 The agentic ReAct loop is fully transparent. While the LLM works, you see its thought process in a live-expanding accordion -- query decomposition, reasoning, SQL queries, and search results. The accordion auto-collapses when the final answer arrives.
 
-| Thinking expanded | Response with collapsed thinking |
-|---|---|
+| Thinking expanded                                   | Response with collapsed thinking       |
+| --------------------------------------------------- | -------------------------------------- |
 | ![Thinking expanded](m5-chat-thinking-expanded.png) | ![Chat response](m5-chat-response.png) |
 
 ## Architecture
