@@ -1,7 +1,7 @@
 import { Component, inject, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatSession, Source } from '../../core/services/chat.service';
+import { ChatService, ChatSession, ChatEvent, Source, ThinkingStep } from '../../core/services/chat.service';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 import { SettingsService } from '../../core/services/settings.service';
 
@@ -9,6 +9,8 @@ interface DisplayMessage {
   role: 'user' | 'assistant';
   content: string;
   sources: Source[] | null;
+  thinkingSteps: ThinkingStep[];
+  isThinking: boolean;
 }
 
 @Component({
@@ -93,6 +95,92 @@ interface DisplayMessage {
           }
 
           @for (msg of messages; track $index) {
+            <!-- Thinking steps accordion (above assistant bubble) -->
+            @if (msg.role === 'assistant' && msg.thinkingSteps.length > 0) {
+              <div class="ml-12 mb-1">
+                <div class="collapse collapse-arrow bg-base-200/30 rounded-lg">
+                  <input type="checkbox" [checked]="msg.isThinking" />
+                  <div class="collapse-title text-xs font-medium py-2 min-h-0 text-base-content/60">
+                    @if (msg.isThinking) {
+                      <span class="inline-flex items-center gap-1">
+                        <span class="loading loading-dots loading-xs"></span>
+                        Thinking... ({{ msg.thinkingSteps.length }} step{{ msg.thinkingSteps.length !== 1 ? 's' : '' }})
+                      </span>
+                    } @else {
+                      Thought process ({{ msg.thinkingSteps.length }} step{{ msg.thinkingSteps.length !== 1 ? 's' : '' }})
+                    }
+                  </div>
+                  <div class="collapse-content px-3 pb-3">
+                    <div class="space-y-1">
+                      @for (step of msg.thinkingSteps; track $index) {
+                        <div class="text-xs text-base-content/60">
+                          @if (step.toolName === 'think' && step.type === 'tool-call') {
+                            <span class="inline-flex items-start gap-1">
+                              <span>&#x1f9e0;</span>
+                              <span class="italic">{{ step.content['thought'] }}</span>
+                            </span>
+                          } @else if (step.toolName === 'decompose_query' && step.type === 'tool-call') {
+                            <span class="inline-flex items-center gap-1">
+                              <span>&#x1f50d;</span>
+                              <span>Decomposing query...</span>
+                            </span>
+                          } @else if (step.toolName === 'decompose_query' && step.type === 'tool-result') {
+                            <div class="ml-5">
+                              @if (getSubQueries(step.content); as subQueries) {
+                                <ul class="list-disc list-inside space-y-0.5">
+                                  @for (sq of subQueries; track $index) {
+                                    <li class="text-xs text-base-content/50">{{ sq }}</li>
+                                  }
+                                </ul>
+                              }
+                            </div>
+                          } @else if (step.toolName === 'sql_query' && step.type === 'tool-call') {
+                            <div>
+                              <span class="inline-flex items-center gap-1 mb-1">
+                                <span>&#x1f5c4;&#xfe0f;</span>
+                                <span>Running SQL</span>
+                              </span>
+                              <pre class="font-mono text-xs bg-base-200 p-2 rounded mt-1 overflow-x-auto">{{ step.content['sql'] }}</pre>
+                            </div>
+                          } @else if (step.toolName === 'sql_query' && step.type === 'tool-result') {
+                            <span class="inline-flex items-center gap-1 ml-5">
+                              <span>&#x1f5c4;&#xfe0f;</span>
+                              <span>Returned {{ getRowCount(step.content) }} rows</span>
+                            </span>
+                          } @else if (step.toolName === 'vector_search' && step.type === 'tool-call') {
+                            <span class="inline-flex items-center gap-1">
+                              <span>&#x1f50d;</span>
+                              <span>Searching: {{ step.content['query'] }}</span>
+                            </span>
+                          } @else if (step.toolName === 'vector_search' && step.type === 'tool-result') {
+                            <span class="inline-flex items-center gap-1 ml-5">
+                              <span>&#x1f50d;</span>
+                              <span>Found {{ getMatchCount(step.content) }} matches</span>
+                            </span>
+                          } @else if (step.toolName === 'chart_data' && step.type === 'tool-call') {
+                            <span class="inline-flex items-center gap-1">
+                              <span>&#x1f4ca;</span>
+                              <span>Generating chart data...</span>
+                            </span>
+                          } @else if (step.toolName === 'update_category' && step.type === 'tool-call') {
+                            <span class="inline-flex items-center gap-1">
+                              <span>&#x1f3f7;&#xfe0f;</span>
+                              <span>Updating category...</span>
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1">
+                              <span>&#x2699;&#xfe0f;</span>
+                              <span>{{ step.toolName }}...</span>
+                            </span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
             <div
               class="chat"
               [class.chat-end]="msg.role === 'user'"
@@ -323,11 +411,11 @@ export class ChatComponent implements AfterViewChecked {
     this.errorMessage = '';
 
     // Add user message
-    this.messages = [...this.messages, { role: 'user', content: text, sources: null }];
+    this.messages = [...this.messages, { role: 'user', content: text, sources: null, thinkingSteps: [], isThinking: false }];
     this.shouldScrollToBottom = true;
 
     // Add empty assistant placeholder
-    this.messages = [...this.messages, { role: 'assistant', content: '', sources: null }];
+    this.messages = [...this.messages, { role: 'assistant', content: '', sources: null, thinkingSteps: [], isThinking: false }];
 
     this.isStreaming = true;
     const assistantIdx = this.messages.length - 1;
@@ -335,16 +423,30 @@ export class ChatComponent implements AfterViewChecked {
     this.chatService
       .sendMessage(this.activeSessionId, text, this.settingsService.currency)
       .subscribe({
-        next: (token) => {
-          if (token.startsWith('__SESSION_ID__:')) {
-            this.activeSessionId = token.slice('__SESSION_ID__:'.length);
-            return;
-          }
+        next: (chatEvent: ChatEvent) => {
           const updated = [...this.messages];
-          updated[assistantIdx] = {
-            ...updated[assistantIdx],
-            content: updated[assistantIdx].content + token,
-          };
+          const current = updated[assistantIdx];
+
+          switch (chatEvent.kind) {
+            case 'session-id':
+              this.activeSessionId = chatEvent.sessionId;
+              return;
+            case 'text-delta':
+              updated[assistantIdx] = {
+                ...current,
+                content: current.content + chatEvent.delta,
+                isThinking: false,
+              };
+              break;
+            case 'thinking-step':
+              updated[assistantIdx] = {
+                ...current,
+                thinkingSteps: [...current.thinkingSteps, chatEvent.step],
+                isThinking: true,
+              };
+              break;
+          }
+
           this.messages = updated;
           this.shouldScrollToBottom = true;
         },
@@ -354,6 +456,12 @@ export class ChatComponent implements AfterViewChecked {
         },
         complete: () => {
           this.isStreaming = false;
+          // Ensure isThinking is false on completion
+          const updated = [...this.messages];
+          if (updated[assistantIdx]) {
+            updated[assistantIdx] = { ...updated[assistantIdx], isThinking: false };
+            this.messages = updated;
+          }
           this.loadSessions();
         },
       });
@@ -365,6 +473,34 @@ export class ChatComponent implements AfterViewChecked {
       keyEvent.preventDefault();
       this.send(event);
     }
+  }
+
+  /** Extract sub-query labels from decompose_query result */
+  getSubQueries(content: Record<string, unknown>): string[] {
+    // Result may be { subQueries: [...] } or an array directly
+    const raw = content['subQueries'] ?? content['sub_queries'] ?? content;
+    if (Array.isArray(raw)) {
+      return raw.map((sq: any) => (typeof sq === 'string' ? sq : sq.query ?? sq.text ?? JSON.stringify(sq)));
+    }
+    return [];
+  }
+
+  /** Extract row count from sql_query result */
+  getRowCount(content: Record<string, unknown>): number {
+    if (typeof content['rowCount'] === 'number') return content['rowCount'];
+    if (Array.isArray(content)) return content.length;
+    const rows = content['results'] ?? content['rows'] ?? content['data'];
+    if (Array.isArray(rows)) return rows.length;
+    return 0;
+  }
+
+  /** Extract match count from vector_search result */
+  getMatchCount(content: Record<string, unknown>): number {
+    if (Array.isArray(content)) return content.length;
+    const matches = content['results'] ?? content['matches'] ?? content['chunks'];
+    if (Array.isArray(matches)) return matches.length;
+    if (typeof content['count'] === 'number') return content['count'];
+    return 0;
   }
 
   private loadSessions(): void {
@@ -389,6 +525,8 @@ export class ChatComponent implements AfterViewChecked {
           role: m.role,
           content: m.content,
           sources: m.sources,
+          thinkingSteps: [],
+          isThinking: false,
         }));
         this.messagesLoading = false;
         this.shouldScrollToBottom = true;

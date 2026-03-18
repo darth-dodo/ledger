@@ -25,6 +25,18 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface ThinkingStep {
+  type: 'tool-call' | 'tool-result';
+  toolName: string;
+  content: Record<string, unknown>;
+  timestamp: number;
+}
+
+export type ChatEvent =
+  | { kind: 'session-id'; sessionId: string }
+  | { kind: 'text-delta'; delta: string }
+  | { kind: 'thinking-step'; step: ThinkingStep };
+
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly baseUrl = 'http://localhost:3000';
@@ -43,7 +55,7 @@ export class ChatService {
     return this.http.delete<void>(`${this.baseUrl}/chat/sessions/${sessionId}`);
   }
 
-  sendMessage(sessionId: string | null, message: string, currency: string): Observable<string> {
+  sendMessage(sessionId: string | null, message: string, currency: string): Observable<ChatEvent> {
     return new Observable((subscriber) => {
       const abortController = new AbortController();
 
@@ -76,12 +88,32 @@ export class ChatService {
                 try {
                   const chunk = JSON.parse(raw);
                   if (chunk.type === 'session-id' && typeof chunk.sessionId === 'string') {
-                    subscriber.next(`__SESSION_ID__:${chunk.sessionId}`);
+                    subscriber.next({ kind: 'session-id', sessionId: chunk.sessionId });
                   } else if (chunk.type === 'text-delta' && typeof chunk.delta === 'string') {
-                    subscriber.next(chunk.delta);
+                    subscriber.next({ kind: 'text-delta', delta: chunk.delta });
+                  } else if (chunk.type === 'tool-call') {
+                    subscriber.next({
+                      kind: 'thinking-step',
+                      step: {
+                        type: 'tool-call',
+                        toolName: chunk.toolName,
+                        content: chunk.args,
+                        timestamp: Date.now(),
+                      },
+                    });
+                  } else if (chunk.type === 'tool-result') {
+                    subscriber.next({
+                      kind: 'thinking-step',
+                      step: {
+                        type: 'tool-result',
+                        toolName: chunk.toolName,
+                        content: chunk.result,
+                        timestamp: Date.now(),
+                      },
+                    });
                   }
                 } catch {
-                  subscriber.next(raw);
+                  // Non-JSON data, skip
                 }
               }
             }

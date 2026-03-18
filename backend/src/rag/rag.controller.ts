@@ -46,6 +46,11 @@ export class RagController {
     for await (const event of streamResult.fullStream) {
       if (event.type === 'text-delta') {
         res.write(`data: ${JSON.stringify({ type: 'text-delta', delta: event.text })}\n\n`);
+      } else if (event.type === 'tool-call' && event.toolName !== 'done') {
+        // Forward intermediate tool invocations so the frontend can show thinking steps
+        res.write(
+          `data: ${JSON.stringify({ type: 'tool-call', toolName: event.toolName, args: event.input })}\n\n`,
+        );
       } else if (
         event.type === 'tool-result' &&
         event.toolName === 'done' &&
@@ -54,6 +59,15 @@ export class RagController {
         // The done tool's Zod-validated summary is the agent's final answer
         res.write(
           `data: ${JSON.stringify({ type: 'text-delta', delta: event.output.summary })}\n\n`,
+        );
+      } else if (
+        event.type === 'tool-result' &&
+        event.toolName !== 'done' &&
+        event.toolName !== 'think'
+      ) {
+        // Forward tool results (skip done and think which don't carry useful display data)
+        res.write(
+          `data: ${JSON.stringify({ type: 'tool-result', toolName: event.toolName, result: event.output })}\n\n`,
         );
       }
     }

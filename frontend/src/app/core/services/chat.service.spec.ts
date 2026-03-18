@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ChatService } from './chat.service';
+import { ChatService, ChatEvent } from './chat.service';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -167,19 +167,22 @@ describe('ChatService', () => {
       });
     }
 
-    it('should parse AI SDK v6 text-delta chunks and emit delta content', async () => {
+    it('should parse AI SDK v6 text-delta chunks and emit ChatEvent objects', async () => {
       const stream = createSSEStream([
         'data: {"type":"text-delta","delta":"Hello"}',
         'data: {"type":"text-delta","delta":" world"}',
       ]);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
-      const emitted: string[] = [];
+      const emitted: ChatEvent[] = [];
       return new Promise<void>((resolve) => {
         service.sendMessage('s1', 'hi', 'USD').subscribe({
           next: (val) => emitted.push(val),
           complete: () => {
-            expect(emitted).toEqual(['Hello', ' world']);
+            expect(emitted).toEqual([
+              { kind: 'text-delta', delta: 'Hello' },
+              { kind: 'text-delta', delta: ' world' },
+            ]);
             resolve();
           },
         });
@@ -194,28 +197,28 @@ describe('ChatService', () => {
       ]);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
-      const emitted: string[] = [];
+      const emitted: ChatEvent[] = [];
       return new Promise<void>((resolve) => {
         service.sendMessage('s1', 'hi', 'USD').subscribe({
           next: (val) => emitted.push(val),
           complete: () => {
-            expect(emitted).toEqual(['ok']);
+            expect(emitted).toEqual([{ kind: 'text-delta', delta: 'ok' }]);
             resolve();
           },
         });
       });
     });
 
-    it('should emit non-JSON SSE data as-is (fallback)', async () => {
+    it('should silently skip non-JSON SSE data', async () => {
       const stream = createSSEStream(['data: plain text here']);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
-      const emitted: string[] = [];
+      const emitted: ChatEvent[] = [];
       return new Promise<void>((resolve) => {
         service.sendMessage('s1', 'hi', 'USD').subscribe({
           next: (val) => emitted.push(val),
           complete: () => {
-            expect(emitted).toEqual(['plain text here']);
+            expect(emitted).toEqual([]);
             resolve();
           },
         });
@@ -226,7 +229,7 @@ describe('ChatService', () => {
       const stream = createSSEStream(['d:{"finishReason":"stop"}']);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
-      const emitted: string[] = [];
+      const emitted: ChatEvent[] = [];
       return new Promise<void>((resolve) => {
         service.sendMessage('s1', 'hi', 'USD').subscribe({
           next: (val) => emitted.push(val),
@@ -242,7 +245,7 @@ describe('ChatService', () => {
       const stream = createSSEStream(['d:not-json']);
       globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
 
-      const emitted: string[] = [];
+      const emitted: ChatEvent[] = [];
       return new Promise<void>((resolve) => {
         service.sendMessage('s1', 'hi', 'USD').subscribe({
           next: (val) => emitted.push(val),
@@ -287,6 +290,134 @@ describe('ChatService', () => {
 
       expect(abortSpy).toHaveBeenCalled();
       abortSpy.mockRestore();
+    });
+
+    it('should emit session-id ChatEvent for session-id chunks', async () => {
+      const stream = createSSEStream([
+        'data: {"type":"session-id","sessionId":"sess-abc"}',
+      ]);
+      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
+
+      const emitted: ChatEvent[] = [];
+      return new Promise<void>((resolve) => {
+        service.sendMessage(null, 'hi', 'USD').subscribe({
+          next: (val) => emitted.push(val),
+          complete: () => {
+            expect(emitted).toEqual([{ kind: 'session-id', sessionId: 'sess-abc' }]);
+            resolve();
+          },
+        });
+      });
+    });
+
+    it('should emit thinking-step for tool-call SSE events', async () => {
+      const stream = createSSEStream([
+        'data: {"type":"tool-call","toolName":"think","args":{"thought":"planning..."}}',
+        'data: {"type":"tool-call","toolName":"sql_query","args":{"sql":"SELECT COUNT(*) FROM transactions"}}',
+      ]);
+      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
+
+      const emitted: ChatEvent[] = [];
+      return new Promise<void>((resolve) => {
+        service.sendMessage('s1', 'hi', 'USD').subscribe({
+          next: (val) => emitted.push(val),
+          complete: () => {
+            expect(emitted).toHaveLength(2);
+            expect(emitted[0]).toEqual(
+              expect.objectContaining({
+                kind: 'thinking-step',
+                step: expect.objectContaining({
+                  type: 'tool-call',
+                  toolName: 'think',
+                  content: { thought: 'planning...' },
+                }),
+              }),
+            );
+            expect(emitted[1]).toEqual(
+              expect.objectContaining({
+                kind: 'thinking-step',
+                step: expect.objectContaining({
+                  type: 'tool-call',
+                  toolName: 'sql_query',
+                  content: { sql: 'SELECT COUNT(*) FROM transactions' },
+                }),
+              }),
+            );
+            // Timestamps should be numbers
+            const step = (emitted[0] as any).step;
+            expect(typeof step.timestamp).toBe('number');
+            resolve();
+          },
+        });
+      });
+    });
+
+    it('should emit thinking-step for tool-result SSE events', async () => {
+      const stream = createSSEStream([
+        'data: {"type":"tool-result","toolName":"sql_query","result":{"results":[{"count":40}],"rowCount":1}}',
+        'data: {"type":"tool-result","toolName":"vector_search","result":{"results":[{"content":"test"}]}}',
+      ]);
+      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
+
+      const emitted: ChatEvent[] = [];
+      return new Promise<void>((resolve) => {
+        service.sendMessage('s1', 'hi', 'USD').subscribe({
+          next: (val) => emitted.push(val),
+          complete: () => {
+            expect(emitted).toHaveLength(2);
+            expect(emitted[0]).toEqual(
+              expect.objectContaining({
+                kind: 'thinking-step',
+                step: expect.objectContaining({
+                  type: 'tool-result',
+                  toolName: 'sql_query',
+                  content: { results: [{ count: 40 }], rowCount: 1 },
+                }),
+              }),
+            );
+            expect(emitted[1]).toEqual(
+              expect.objectContaining({
+                kind: 'thinking-step',
+                step: expect.objectContaining({
+                  type: 'tool-result',
+                  toolName: 'vector_search',
+                  content: { results: [{ content: 'test' }] },
+                }),
+              }),
+            );
+            resolve();
+          },
+        });
+      });
+    });
+
+    it('should handle mixed event types in correct order', async () => {
+      const stream = createSSEStream([
+        'data: {"type":"session-id","sessionId":"s1"}',
+        'data: {"type":"tool-call","toolName":"decompose_query","args":{"message":"test"}}',
+        'data: {"type":"tool-result","toolName":"decompose_query","result":{"subQueries":[{"query":"test","intent":"sql_aggregate"}]}}',
+        'data: {"type":"tool-call","toolName":"think","args":{"thought":"planning"}}',
+        'data: {"type":"text-delta","delta":"The answer is 42."}',
+      ]);
+      globalThis.fetch = vi.fn().mockResolvedValue(new Response(stream, { status: 200 }));
+
+      const emitted: ChatEvent[] = [];
+      return new Promise<void>((resolve) => {
+        service.sendMessage(null, 'hi', 'USD').subscribe({
+          next: (val) => emitted.push(val),
+          complete: () => {
+            expect(emitted).toHaveLength(5);
+            expect(emitted[0]).toEqual({ kind: 'session-id', sessionId: 's1' });
+            expect((emitted[1] as any).step.toolName).toBe('decompose_query');
+            expect((emitted[1] as any).step.type).toBe('tool-call');
+            expect((emitted[2] as any).step.toolName).toBe('decompose_query');
+            expect((emitted[2] as any).step.type).toBe('tool-result');
+            expect((emitted[3] as any).step.toolName).toBe('think');
+            expect(emitted[4]).toEqual({ kind: 'text-delta', delta: 'The answer is 42.' });
+            resolve();
+          },
+        });
+      });
     });
 
     it('should emit error with fallback message when response body is not JSON', async () => {
