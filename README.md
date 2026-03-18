@@ -6,8 +6,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/tests-329%20passing-brightgreen" alt="Tests">
-  <img src="https://img.shields.io/badge/backend_coverage-96%25-brightgreen" alt="Backend Coverage">
-  <img src="https://img.shields.io/badge/frontend_coverage-94%25-brightgreen" alt="Frontend Coverage">
+  <a href="https://codecov.io/gh/darth-dodo/ledger"><img src="https://codecov.io/gh/darth-dodo/ledger/branch/main/graph/badge.svg" alt="Codecov"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
