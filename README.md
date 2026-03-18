@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-329%20passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-336%20passing-brightgreen" alt="Tests">
   <a href="https://codecov.io/gh/darth-dodo/ledger"><img src="https://codecov.io/gh/darth-dodo/ledger/branch/main/graph/badge.svg" alt="Codecov"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
@@ -48,8 +48,19 @@ Bank statements sit in downloads folders as PDFs and CSVs. Understanding spendin
 | Adaptive Query Decomposition | :white_check_mark: | LLM breaks compound questions into typed sub-queries   |
 | Chart Data Tool              | :white_check_mark: | Agent generates chart-ready data (label/value columns) |
 | Category Updates via Chat    | :white_check_mark: | Re-categorize transactions through conversation        |
+| LLM Thinking Display         | :white_check_mark: | Transparent ReAct loop with live tool-call streaming   |
 | Dashboard                    | :construction:     | Visual analytics and spending breakdowns               |
 | Auth & Polish                | :construction:     | User accounts and production hardening                 |
+
+## Screenshots
+
+### Chat with Thinking Display
+
+The agentic ReAct loop is fully transparent. While the LLM works, you see its thought process in a live-expanding accordion -- query decomposition, reasoning, SQL queries, and search results. The accordion auto-collapses when the final answer arrives.
+
+| Thinking expanded                                   | Response with collapsed thinking       |
+| --------------------------------------------------- | -------------------------------------- |
+| ![Thinking expanded](m5-chat-thinking-expanded.png) | ![Chat response](m5-chat-response.png) |
 
 ## Architecture
 
@@ -137,15 +148,15 @@ cd frontend && pnpm dev
 ## Development
 
 ```bash
-# Run all tests (329 tests)
+# Run all tests (336 tests)
 make test
 
 # Run with coverage
 make test-coverage                     # Backend + frontend coverage
 
 # Individual test suites
-cd backend && pnpm test                # 275 backend tests
-cd frontend && pnpm test               # 54 frontend tests (with coverage)
+cd backend && pnpm test                # 278 backend tests
+cd frontend && pnpm test               # 58 frontend tests (with coverage)
 
 # Type check
 cd backend && pnpm build
@@ -160,7 +171,7 @@ cd backend && pnpm migration:revert    # Revert last migration
 | Module   | Statements | Branches | Functions | Lines |
 | -------- | ---------- | -------- | --------- | ----- |
 | Backend  | 96%        | 91%      | 100%      | 96%   |
-| Frontend | 94%        | 90%      | 85%       | 95%   |
+| Frontend | 94%        | 93%      | 85%       | 96%   |
 
 Coverage is enforced in CI and thresholds are set at 85% for the backend (`backend/vitest.config.ts`).
 
@@ -172,7 +183,7 @@ Coverage is enforced in CI and thresholds are set at 85% for the backend (`backe
 | Backend  | NestJS 11, TypeORM                  | REST API with dependency injection                |
 | Database | PostgreSQL + pgvector               | Relational data + vector embeddings               |
 | AI       | Mistral AI + Vercel AI SDK          | Categorization, embeddings, ReAct agent streaming |
-| Testing  | Vitest                              | Unit + integration tests (329 total)              |
+| Testing  | Vitest                              | Unit + integration tests (336 total)              |
 | Runtime  | tsx, pnpm                           | TypeScript execution, package management          |
 
 ## Project Structure
@@ -208,5 +219,6 @@ ledger/
 - [ADR-001: Upload Strategy](docs/adrs/adr-001-upload-strategy.md) -- File handling decisions
 - [ADR-002: Parser Strategy](docs/adrs/adr-002-parser-strategy.md) -- Multi-format parsing design
 - [ADR-003: Embedding Strategy](docs/adrs/adr-003-embedding-strategy.md) -- RAG vector storage decisions
+- [ADR-004: LLM Thinking Display](docs/adrs/adr-004-llm-thinking-display.md) -- Transparent ReAct loop via SSE
 - [Adaptive Query Decomposition Design](docs/plans/2026-03-14-adaptive-query-decomposition-design.md) -- ReAct agent + decomposition design
 - [Changelog](CHANGELOG.md)
