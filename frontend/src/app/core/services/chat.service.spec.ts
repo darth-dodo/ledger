@@ -344,8 +344,8 @@ describe('ChatService', () => {
               }),
             );
             // Timestamps should be numbers
-            const step = (emitted[0] as any).step;
-            expect(typeof step.timestamp).toBe('number');
+            const event = emitted[0] as Extract<ChatEvent, { kind: 'thinking-step' }>;
+            expect(typeof event.step.timestamp).toBe('number');
             resolve();
           },
         });
@@ -408,11 +408,14 @@ describe('ChatService', () => {
           complete: () => {
             expect(emitted).toHaveLength(5);
             expect(emitted[0]).toEqual({ kind: 'session-id', sessionId: 's1' });
-            expect((emitted[1] as any).step.toolName).toBe('decompose_query');
-            expect((emitted[1] as any).step.type).toBe('tool-call');
-            expect((emitted[2] as any).step.toolName).toBe('decompose_query');
-            expect((emitted[2] as any).step.type).toBe('tool-result');
-            expect((emitted[3] as any).step.toolName).toBe('think');
+            const step1 = (emitted[1] as Extract<ChatEvent, { kind: 'thinking-step' }>).step;
+            expect(step1.toolName).toBe('decompose_query');
+            expect(step1.type).toBe('tool-call');
+            const step2 = (emitted[2] as Extract<ChatEvent, { kind: 'thinking-step' }>).step;
+            expect(step2.toolName).toBe('decompose_query');
+            expect(step2.type).toBe('tool-result');
+            const step3 = (emitted[3] as Extract<ChatEvent, { kind: 'thinking-step' }>).step;
+            expect(step3.toolName).toBe('think');
             expect(emitted[4]).toEqual({ kind: 'text-delta', delta: 'The answer is 42.' });
             resolve();
           },

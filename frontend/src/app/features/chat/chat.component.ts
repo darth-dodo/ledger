@@ -480,7 +480,15 @@ export class ChatComponent implements AfterViewChecked {
     // Result may be { subQueries: [...] } or an array directly
     const raw = content['subQueries'] ?? content['sub_queries'] ?? content;
     if (Array.isArray(raw)) {
-      return raw.map((sq: any) => (typeof sq === 'string' ? sq : sq.query ?? sq.text ?? JSON.stringify(sq)));
+      return raw.map((sq: unknown) => {
+        if (typeof sq === 'string') return sq;
+        if (sq && typeof sq === 'object') {
+          const obj = sq as Record<string, unknown>;
+          if (typeof obj['query'] === 'string') return obj['query'];
+          if (typeof obj['text'] === 'string') return obj['text'];
+        }
+        return JSON.stringify(sq);
+      });
     }
     return [];
   }
