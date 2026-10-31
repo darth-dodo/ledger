@@ -22,6 +22,8 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
 </p>
 
+> **Runs on your machine, no hosted demo.** Statements, transactions and embeddings stay in your local PostgreSQL (pgvector) and Ollama. AI categorization and chat call Groq only if you set `GROQ_API_KEY`. See [Quick Start](#quick-start).
+
 ---
 
 ## The Problem
